@@ -60,22 +60,22 @@ int main(int argc,char *argv[])
     GFC_Matrix4 skyMat,dinoMat;
     //initializtion    
     parse_arguments(argc,argv);
-    init_logger("gf3d.log",0);
-    slog("gf3d begin");
+    init_logger("gf3d.log",0); //append_mode is 0, meaning the file overwrites the previous
+    slog("gf3d begin"); //writes the state to the log
     //gfc init
     gfc_input_init("config/input.cfg");
-    gfc_config_def_init();
-    gfc_action_init(1024);
+    gfc_config_def_init(); //not necessary
+    gfc_action_init(1024); //setups/inits vulkan graphics subsystems
     //gf3d init
-    gf3d_vgraphics_init("config/setup.cfg");
+    gf3d_vgraphics_init("config/setup.cfg"); 
     gf3d_materials_init();
     gf2d_font_init("config/font.cfg");
     gf2d_actor_init(1000);
-    gf3d_draw_init();//3D
+    gf3d_draw_init();//3D, draws origin
     gf2d_draw_manager_init(1000);//2D
     
     //game init
-    srand(SDL_GetTicks());
+    srand(SDL_GetTicks()); // 
     slog_sync();
 
     //game setup
@@ -84,7 +84,7 @@ int main(int argc,char *argv[])
     gfc_matrix4_identity(skyMat);
     dino = gf3d_model_load("models/dino.model");
     gfc_matrix4_identity(dinoMat);
-        //camera
+        //camera, definitely needs change for player entity
     gf3d_camera_set_scale(gfc_vector3d(1,1,1));
     gf3d_camera_set_position(gfc_vector3d(15,-15,10));
     gf3d_camera_look_at(gfc_vector3d(0,0,0),NULL);
@@ -94,7 +94,7 @@ int main(int argc,char *argv[])
     gf3d_camera_enable_free_look(1);
     //windows
 
-    // main game loop    
+    // main game loop, constant series of updates  
     while(!_done)
     {
         gfc_input_update();
@@ -105,7 +105,7 @@ int main(int argc,char *argv[])
         gf3d_camera_update_view();
         gf3d_camera_get_view_mat4(gf3d_vgraphics_get_view_matrix());
 
-        gf3d_vgraphics_render_start();
+        gf3d_vgraphics_render_start(); // combines all draw commands, then submits
 
             //3D draws
         
