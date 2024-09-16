@@ -62,7 +62,7 @@ void gf3d_pipeline_close()
     if (__DEBUG)slog("pipeline system closed");
 }
 
-void gf3d_pipeline_call_render(
+void gf3d_pipeline_call_render( // work on this the most
     Pipeline *pipe,
     VkDescriptorSet * descriptorSet,
     VkBuffer vertexBuffer,
@@ -568,7 +568,7 @@ Pipeline *gf3d_pipeline_create_from_config(
     pipelineInfo.basePipelineIndex = -1; // Optional
     pipelineInfo.pDepthStencilState = &depthStencil;
     sj_free(file);
-
+    // where pipeline is actually created
     if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &pipe->pipeline) != VK_SUCCESS)
     {   
         slog("failed to create pipeline!");
