@@ -19,9 +19,9 @@ typedef struct Entity_S{
     void (*update)  (struct Entity_S *self);    // called every frame for the entity to update its state
 
     //decide things
-    void (*draw)    (struct Entity_S *self);     // called for custom drawing code
+    void (*draw)    (struct Entity_S *self);    // called for custom drawing code
 
-    void (*free)    (struct Entity_S *self);    // called when the entity is cleaned up to clean up custom data
+    void (*free)    (struct Entity_S *self);    // called when the entity is cleaned up
     void            *data;
 
 

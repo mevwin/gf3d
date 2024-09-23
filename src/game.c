@@ -56,24 +56,27 @@ void draw_origin()
 
 void dino_think(Entity *self){
     if (!self) return;
-    self->rotation.z = 0;
+    self->rotation.z = self->rotation.z + 0.1;
 }
 
 
 int main(int argc,char *argv[])
 {
     //local variables
-    Model *sky,*dino;
+    Model *sky;
     GFC_Matrix4 skyMat,dinoMat;
     Entity* ent;
+
     //initializtion    
     parse_arguments(argc,argv);
     init_logger("gf3d.log",0); //append_mode is 0, meaning the file overwrites the previous
     slog("gf3d begin"); //writes the state to the log
+
     //gfc init
     gfc_input_init("config/input.cfg");
     gfc_config_def_init(); //not necessary
     gfc_action_init(1024); //setups/inits vulkan graphics subsystems
+
     //gf3d init
     gf3d_vgraphics_init("config/setup.cfg"); 
     gf3d_materials_init();
@@ -93,9 +96,11 @@ int main(int argc,char *argv[])
     gf2d_mouse_load("actors/mouse.actor");
     sky = gf3d_model_load("models/sky.model");
     gfc_matrix4_identity(skyMat);
+
     //dino = gf3d_model_load("models/dino.model");
-    //gfc_matrix4_identity(dinoMat);
-        //camera, definitely needs change for player entity
+    gfc_matrix4_identity(dinoMat);
+    
+    //camera, definitely needs change for player entity
     gf3d_camera_set_scale(gfc_vector3d(1,1,1));
     gf3d_camera_set_position(gfc_vector3d(15,-15,10));
     gf3d_camera_look_at(gfc_vector3d(0,0,0),NULL);
@@ -117,8 +122,8 @@ int main(int argc,char *argv[])
         gfc_input_update();
         gf2d_mouse_update();
         gf2d_font_update();
-        // entity_think
-        // entity_update            
+        entity_think(ent);
+        entity_update(ent);
 
         //camera updates
         gf3d_camera_controls_update();
@@ -128,14 +133,8 @@ int main(int argc,char *argv[])
         gf3d_vgraphics_render_start(); // combines all draw commands, then submits
 
             //3D draws
-        
                 gf3d_model_draw_sky(sky,skyMat,GFC_COLOR_WHITE);
-                //entity_draw_all();
-                gf3d_model_draw(
-                    dino,
-                    dinoMat,
-                    GFC_COLOR_WHITE,
-                    0);
+                entity_draw(ent);
                 draw_origin();
             //2D draws
                 gf2d_mouse_draw();
