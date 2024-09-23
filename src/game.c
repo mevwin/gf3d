@@ -56,7 +56,7 @@ void draw_origin()
 
 void dino_think(Entity *self){
     if (!self) return;
-    self->rotation.z = self->rotation.z + 0.1;
+    self->rotation.z = self->rotation.z + 0.01;
 }
 
 
@@ -64,8 +64,8 @@ int main(int argc,char *argv[])
 {
     //local variables
     Model *sky;
-    GFC_Matrix4 skyMat,dinoMat;
-    Entity* ent;
+    GFC_Matrix4 skyMat;
+    Entity* dino;
 
     //initializtion    
     parse_arguments(argc,argv);
@@ -89,16 +89,13 @@ int main(int argc,char *argv[])
     entity_system_init(1000);
 
     //game init
-    srand(SDL_GetTicks()); // 
+    srand(SDL_GetTicks()); 
     slog_sync();
 
     //game setup
     gf2d_mouse_load("actors/mouse.actor");
     sky = gf3d_model_load("models/sky.model");
     gfc_matrix4_identity(skyMat);
-
-    //dino = gf3d_model_load("models/dino.model");
-    gfc_matrix4_identity(dinoMat);
     
     //camera, definitely needs change for player entity
     gf3d_camera_set_scale(gfc_vector3d(1,1,1));
@@ -109,10 +106,16 @@ int main(int argc,char *argv[])
     
     gf3d_camera_enable_free_look(1);
 
-    ent = entity_new();
-    if (ent){
-        ent->model = gf3d_model_load("models/dino.model");
-        ent->think = dino_think;
+    //entity initialization loop
+    for (int i = 0; i < 5; i++) {
+        dino = entity_new();
+        if (dino) {
+            dino->model = gf3d_model_load("models/dino.model");
+            dino->think = dino_think;
+            if (i > 0) {
+                dino->position = gfc_vector3d(i*10, i*10, 0);
+            }
+        }
     }
     //windows
 
@@ -122,8 +125,8 @@ int main(int argc,char *argv[])
         gfc_input_update();
         gf2d_mouse_update();
         gf2d_font_update();
-        entity_think(ent);
-        entity_update(ent);
+        entity_think_all();
+        entity_update_all();
 
         //camera updates
         gf3d_camera_controls_update();
@@ -131,11 +134,11 @@ int main(int argc,char *argv[])
         gf3d_camera_get_view_mat4(gf3d_vgraphics_get_view_matrix());
 
         gf3d_vgraphics_render_start(); // combines all draw commands, then submits
-
             //3D draws
                 gf3d_model_draw_sky(sky,skyMat,GFC_COLOR_WHITE);
-                entity_draw(ent);
+                entity_draw_all();
                 draw_origin();
+
             //2D draws
                 gf2d_mouse_draw();
                 gf2d_font_draw_line_tag("ALT+F4 to exit",FT_H1,GFC_COLOR_WHITE, gfc_vector2d(10,10));

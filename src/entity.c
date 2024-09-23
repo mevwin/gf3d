@@ -69,7 +69,7 @@ void entity_draw(Entity *self){
 void entity_draw_all(){
     int i;
     for (i = 0; i < entity_manager.entityMax; i++) {
-        if (entity_manager.entity_list[i]._inuse) continue; // skips ones not set
+        if (!entity_manager.entity_list[i]._inuse) continue; // skips ones not inuse
         entity_draw(&entity_manager.entity_list[i]);
     }
 }
@@ -82,7 +82,7 @@ void entity_think(Entity *self){
 void entity_think_all(){
     int i;
     for (i = 0; i < entity_manager.entityMax; i++) {
-        if (entity_manager.entity_list[i]._inuse) continue; // skips ones not set
+        if (!entity_manager.entity_list[i]._inuse) continue; // skips ones not inuse
         entity_think(&entity_manager.entity_list[i]);
     }
 }
@@ -95,7 +95,7 @@ void entity_update(Entity *self){
 void entity_update_all(){
     int i;
     for (i = 0; i < entity_manager.entityMax; i++) {
-        if (entity_manager.entity_list[i]._inuse) continue; // skips ones not set
+        if (!entity_manager.entity_list[i]._inuse) continue; // skips ones not inuse
         entity_update(&entity_manager.entity_list[i]);
     }
 }
@@ -104,7 +104,7 @@ Entity *entity_new(){
     int i;
     for (i = 0; i < entity_manager.entityMax; i++)
     {
-        if (entity_manager.entity_list[i]._inuse) continue; // skips ones in use
+        if (entity_manager.entity_list[i]._inuse) continue; // skips ones inuse
         memset(&entity_manager.entity_list[i], 0, sizeof(Entity)); // clear out in case anything was still there
 
         // any default values should be set
