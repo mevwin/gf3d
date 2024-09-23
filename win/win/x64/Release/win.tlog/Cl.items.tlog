@@ -25,6 +25,7 @@ C:\Users\vielg\gf3d\gfc\src\gfc_text.c;C:\Users\vielg\gf3d\win\win\x64\Release\g
 C:\Users\vielg\gf3d\gfc\src\gfc_types.c;C:\Users\vielg\gf3d\win\win\x64\Release\gfc_types.obj
 C:\Users\vielg\gf3d\gfc\src\gfc_vector.c;C:\Users\vielg\gf3d\win\win\x64\Release\gfc_vector.obj
 C:\Users\vielg\gf3d\gfc\src\miniz.c;C:\Users\vielg\gf3d\win\win\x64\Release\miniz.obj
+C:\Users\vielg\gf3d\src\entity.c;C:\Users\vielg\gf3d\win\win\x64\Release\entity.obj
 C:\Users\vielg\gf3d\src\game.c;C:\Users\vielg\gf3d\win\win\x64\Release\game.obj
 C:\Users\vielg\gf3d\src\gf2d_actor.c;C:\Users\vielg\gf3d\win\win\x64\Release\gf2d_actor.obj
 C:\Users\vielg\gf3d\src\gf2d_draw.c;C:\Users\vielg\gf3d\win\win\x64\Release\gf2d_draw.obj

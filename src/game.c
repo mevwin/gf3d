@@ -25,6 +25,8 @@
 #include "gf3d_texture.h"
 #include "gf3d_draw.h"
 
+#include "entity.h"
+
 extern int __DEBUG;
 
 static int _done = 0;
@@ -52,12 +54,18 @@ void draw_origin()
         gfc_vector3d(0,0,0),gfc_vector3d(0,0,0),gfc_vector3d(1,1,1),0.1,gfc_color(0,0,1,1));
 }
 
+void dino_think(Entity *self){
+    if (!self) return;
+    self->rotation.z = 0;
+}
+
 
 int main(int argc,char *argv[])
 {
     //local variables
     Model *sky,*dino;
     GFC_Matrix4 skyMat,dinoMat;
+    Entity* ent;
     //initializtion    
     parse_arguments(argc,argv);
     init_logger("gf3d.log",0); //append_mode is 0, meaning the file overwrites the previous
@@ -74,6 +82,9 @@ int main(int argc,char *argv[])
     gf3d_draw_init();//3D, draws origin
     gf2d_draw_manager_init(1000);//2D
     
+    //entity init
+    entity_system_init(1000);
+
     //game init
     srand(SDL_GetTicks()); // 
     slog_sync();
@@ -82,8 +93,8 @@ int main(int argc,char *argv[])
     gf2d_mouse_load("actors/mouse.actor");
     sky = gf3d_model_load("models/sky.model");
     gfc_matrix4_identity(skyMat);
-    dino = gf3d_model_load("models/dino.model");
-    gfc_matrix4_identity(dinoMat);
+    //dino = gf3d_model_load("models/dino.model");
+    //gfc_matrix4_identity(dinoMat);
         //camera, definitely needs change for player entity
     gf3d_camera_set_scale(gfc_vector3d(1,1,1));
     gf3d_camera_set_position(gfc_vector3d(15,-15,10));
@@ -92,6 +103,12 @@ int main(int argc,char *argv[])
     gf3d_camera_set_rotate_step(0.05);
     
     gf3d_camera_enable_free_look(1);
+
+    ent = entity_new();
+    if (ent){
+        ent->model = gf3d_model_load("models/dino.model");
+        ent->think = dino_think;
+    }
     //windows
 
     // main game loop, constant series of updates  
@@ -100,7 +117,10 @@ int main(int argc,char *argv[])
         gfc_input_update();
         gf2d_mouse_update();
         gf2d_font_update();
-        //camera updaes
+        // entity_think
+        // entity_update            
+
+        //camera updates
         gf3d_camera_controls_update();
         gf3d_camera_update_view();
         gf3d_camera_get_view_mat4(gf3d_vgraphics_get_view_matrix());
@@ -110,6 +130,7 @@ int main(int argc,char *argv[])
             //3D draws
         
                 gf3d_model_draw_sky(sky,skyMat,GFC_COLOR_WHITE);
+                //entity_draw_all();
                 gf3d_model_draw(
                     dino,
                     dinoMat,
