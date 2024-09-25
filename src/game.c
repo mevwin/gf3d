@@ -54,11 +54,84 @@ void draw_origin()
         gfc_vector3d(0,0,0),gfc_vector3d(0,0,0),gfc_vector3d(1,1,1),0.1,gfc_color(0,0,1,1));
 }
 
-void dino_think(Entity *self){
+//put in dino.c /dino.h
+void dino_think(Entity* self){
+    GFC_Vector2D dir = { 0,-1 };
+    //DinoData* data;
+    // int dx, dy;
+    //data = self->data
+
     if (!self) return;
-    self->rotation.z = self->rotation.z + 0.01;
+    //self->rotation.z = self->rotation.z + 0.01;
+    dir = gfc_vector2d_rotate(dir, self->rotation.z);
+
+    //input.cfg, include gfc_input.h
+    if (gfc_input_command_down("walkforward")) {
+        gfc_vector2d_add(self->position, self->position, dir);
+    }
+    if (gfc_input_command_down("freelook")) {
+        //data->freelook = !data->freeLook;
+    }
+    /*
+    GetRelativemoustate(&dx, &dy);
+    self->rotation.y += dx *0.01;
+    self->rotation.z += dy *0.01;
+    */
+
 }
 
+//gf3d_camera.h
+void dino_update(Entity* self) {
+    GFC_Vector3D lookTarget, camera, dir = { 0 };
+
+    if (!self) return;
+
+    gfc_vector3d_copy(lookTarget, self->position);
+    lookTarget.z += -5;
+    dir.y = 1.0;
+    gfc_vector3d_rotate_about_z(&dir, self->rotation.z);
+    gfc_vector3d_sub(camera, self->position, dir);
+    camera.z += 10;
+    gf3d_camera_look_at(lookTarget, &camera);
+
+
+}
+/*
+typedef struct {
+    Uint8   freelook;
+            cameraPitch; //raise and lower target instead
+
+
+}DinoData;
+*/
+Entity* dino_spawn(GFC_Vector3D position) {
+    Entity* self;
+    //DinoData* data;
+    self = entity_new();
+    if (!self) return NULL;
+    //model
+    //think
+    //position
+    self->model = gf3d_model_load("models/dino.model");
+    self->think = dino_think;
+    self->update = dino_update;
+    self->position = position;
+    //data = allocate_array(sizeof, 1)
+    // if data self->data = dat
+
+    return self;
+}
+/*
+void dino_free(self){
+    DinoData *data;
+    if !self reutnr
+    data = (DinoData*) self->data;
+    free(data);
+    self->data = NULL;
+}
+
+*/
+// dino implementation stops here
 
 int main(int argc,char *argv[])
 {
@@ -108,28 +181,22 @@ int main(int argc,char *argv[])
 
     //entity initialization loop
     for (int i = 0; i < 5; i++) {
-        dino = entity_new();
-        if (dino) {
-            dino->model = gf3d_model_load("models/dino.model");
-            dino->think = dino_think;
-            if (i > 0) {
-                dino->position = gfc_vector3d(i*10, i*10, 0);
-            }
-        }
+        if (i > 0) dino = dino_spawn(gfc_vector3d(0, 0, 0));
+        else dino_spawn(gfc_vector3d(i*10, i*10, 0));
     }
     //windows
 
     // main game loop, constant series of updates  
     while(!_done)
     {
-        gfc_input_update();
+        gfc_input_update(); //look here for SDL stuff
         gf2d_mouse_update();
         gf2d_font_update();
         entity_think_all();
         entity_update_all();
 
         //camera updates
-        gf3d_camera_controls_update();
+        gf3d_camera_controls_update(); //arrow and ASDW are registered here
         gf3d_camera_update_view();
         gf3d_camera_get_view_mat4(gf3d_vgraphics_get_view_matrix());
 
