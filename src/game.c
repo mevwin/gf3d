@@ -54,91 +54,12 @@ void draw_origin()
         gfc_vector3d(0,0,0),gfc_vector3d(0,0,0),gfc_vector3d(1,1,1),0.1,gfc_color(0,0,1,1));
 }
 
-//put in dino.c /dino.h
-void dino_think(Entity* self){
-    GFC_Vector2D dir = { 0,-1 };
-    //DinoData* data;
-    // int dx, dy;
-    //data = self->data
-
-    if (!self) return;
-    //self->rotation.z = self->rotation.z + 0.01;
-    dir = gfc_vector2d_rotate(dir, self->rotation.z);
-
-    //input.cfg, include gfc_input.h
-    if (gfc_input_command_down("walkforward")) {
-        gfc_vector2d_add(self->position, self->position, dir);
-    }
-    if (gfc_input_command_down("freelook")) {
-        //data->freelook = !data->freeLook;
-    }
-    /*
-    GetRelativemoustate(&dx, &dy);
-    self->rotation.y += dx *0.01;
-    self->rotation.z += dy *0.01;
-    */
-
-}
-
-//gf3d_camera.h
-void dino_update(Entity* self) {
-    GFC_Vector3D lookTarget, camera, dir = { 0 };
-
-    if (!self) return;
-
-    gfc_vector3d_copy(lookTarget, self->position);
-    lookTarget.z += -5;
-    dir.y = 1.0;
-    gfc_vector3d_rotate_about_z(&dir, self->rotation.z);
-    gfc_vector3d_sub(camera, self->position, dir);
-    camera.z += 10;
-    gf3d_camera_look_at(lookTarget, &camera);
-
-
-}
-/*
-typedef struct {
-    Uint8   freelook;
-            cameraPitch; //raise and lower target instead
-
-
-}DinoData;
-*/
-Entity* dino_spawn(GFC_Vector3D position) {
-    Entity* self;
-    //DinoData* data;
-    self = entity_new();
-    if (!self) return NULL;
-    //model
-    //think
-    //position
-    self->model = gf3d_model_load("models/dino.model");
-    self->think = dino_think;
-    self->update = dino_update;
-    self->position = position;
-    //data = allocate_array(sizeof, 1)
-    // if data self->data = dat
-
-    return self;
-}
-/*
-void dino_free(self){
-    DinoData *data;
-    if !self reutnr
-    data = (DinoData*) self->data;
-    free(data);
-    self->data = NULL;
-}
-
-*/
-// dino implementation stops here
-
 int main(int argc,char *argv[])
 {
     //local variables
     Model *sky;
     GFC_Matrix4 skyMat;
-    Entity* dino;
+    Entity* player;
 
     //initializtion    
     parse_arguments(argc,argv);
@@ -177,13 +98,11 @@ int main(int argc,char *argv[])
     gf3d_camera_set_move_step(0.2);
     gf3d_camera_set_rotate_step(0.05);
     
-    gf3d_camera_enable_free_look(1);
+    //gf3d_camera_enable_free_look(1);
 
     //entity initialization loop
-    for (int i = 0; i < 5; i++) {
-        if (i > 0) dino = dino_spawn(gfc_vector3d(0, 0, 0));
-        else dino_spawn(gfc_vector3d(i*10, i*10, 0));
-    }
+    player = player_spawn(gfc_vector3d(0, 0, 0));
+
     //windows
 
     // main game loop, constant series of updates  
@@ -216,6 +135,7 @@ int main(int argc,char *argv[])
     vkDeviceWaitIdle(gf3d_vgraphics_get_default_logical_device());    
     //cleanup
     slog("gf3d program end");
+    entity_system_close();
     exit(0);
     slog_sync();
     return 0;

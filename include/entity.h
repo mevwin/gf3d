@@ -36,6 +36,7 @@ typedef struct Entity_S{
  */
 void entity_system_init(Uint32 maxEnts);
 
+void entity_system_close();
 
 /**
  * @brief draw all active entities
@@ -63,5 +64,5 @@ Entity *entity_new();
  * @brief return the memory of a previously allocated entity back to the pool
  * @param self the entity to free
  */
-
+void entity_free(Entity* self);
 #endif
