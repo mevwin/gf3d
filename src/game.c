@@ -100,7 +100,7 @@ int main(int argc,char *argv[])
     
     //gf3d_camera_enable_free_look(1);
 
-    //entity initialization loop
+    //player initialization
     player = player_spawn(gfc_vector3d(0, 0, 0));
 
     //windows
@@ -120,12 +120,12 @@ int main(int argc,char *argv[])
         gf3d_camera_get_view_mat4(gf3d_vgraphics_get_view_matrix());
 
         gf3d_vgraphics_render_start(); // combines all draw commands, then submits
-            //3D draws
+                //3D draws
                 gf3d_model_draw_sky(sky,skyMat,GFC_COLOR_WHITE);
                 entity_draw_all();
                 draw_origin();
 
-            //2D draws
+                //2D draws
                 gf2d_mouse_draw();
                 gf2d_font_draw_line_tag("ALT+F4 to exit",FT_H1,GFC_COLOR_WHITE, gfc_vector2d(10,10));
         gf3d_vgraphics_render_end();
