@@ -59,37 +59,40 @@ void player_think(Entity* self) {
         gfc_vector2d_add(self->position, self->position, rigdir);
     }
 
-    if (gfc_input_command_down("freelook")) {
+    if (gfc_input_command_pressed("freelook")) {
         data->freelook = !data->freelook;
-    }
-    if (gfc_input_command_down("lookforward")) {
-        self->rotation.z = 0;
+        gf3d_camera_enable_free_look(data->freelook);
     }
     
     // auto-move
-    gfc_vector2d_add(self->position, self->position, fordir);
+    //gfc_vector2d_add(self->position, self->position, fordir);
 }
 
 //gf3d_camera.h
 void player_update(Entity* self) {
     GFC_Vector3D lookTarget, camera, dir = { 0 };
+    PlayerData* data;
 
     if (!self) return;
+    data = self->data;
+    if (!data) return;
     
-    gfc_vector3d_copy(lookTarget, self->position);
-    dir.y = -1.0;
-    gfc_vector3d_rotate_about_z(&dir, self->rotation.z);
-    gfc_vector3d_sub(camera, self->position, dir);
+    if (!(data->freelook)) {
+        gfc_vector3d_copy(lookTarget, self->position);
+        dir.y = -1.0;
+        gfc_vector3d_rotate_about_z(&dir, self->rotation.z);
+        gfc_vector3d_sub(camera, self->position, dir);
 
-    //camera offset
-    camera.y += 50;
-    camera.z += 10;
+        //camera offset
+        camera.y += 50;
+        camera.z += 10;
 
-    
-    lookTarget.y -= 30;
-    lookTarget.z = 0;
-    //slog("Player Position: %f, %f, %f", self->position.x, self->position.y, self->position.z);
-    gf3d_camera_look_at(lookTarget, &camera);
+        lookTarget.y -= 30;
+        lookTarget.z = 0;
+        //slog("Player Position: %f, %f, %f", self->position.x, self->position.y, self->position.z);
+        gf3d_camera_look_at(lookTarget, &camera);
+    }
+    else slog("Free Look Enabled");
 }
 
 

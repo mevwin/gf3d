@@ -310,24 +310,24 @@ void gf3d_camera_controls_update()
             position = gf3d_camera_get_position();
             slog("position: %f,%f,%f",position.x,position.y,position.z);
         }
-        if (keys[SDL_SCANCODE_W])
+        if (keys[SDL_SCANCODE_I])
         {
             gf3d_camera_walk_forward(moveSpeed);
         }
-        if (keys[SDL_SCANCODE_S])
+        if (keys[SDL_SCANCODE_K])
         {
             gf3d_camera_walk_forward(-moveSpeed);
         }
-        if (keys[SDL_SCANCODE_D])
+        if (keys[SDL_SCANCODE_K])
         {
             gf3d_camera_walk_right(moveSpeed);
         }
-        if (keys[SDL_SCANCODE_A])    
+        if (keys[SDL_SCANCODE_J])    
         {
             gf3d_camera_walk_right(-moveSpeed);
         }
-        if (keys[SDL_SCANCODE_SPACE])gf3d_camera_move_up(moveSpeed);
-        if (keys[SDL_SCANCODE_Z])gf3d_camera_move_up(-moveSpeed);
+        if (keys[SDL_SCANCODE_U])gf3d_camera_move_up(moveSpeed);
+        if (keys[SDL_SCANCODE_O])gf3d_camera_move_up(-moveSpeed);
         
         if (keys[SDL_SCANCODE_UP])gf3d_camera_pitch(-gf3d_camera.rotateStep);
         if (keys[SDL_SCANCODE_DOWN])gf3d_camera_pitch(gf3d_camera.rotateStep);

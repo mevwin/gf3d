@@ -30,7 +30,7 @@ void entity_system_init(Uint32 maxEnts){
         return;
     }
     entity_manager.entityMax = maxEnts; // at this point, big ass entity list is made
-    //atexit(entity_system_close());
+    atexit(entity_system_close);
 }
 
 void entity_system_close(){
@@ -40,7 +40,7 @@ void entity_system_close(){
         if (!entity_manager.entity_list[i]._inuse) continue;
         entity_free(&entity_manager.entity_list[i]);
     }
-    entity_manager.entity_list = NULL;
+    free(entity_manager.entity_list);
 }
 
 

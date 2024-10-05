@@ -68,7 +68,6 @@ int main(int argc,char *argv[])
 
     //gfc init
     gfc_input_init("config/input.cfg");
-    gfc_config_def_init(); //not necessary
     gfc_action_init(1024); //setups/inits vulkan graphics subsystems
 
     //gf3d init
@@ -135,7 +134,6 @@ int main(int argc,char *argv[])
     vkDeviceWaitIdle(gf3d_vgraphics_get_default_logical_device());    
     //cleanup
     slog("gf3d program end");
-    entity_system_close();
     exit(0);
     slog_sync();
     return 0;
