@@ -5,13 +5,9 @@
 
 enum roll_type {
 	UP,
-	UPRIGHT,
 	RIGHT,
-	DOWNRIGHT,
 	DOWN,
-	DOWNLEFT,
-	LEFT,
-	UPLEFT
+	LEFT
 };
 
 /**
@@ -29,4 +25,5 @@ void player_cam(Entity* self);
  */
 void barrel_roll(Entity* self);
 
+int check_bounds(Entity* self, GFC_Vector3D movement);
 #endif

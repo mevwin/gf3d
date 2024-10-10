@@ -15,6 +15,9 @@ typedef struct {
     GFC_Vector3D    og_pos;
     int             mid_roll;
     int             roll;
+
+    int             x_bound;
+    int             z_bound;
             
 }PlayerData;
 

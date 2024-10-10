@@ -26,6 +26,9 @@ Entity* player_spawn(GFC_Vector3D position) {
     data->og_pos = self->position;
     data->mid_roll = 0;
 
+    data->x_bound = 49;
+    data->z_bound = 35;
+
     return self;
 }
 
@@ -46,6 +49,7 @@ void player_think(Entity* self) {
         data->freelook = !data->freelook;
         gf3d_camera_enable_free_look(data->freelook);
     }
+    //slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
 }
 
 //gf3d_camera.h
