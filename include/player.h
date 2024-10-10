@@ -2,6 +2,7 @@
 #define __PLAYER_H__
 
 #include "entity.h"
+#include "player_move.h"
 
 typedef struct {
     Uint8           freelook;
@@ -12,6 +13,8 @@ typedef struct {
     float           forspeed;
 
     GFC_Vector3D    og_pos;
+    int             mid_roll;
+    int             roll;
             
 }PlayerData;
 

@@ -20,11 +20,11 @@ Entity* player_spawn(GFC_Vector3D position) {
     data = gfc_allocate_array(sizeof(PlayerData), 1);
     if (data) self->data = data;
 
-    data->upspeed = (float) 0.8;
-    data->rigspeed = (float) 0.8;
-    data->forspeed = (float) -0.2;
+    data->upspeed = (float) 1.2;
+    data->rigspeed = (float) 1.2;
 
     data->og_pos = self->position;
+    data->mid_roll = 0;
 
     return self;
 }
@@ -37,19 +37,19 @@ void player_think(Entity* self) {
 
     if (!self) return;
     
-    player_movement(self);
+    if (!data->mid_roll)
+        player_movement(self);
+    else
+        barrel_roll(self);
 
     if (gfc_input_command_pressed("freelook")) {
         data->freelook = !data->freelook;
         gf3d_camera_enable_free_look(data->freelook);
     }
-
-    
 }
 
 //gf3d_camera.h
 void player_update(Entity* self) {
-    undo_anim(self);
     player_cam(self);
 }
 

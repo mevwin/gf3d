@@ -3,19 +3,30 @@
 
 #include "entity.h"
 
+enum roll_type {
+	UP,
+	UPRIGHT,
+	RIGHT,
+	DOWNRIGHT,
+	DOWN,
+	DOWNLEFT,
+	LEFT,
+	UPLEFT
+};
+
 /**
  * @brief reads player input and turns it into movement
  */
 void player_movement(Entity* self);
 
 /**
- * @brief undoes rotation on ship when player isn't pressing a button
- */
-void undo_anim(Entity* self);
-
-/**
  * @brief sets player's camera
  */
 void player_cam(Entity* self);
+
+/**
+ * @brief do a barrel roll!
+ */
+void barrel_roll(Entity* self);
 
 #endif
