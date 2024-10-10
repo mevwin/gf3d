@@ -23,9 +23,9 @@ struct ObjData_S
     Face *faceWeights;
     
     Uint32 face_count;
-    Face *outFace;
+    Face *outFace;  // array of faces
     
-    Vertex *faceVertices;
+    Vertex *faceVertices;   // array of vertices
     Uint32  face_vert_count;
     GFC_Box     bounds;
 };

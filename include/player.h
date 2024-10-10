@@ -1,16 +1,18 @@
-#ifndef __DINO_H__
-#define __DINO_H__
+#ifndef __PLAYER_H__
+#define __PLAYER_H__
 
 #include "entity.h"
 
 typedef struct {
-    Uint8   freelook;
+    Uint8           freelook;
     //        cameraPitch; //raise and lower target instead
 
-    float   upspeed;
-    float  rigspeed;
-    float  forspeed;
+    float           upspeed;
+    float           rigspeed;
+    float           forspeed;
 
+    GFC_Vector3D    og_pos;
+            
 }PlayerData;
 
 Entity* player_spawn(GFC_Vector3D postion);

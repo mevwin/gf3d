@@ -23,10 +23,22 @@ struct MaterialUBO
     vec2    padding;        //for alignment
 };
 
+struct Light
+{
+    vec4            lightPos;
+    vec4            lightDir;
+    vec4            lightColor;
+    float           angle;
+    float           brightness;
+    float           falloff;
+    float           inUse;
+};
+
 layout(binding = 0) uniform UniformBufferObject
 {
     MeshUBO         mesh;
     MaterialUBO     material;   //this may become an array
+    Light           light[MAX_LIGHTS];
 } ubo;
 
 out gl_PerVertex

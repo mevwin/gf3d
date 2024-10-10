@@ -62,6 +62,7 @@ void entity_draw(Entity *self){
         self->model,
         matrix,
         GFC_COLOR_WHITE,
+        NULL,
         0
     );
 }

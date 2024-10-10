@@ -34,12 +34,14 @@
 #include "gf3d_mesh.h"
 #include "gf3d_materials.h"
 
+#include "lights.h"
 
 //all inclusive of features
 typedef struct
 {
     MeshUBO         mesh;
     MaterialUBO     material;   //this may become an array
+    Light           light[LIGHTS_MAX];
 }ModelUBO;
 
 /**
@@ -148,7 +150,9 @@ void gf3d_model_draw(
     Model *model,
     GFC_Matrix4 modelMat,
     GFC_Color   colorMod,//TODO pass a material instead
-    Uint32 frame);
+    GFC_List    *light,
+    Uint32 frame
+);
 
 /**
  * @brief queue up a model for rendering, specifying one mesh in the model (this can be for animation, or sub-meshes)
@@ -163,6 +167,7 @@ void gf3d_model_draw_index(
     Uint32 index,
     GFC_Matrix4 modelMat,
     GFC_Color   colorMod,
+    GFC_List* light,
     Uint32 frame);
 
 /**
@@ -177,6 +182,7 @@ void gf3d_model_draw_all_meshes(
     Model *model,
     GFC_Matrix4 modelMat,
     GFC_Color   colorMod,
+    GFC_List* light,
     Uint32 frame);
 
 /**

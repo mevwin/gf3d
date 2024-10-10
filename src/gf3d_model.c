@@ -565,6 +565,7 @@ void gf3d_model_draw_all_meshes(
     Model *model,
     GFC_Matrix4 modelMat,
     GFC_Color colorMod,
+    GFC_List* light,
     Uint32 frame)
 {
     int i,c;
@@ -572,7 +573,7 @@ void gf3d_model_draw_all_meshes(
     c = gfc_list_get_count(model->mesh_list);
     for (i = 0;i < c; i++)
     {
-        gf3d_model_draw_index(model,i,modelMat,colorMod,frame);
+        gf3d_model_draw_index(model,i,modelMat,colorMod, light, frame);
     }
 }
 
@@ -580,6 +581,7 @@ void gf3d_model_draw(
     Model *model,
     GFC_Matrix4 modelMat,
     GFC_Color   colorMod,
+    GFC_List* light,
     Uint32 frame)
 {
     if (!model)return;
@@ -590,6 +592,7 @@ void gf3d_model_draw(
             frame,
             modelMat,
             colorMod,
+            light,
             0);
         return;
     }
@@ -597,6 +600,7 @@ void gf3d_model_draw(
         model,
         modelMat,
         colorMod,
+        light,
         frame);
 }
 
@@ -606,8 +610,11 @@ void gf3d_model_draw_index(
     Uint32 index,
     GFC_Matrix4 modelMat,
     GFC_Color   colorMod,
+    GFC_List* light,
     Uint32 frame)
 {
+    int c, i;
+    Light* l;
     Mesh *mesh;
     GFC_Matrix4 matrix = {0};
     GFC_Vector4D modColor = {0};
@@ -622,6 +629,17 @@ void gf3d_model_draw_index(
     gfc_matrix4_multiply(matrix,model->matrix,modelMat);
     
     uboData.mesh = gf3d_mesh_get_ubo(matrix,colorMod);
+
+    if (light){
+        slog("light exists");
+        c = gfc_list_count(light);
+        for (i = 0; i < MIN(c, LIGHTS_MAX); i++)
+        {
+            l = gfc_list_nth(light, i);
+            if (!l) continue;
+            memcpy(&uboData.light[i], l, sizeof(Light));
+        }
+    }
     
     if (model->material)
     {
