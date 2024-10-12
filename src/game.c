@@ -26,6 +26,8 @@
 #include "gf3d_draw.h"
 
 #include "entity.h"
+#include "player.h"
+#include "enemy.h"
 
 extern int __DEBUG;
 
@@ -59,7 +61,7 @@ int main(int argc,char *argv[])
     //local variables
     Model *sky;
     GFC_Matrix4 skyMat;
-    Entity* player;
+    Entity* player, *enemy;
 
     //initializtion    
     parse_arguments(argc,argv);
@@ -101,6 +103,7 @@ int main(int argc,char *argv[])
 
     //player initialization
     player = player_spawn(gfc_vector3d(0, 0, 0));
+    enemy = enemy_spawn(gfc_vector3d(30, -40, 10));
 
     //windows
 

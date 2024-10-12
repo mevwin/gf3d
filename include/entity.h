@@ -4,7 +4,14 @@
 #include "gfc_types.h"
 #include "gfc_text.h"
 #include "gfc_vector.h"
+#include "gfc_shape.h"
 #include "gf3d_model.h"
+
+enum Entity_Type {
+    PLAYER,
+    ENEMY,
+    PROJECTILE
+};
 
 typedef struct Entity_S{
     Uint8           _inuse;     // flag for memory management
@@ -24,7 +31,9 @@ typedef struct Entity_S{
     void (*free)    (struct Entity_S *self);    // called when the entity is cleaned up
     void            *data;
 
-
+    int             entity_type;
+    GFC_Rect        hurtbox;
+    
 }Entity;
 /**
  * always comment in header files about certain shit
@@ -65,4 +74,7 @@ Entity *entity_new();
  * @param self the entity to free
  */
 void entity_free(Entity* self);
+
+Entity* get_entityList();
+
 #endif

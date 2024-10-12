@@ -127,3 +127,7 @@ void entity_free(Entity *self){
     gf3d_model_free(self->model);
     memset(self, 0, sizeof(Entity));
 }
+
+Entity* get_entityList() {
+    return entity_manager.entity_list;
+}
