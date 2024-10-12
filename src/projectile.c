@@ -3,7 +3,7 @@
 
 int proj_count = 0;
 
-Entity* proj_spawn(GFC_Vector3D position) {
+Entity* proj_spawn(GFC_Vector3D position, int curr_mode) {
     Entity* self;
     Entity* entity_list;
     ProjData* data;
@@ -13,6 +13,10 @@ Entity* proj_spawn(GFC_Vector3D position) {
     if (!self) return NULL;
 
     if (proj_count == MAX_PROJ) return NULL;
+    data = gfc_allocate_array(sizeof(ProjData), 1);
+    if (data) self->data = data;
+
+    data->curr_mode = curr_mode;
 
     self->model = gf3d_model_load("models/projectile.model");
     self->think = proj_think;
@@ -22,14 +26,13 @@ Entity* proj_spawn(GFC_Vector3D position) {
     self->free = proj_free;
     self->entity_type = PROJECTILE;
 
-    data = gfc_allocate_array(sizeof(ProjData), 1);
-    if (data) self->data = data;
 
-    data->forspeed = 5;
+
+    data->forspeed = 10;
     data->upspeed = 2;
     data->rigspeed = 2;
 
-    data->y_bound = -90;
+    data->y_bound = -180;
     proj_count++;
 }
 
@@ -67,7 +70,7 @@ void proj_free(Entity* self) {
 int	proj_exist(Entity* self, ProjData* data) {
     if (!data) return;
     
-    if (data->y_bound == self->position.y)
+    if (data->y_bound >= self->position.y)
         return 0;
 
     return 1;

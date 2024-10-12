@@ -32,9 +32,11 @@ Entity* player_spawn(GFC_Vector3D position) {
     data->mid_roll = 0;
 
     data->x_bound = 49; // left is positive, right is negative
-    data->z_bound = 35;
+    data->z_bound = 35; // 98 x 70
 
-    // 98 x 70
+    //default attack
+    data->curr_mode = SINGLE_SHOT;
+    
 
     return self;
 }
@@ -59,7 +61,7 @@ void player_think(Entity* self) {
         data->freelook = !data->freelook;
         gf3d_camera_enable_free_look(data->freelook);
     }
-    slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
+    //slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
 }
 
 //gf3d_camera.h
@@ -97,11 +99,9 @@ void player_attack(Entity* self, PlayerData* data) {
     //attack_dest = gfc_vector3d(cursor_pos.x, -40, cursor_pos.y);
 
     //slog("MouseX: %f, MouseY: %f", cursor_pos.x, cursor_pos.y);
-    //gfc_vector3d_copy(player_pos, self->position);
 
-    //proj = proj_spawn(player_pos);
+    proj = proj_spawn(self->position, data->curr_mode);
 
-    //if (!proj) return;
     //slog("ShipX: %f, ShipY: %f", self->position.x, self->position.z);
     /*
     for (i = 0; i < MAX_ENEMY; i++) {

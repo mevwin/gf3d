@@ -18,6 +18,8 @@ void player_movement(Entity* self, PlayerData* data) {
         if (!check_movebounds(self, updir, data))
             updir = gfc_vector3d(0, 0, 0);
 
+        gfc_vector3d_add(self->position, self->position, updir);
+
         // animation panning up
         if (self->rotation.y > -0.25)
             self->rotation.y -= 0.03;

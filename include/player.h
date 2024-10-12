@@ -16,6 +16,8 @@ typedef struct {
 
     int             x_bound;
     int             z_bound;
+
+    int             curr_mode;
             
 }PlayerData;
 
