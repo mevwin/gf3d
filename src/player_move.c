@@ -75,26 +75,6 @@ void player_movement(Entity* self, PlayerData* data) {
         }
     }
 
-    // undoes rotation on ship when player isn't pressing a button
-    if (self->rotation.y < 0 && !gfc_input_command_down("moveup"))
-        self->rotation.y += 0.01;
-
-    if (self->rotation.y > 0 && !gfc_input_command_down("movedown"))
-        self->rotation.y -= 0.01;
-
-    if (self->rotation.x < 0 && self->rotation.z < 0 && !gfc_input_command_down("moveright")) {
-        self->rotation.x += 0.01;
-        self->rotation.z += 0.01;
-    }
-    if (self->rotation.x > 0 && self->rotation.z > 0 && !gfc_input_command_down("moveleft")) {
-        self->rotation.x -= 0.01;
-        self->rotation.z -= 0.01;
-    }
-
-    // fix for offsetting due to model Z rotation
-    if (self->position.y != data->og_pos.y) 
-        self->position.y = data->og_pos.y;
-
     // barrel_roll checks
     if (gfc_input_command_down("movedown") && 
         gfc_input_command_released("roll")
@@ -120,13 +100,10 @@ void player_movement(Entity* self, PlayerData* data) {
         data->mid_roll = 1;
         data->roll = LEFT;
     }
-
-    // resets barrel roll rotation
-    if (self->rotation.x < -5 || self->rotation.x > 5) self->rotation.x = 0;
 }
 
 void player_cam(Entity* self, PlayerData* data) {
-    GFC_Vector3D lookTarget, camera, dir = { 0 };
+    GFC_Vector3D lookTarget, camera = { 0 };
 
     if (!self) return;
     if (!data) return;
@@ -134,8 +111,9 @@ void player_cam(Entity* self, PlayerData* data) {
     // camera_view
     if (!(data->freelook)) {
         gfc_vector3d_copy(lookTarget, gfc_vector3d(0, self->position.y, 0));
-        camera = gfc_vector3d(0, self->position.y + 90, 8);
+        camera = gfc_vector3d(0, self->position.y + 90, 0);
         gf3d_camera_look_at(lookTarget, &camera);
+        //gf3d_camera_set_position(gfc_vector3d(0, self->position.y + 90, 3));
     }
     else slog("Free Look Enabled");
 }
@@ -243,4 +221,32 @@ void mousepos_to_gamepos(GFC_Vector2D* cursor_pos, PlayerData* data) {
 
     if (cursor_pos->y > data->z_bound) cursor_pos->y = data->z_bound;
     if (cursor_pos->y < -data->z_bound) cursor_pos->y = -data->z_bound;
+}
+
+void ease_anim(Entity* self, PlayerData* data) {
+    if (!self) return;
+    if (!data) return;
+
+    // undoes rotation on ship when player isn't pressing a button
+    if (self->rotation.y < 0 && !gfc_input_command_down("moveup"))
+        self->rotation.y += 0.01;
+
+    if (self->rotation.y > 0 && !gfc_input_command_down("movedown"))
+        self->rotation.y -= 0.01;
+
+    if (self->rotation.x < 0 && self->rotation.z < 0 && !gfc_input_command_down("moveright")) {
+        self->rotation.x += 0.01;
+        self->rotation.z += 0.01;
+    }
+    if (self->rotation.x > 0 && self->rotation.z > 0 && !gfc_input_command_down("moveleft")) {
+        self->rotation.x -= 0.01;
+        self->rotation.z -= 0.01;
+    }
+
+    // fix for offsetting due to model Z rotation
+    if (self->position.y != data->og_pos.y)
+        self->position.y = data->og_pos.y;
+
+    // resets barrel roll rotation
+    if (self->rotation.x < -5 || self->rotation.x > 5) self->rotation.x = 0;
 }

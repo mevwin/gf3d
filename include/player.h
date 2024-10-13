@@ -23,7 +23,10 @@ typedef struct {
     float           shot_delay;
 
     int             change_flag;
-            
+
+    GFC_Rect        hurt_box;
+    
+    Entity*         reticle;
 }PlayerData;
 
 Entity* player_spawn(GFC_Vector3D position);
@@ -31,5 +34,6 @@ void player_think(Entity* self);
 void player_update(Entity* self);
 void player_free(Entity*  self);
 void player_attack(Entity* self, PlayerData* data);
+
 
 #endif

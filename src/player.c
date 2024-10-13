@@ -1,15 +1,18 @@
 #include "simple_logger.h"
 #include "gf3d_camera.h"
-#include "gf2d_mouse.h"
+#include "gfc_shape.h"
+#include "gfc_input.h"
 #include "player.h"
 #include "player_move.h"
 #include "enemy.h"
 #include "projectile.h"
+#include "reticle.h"
 
 
 Entity* player_spawn(GFC_Vector3D position) {
     Entity* self;
     PlayerData* data;
+    GFC_Vector2D cursor;
 
     self = entity_new();
     if (!self) return NULL;
@@ -40,6 +43,15 @@ Entity* player_spawn(GFC_Vector3D position) {
     data->shot_delay = 0;
 
     data->change_flag = 1;
+
+    data->hurt_box = gfc_rect(
+        self->position.x - 3,
+        self->position.z + 3,
+        6.0,
+        -6.0
+    );
+
+    data->reticle = reticle_spawn(gfc_vector3d(position.x, -40, position.z));
 
     return self;
 }
@@ -75,7 +87,7 @@ void player_think(Entity* self) {
 
     if (gf2d_mouse_button_pressed(0) && data->curr_mode == CHARGE_SHOT) {
         player_attack(self, data);
-        data->next_charged_shot = time + 2.5;
+        data->next_charged_shot = time + 2.0;
         data->shot_delay = time + 0.75;
         data->change_flag = 1;
     }
@@ -95,7 +107,22 @@ void player_think(Entity* self) {
 
 //gf3d_camera.h
 void player_update(Entity* self) {
-    player_cam(self, self->data);
+    PlayerData* data;
+
+    data = self->data;
+    if (!data) return;
+
+    player_cam(self, data);
+
+    ease_anim(self,data);
+
+    //updates hurtbox
+    data->hurt_box = gfc_rect(
+        self->position.x - 3,
+        self->position.z + 3,
+        6.0,
+        -6.0
+    );
 }
 
 
@@ -112,7 +139,8 @@ void player_free(Entity* self){
 void player_attack(Entity* self, PlayerData* data) {
     //Entity* entity_list;
     Entity* proj;
-    GFC_Vector3D attack_start;
+    GFC_Vector3D attack_start, attack_dest, center;
+    GFC_Vector2D cursor_pos;
     float curr_time;
     //GFC_Edge3D ray;
     //int i;
@@ -123,11 +151,24 @@ void player_attack(Entity* self, PlayerData* data) {
     //entity_list = get_entityList();
     //if (!entity_list) return;
 
-    //cursor_pos = gf2d_mouse_get_position();
-    //mousepos_to_gamepos(&cursor_pos, data);
-    //attack_dest = gfc_vector3d(cursor_pos.x, -40, cursor_pos.y);
+    /*
+    cursor_pos = gf2d_mouse_get_position();
+    mousepos_to_gamepos(&cursor_pos, data);
+    attack_dest = gfc_vector3d(cursor_pos.x, self->position.y, cursor_pos.y);
 
-    //slog("MouseX: %f, MouseY: %f", cursor_pos.x, cursor_pos.y);
+    center = gfc_rect_get_center_point(data->hurt_box);
+
+    if (cursor_pos.x > self->position.x - 3 &&
+        cursor_pos.x <= self->position.x + 3 &&
+        cursor_pos.y > self->position.z - 3 &&
+        cursor_pos.y <= self->position.z + 3
+        )
+        slog("Attack Hit");
+    else {
+        slog("ShipX: %f, ShipY: %f", self->position.x, self->position.z);
+        slog("CursorX: %f, CursorY: %f", cursor_pos.x, cursor_pos.y);
+    }
+    */
 
     gfc_vector3d_copy(attack_start, self->position);
     attack_start.z -= 3;
@@ -157,6 +198,9 @@ void player_attack(Entity* self, PlayerData* data) {
         }
             
     }
+    */
+
+    /*
     ray = gf2d_mouse_get_cast_ray();
     slog("\nPoint A: %f, %f, %f\nPoint B: %f, %f, %f", 
         ray.a.x, ray.a.y, ray.a.z,

@@ -22,8 +22,10 @@ Entity* enemy_spawn(GFC_Vector3D position) {
 	data->upspeed = (float)1.2;
 	data->rigspeed = (float)1.2;
 
-	data->x_bound = 49; // left is positive, right is negative
-	data->z_bound = 35;
+	data->x_bound = 72; // left is positive, right is negative
+	data->z_bound = 48;
+
+	return self;
 }
 void enemy_think(Entity* self) {
 

@@ -30,4 +30,6 @@ int check_movebounds(Entity* self, GFC_Vector3D movement, PlayerData* data);
 
 void mousepos_to_gamepos(GFC_Vector2D* cursor_pos, PlayerData* data);
 
+void ease_anim(Entity* self, PlayerData* data);
+
 #endif

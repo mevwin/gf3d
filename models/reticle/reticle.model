@@ -1,0 +1,7 @@
+{
+    "model":
+    {
+        "obj":"models/reticle/reticle.obj",
+        "texture": "models/reticle/color_EE.png"
+    }
+}

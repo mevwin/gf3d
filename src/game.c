@@ -50,7 +50,7 @@ void draw_origin()
         gfc_vector3d(0,0,0),gfc_vector3d(0,0,0),gfc_vector3d(1,1,1),0.1,gfc_color(1,0,0,1));
     gf3d_draw_edge_3d(
         gfc_edge3d_from_vectors(gfc_vector3d(0,-100,0),gfc_vector3d(0,100,0)),
-        gfc_vector3d(0,0,0),gfc_vector3d(0,0,0),gfc_vector3d(1,1,1),0.1,gfc_color(0,1,0,1));
+        gfc_vector3d(0,0,0),gfc_vector3d(0,0,0),gfc_vector3d(1,1,1),0.1,gfc_color(0,1,0,0));
     gf3d_draw_edge_3d(
         gfc_edge3d_from_vectors(gfc_vector3d(0,0,-100),gfc_vector3d(0,0,100)),
         gfc_vector3d(0,0,0),gfc_vector3d(0,0,0),gfc_vector3d(1,1,1),0.1,gfc_color(0,0,1,1));
@@ -92,6 +92,8 @@ int main(int argc,char *argv[])
     sky = gf3d_model_load("models/sky.model");
     gfc_matrix4_identity(skyMat);
     
+    //gf2d_mouse_hide();
+
     //camera, definitely needs change for player entity
     gf3d_camera_set_scale(gfc_vector3d(1,1,1));
     gf3d_camera_set_position(gfc_vector3d(15,-15,10));
@@ -102,8 +104,8 @@ int main(int argc,char *argv[])
     //gf3d_camera_enable_free_look(1);
 
     //player initialization
-    player = player_spawn(gfc_vector3d(0, 0, 0));
-    enemy = enemy_spawn(gfc_vector3d(30, -40, 10));
+    player = player_spawn(gfc_vector3d(0, 0, -10));
+    enemy = enemy_spawn(gfc_vector3d(30, -40, 20));
 
     //windows
 

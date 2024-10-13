@@ -36,15 +36,14 @@ Entity* proj_spawn(GFC_Vector3D position, int curr_mode, float curr_time) {
         data->forspeed = 20;
     }
 
-    
-    
-
     //data->forspeed = 15;
     data->upspeed = 2;
     data->rigspeed = 2;
 
     data->y_bound = -180;
     proj_count++;
+
+    return self;
 }
 
 void proj_update(Entity* self) {
