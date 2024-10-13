@@ -1,7 +1,0 @@
-{
-    "model":
-    {
-        "obj":"models/player_ship/player_ship.obj",
-        "texture": "models/dino/color_44.png"
-    }
-}

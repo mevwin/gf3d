@@ -2,8 +2,9 @@
 #include "projectile.h"
 
 int proj_count = 0;
+float next_shot_time = 0;
 
-Entity* proj_spawn(GFC_Vector3D position, int curr_mode) {
+Entity* proj_spawn(GFC_Vector3D position, int curr_mode, float curr_time) {
     Entity* self;
     Entity* entity_list;
     ProjData* data;
@@ -13,42 +14,37 @@ Entity* proj_spawn(GFC_Vector3D position, int curr_mode) {
     if (!self) return NULL;
 
     if (proj_count == MAX_PROJ) return NULL;
+
     data = gfc_allocate_array(sizeof(ProjData), 1);
     if (data) self->data = data;
 
-    data->curr_mode = curr_mode;
-
-    self->model = gf3d_model_load("models/projectile.model");
-    self->think = proj_think;
     self->update = proj_update;
-
+    self->entity_type = PROJECTILE;
     self->position = position;
     self->free = proj_free;
-    self->entity_type = PROJECTILE;
 
+    data->curr_mode = curr_mode;
 
+    if (curr_mode == SINGLE_SHOT) {
+        self->think = proj_think_basic;
+        self->model = gf3d_model_load("models/projectiles/single_shot.model");
+        data->forspeed = 15;
+    }
+    if (curr_mode == CHARGE_SHOT) {
+        self->think = proj_think_basic;
+        self->model = gf3d_model_load("models/projectiles/charge_shot.model");
+        data->forspeed = 20;
+    }
 
-    data->forspeed = 10;
+    
+    
+
+    //data->forspeed = 15;
     data->upspeed = 2;
     data->rigspeed = 2;
 
     data->y_bound = -180;
     proj_count++;
-}
-
-void proj_think(Entity* self) {
-    ProjData* data;
-    
-    data = self->data;
-    if (!data) return;
-
-    //GFC_Vector2D fordir = { 0, data->forspeed };
-
-    if (!proj_exist(self, self->data))
-        entity_free(self);
-
-    self->position.y -= data->forspeed;
-
 }
 
 void proj_update(Entity* self) {
@@ -74,4 +70,27 @@ int	proj_exist(Entity* self, ProjData* data) {
         return 0;
 
     return 1;
+}
+
+void proj_think_basic(Entity* self) {
+    ProjData* data;
+
+    data = self->data;
+    if (!data) return;
+
+    self->position.y -= data->forspeed;
+
+    if (!proj_exist(self, self->data))
+        entity_free(self);
+
+}
+
+void proj_think_missile(Entity* self) {
+
+}
+void proj_think_spread_shot(Entity* self) {
+
+}
+void proj_think_super_nuke(Entity* self) {
+
 }

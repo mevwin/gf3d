@@ -18,6 +18,11 @@ typedef struct {
     int             z_bound;
 
     int             curr_mode;
+
+    float           next_charged_shot; // time to release charge shot
+    float           shot_delay;
+
+    int             change_flag;
             
 }PlayerData;
 
