@@ -42,3 +42,21 @@ void enemy_free(Entity* self) {
 	free(data);
 	self->data = NULL;
 }
+/**
+* define enemy/AI behavior as a FSA
+* define states of the enemy through enumerations
+* Ex:
+* typedef enum{
+*	IDLE,
+*	ATTACK,
+*	IN_PAIN,
+*	DIE,
+*	DEATH
+* }enemy_states;
+* 
+* have think functions for each state
+* decide in each state what to do
+* 
+* make .def for defining monsters
+* entity_load_from_def(entityDef)
+*/

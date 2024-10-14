@@ -31,57 +31,15 @@ Entity* reticle_spawn(GFC_Vector3D position) {
 }
 
 void reticle_think(Entity* self) {
+    //constantly check if something is in reticle
+    
     ReticleData* data;
+    GFC_Edge3D player_to_rec;
 
     data = self->data;
     if (!data) return;
 
-    GFC_Vector3D updir = { 0, 0, data->mouse_move.y };
-    GFC_Vector2D rigdir = { data->mouse_move.x, 0 };
 
-    //gfc_vector3d_rotate_about_x(&updir, self->rotation.x);
-    //rigdir = gfc_vector2d_rotate(rigdir, self->rotation.z);
-
-    /**
-    * dx > 0, right
-    * dy < 0, up
-    */
-
-    
-    //if (data->mouse_move.x != 0 && data->mouse_move.y != 0)
-      //  slog("Mouse: %f, %f", data->mouse_move.x, data->mouse_move.y);
-        
-    //slog("RecX: %f, RecY: %f", self->position.x, self->position.z);
-    /*
-    
-    if (data->mouse_move.x > 0) {
-        gfc_vector2d_negate(rigdir, rigdir);
-        if (!check_recbounds(self, gfc_vector3d(rigdir.x, rigdir.y, 0), data))
-            rigdir = gfc_vector2d(0, 0);
-        gfc_vector2d_add(self->position, self->position, rigdir);
-    }
-    
-    if (data->mouse_move.x < 0) {
-        if (!check_recbounds(self, gfc_vector3d(rigdir.x, rigdir.y, 0), data))
-            rigdir = gfc_vector2d(0, 0);
-        gfc_vector2d_add(self->position, self->position, -rigdir); 
-    }
-    
-    if (data->mouse_move.y < 0) {
-        gfc_vector3d_negate(updir, updir);
-        if (!check_recbounds(self, updir, data))
-            updir = gfc_vector3d(0, 0, 0);
-        gfc_vector3d_add(self->position, self->position, updir);
-    }
-
-    if (data->mouse_move.y > 0) {
-        if (!check_recbounds(self, updir, data))
-            updir = gfc_vector3d(0, 0, 0);
-        gfc_vector3d_add(self->position, self->position, -updir);
-    }
-    */
-
-    
 }
 
 void reticle_update(Entity* self) {
@@ -111,7 +69,13 @@ void reticle_update(Entity* self) {
 }
 
 void reticle_free(Entity* self) {
+    ReticleData* data;
 
+    if (!self) return;
+
+    data = (ReticleData*)self->data;
+    free(data);
+    self->data = NULL;
 }
 
 int check_recbounds(Entity* self, GFC_Vector3D movement, ReticleData* data) {

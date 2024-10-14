@@ -1,6 +1,6 @@
 #include "simple_logger.h"
 #include "gf3d_camera.h"
-#include "gfc_shape.h"
+#include "gf3d_draw.h"
 #include "gfc_input.h"
 #include "player.h"
 #include "player_move.h"
@@ -52,6 +52,7 @@ Entity* player_spawn(GFC_Vector3D position) {
     );
 
     data->reticle = reticle_spawn(gfc_vector3d(position.x, -40, position.z));
+
 
     return self;
 }
@@ -107,22 +108,34 @@ void player_think(Entity* self) {
 
 //gf3d_camera.h
 void player_update(Entity* self) {
-    PlayerData* data;
+    PlayerData* playdata;
+    ReticleData* retdata;
+    Entity* reticle;
 
-    data = self->data;
-    if (!data) return;
+    playdata = self->data;
+    if (!playdata) return;
 
-    player_cam(self, data);
+    reticle = playdata->reticle;
+    if (!reticle) return;
 
-    ease_anim(self,data);
+    retdata = reticle->data;
+
+    player_cam(self, playdata);
+    if (!retdata) return;
 
     //updates hurtbox
-    data->hurt_box = gfc_rect(
+    playdata->hurt_box = gfc_rect(
         self->position.x - 3,
         self->position.z + 3,
         6.0,
         -6.0
     );
+
+    gf3d_draw_init();
+
+    gf3d_draw_edge_3d(
+        gfc_edge3d_from_vectors(self->position, gfc_vector3d(100, 0, 0)),
+        gfc_vector3d(0, 0, 0), gfc_vector3d(0, 0, 0), gfc_vector3d(1, 1, 1), 0.1, gfc_color(1, 0, 0, 1));
 }
 
 

@@ -75,6 +75,30 @@ void player_movement(Entity* self, PlayerData* data) {
         }
     }
 
+    // undoes rotation on ship when player isn't pressing a button
+    if (self->rotation.y < 0 && !gfc_input_command_down("moveup"))
+        self->rotation.y += 0.01;
+
+    if (self->rotation.y > 0 && !gfc_input_command_down("movedown"))
+        self->rotation.y -= 0.01;
+
+    if (self->rotation.x < 0 && self->rotation.z < 0 && !gfc_input_command_down("moveright")) {
+        self->rotation.x += 0.01;
+        self->rotation.z += 0.01;
+    }
+    if (self->rotation.x > 0 && self->rotation.z > 0 && !gfc_input_command_down("moveleft")) {
+        self->rotation.x -= 0.01;
+        self->rotation.z -= 0.01;
+    }
+
+    // fix for offsetting due to model Z rotation
+    if (self->position.y != data->og_pos.y)
+        self->position.y = data->og_pos.y;
+
+    // resets barrel roll rotation
+    if (self->rotation.x < -5 || self->rotation.x > 5) self->rotation.x = 0;
+
+
     // barrel_roll checks
     if (gfc_input_command_down("movedown") && 
         gfc_input_command_released("roll")
@@ -207,6 +231,7 @@ int check_movebounds(Entity* self, GFC_Vector3D movement, PlayerData* data) {
     return 1;
 }
 
+/*
 void mousepos_to_gamepos(GFC_Vector2D* cursor_pos, PlayerData* data) {
     GFC_Vector2D res = gf3d_vgraphics_get_resolution();
 
@@ -222,31 +247,4 @@ void mousepos_to_gamepos(GFC_Vector2D* cursor_pos, PlayerData* data) {
     if (cursor_pos->y > data->z_bound) cursor_pos->y = data->z_bound;
     if (cursor_pos->y < -data->z_bound) cursor_pos->y = -data->z_bound;
 }
-
-void ease_anim(Entity* self, PlayerData* data) {
-    if (!self) return;
-    if (!data) return;
-
-    // undoes rotation on ship when player isn't pressing a button
-    if (self->rotation.y < 0 && !gfc_input_command_down("moveup"))
-        self->rotation.y += 0.01;
-
-    if (self->rotation.y > 0 && !gfc_input_command_down("movedown"))
-        self->rotation.y -= 0.01;
-
-    if (self->rotation.x < 0 && self->rotation.z < 0 && !gfc_input_command_down("moveright")) {
-        self->rotation.x += 0.01;
-        self->rotation.z += 0.01;
-    }
-    if (self->rotation.x > 0 && self->rotation.z > 0 && !gfc_input_command_down("moveleft")) {
-        self->rotation.x -= 0.01;
-        self->rotation.z -= 0.01;
-    }
-
-    // fix for offsetting due to model Z rotation
-    if (self->position.y != data->og_pos.y)
-        self->position.y = data->og_pos.y;
-
-    // resets barrel roll rotation
-    if (self->rotation.x < -5 || self->rotation.x > 5) self->rotation.x = 0;
-}
+*/

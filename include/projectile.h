@@ -1,14 +1,17 @@
+#ifndef __PROJECTILE_H__
+#define __PROJECTILE_H__
+
 #include "entity.h"
 
 #define MAX_PROJ 20
 
-enum ProjType {
+typedef enum{
 	SINGLE_SHOT,
 	CHARGE_SHOT,
 	MISSILE,
 	SPREAD_SHOT,
 	SUPER_NUKE
-};
+}ProjType;
 
 typedef struct {
 	GFC_Vector3D    og_pos;
@@ -35,3 +38,5 @@ void proj_think_basic(Entity* self);
 void proj_think_missile(Entity* self);
 void proj_think_spread_shot(Entity* self);
 void proj_think_super_nuke(Entity* self);
+
+#endif
