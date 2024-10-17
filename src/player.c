@@ -71,17 +71,6 @@ void player_think(Entity* self) {
     time = SDL_GetTicks() / 1000.0;
     //slog("Time: %0.3f Next_shot %0.3f", time, data->next_charged_shot);
     
-    if (time >= data->next_charged_shot && time < data->next_charged_shot + 0.03) {
-        data->curr_mode = CHARGE_SHOT;
-        gf3d_model_free(self->model);
-        self->model = gf3d_model_load("models/player_ship/player_ship_charged.model");
-    }
-    else if (time < data->next_charged_shot && data->change_flag) {
-        data->curr_mode = SINGLE_SHOT;
-        gf3d_model_free(self->model);
-        self->model = gf3d_model_load("models/player_ship/player_ship_single.model");
-        data->change_flag = 0;
-    }
 
     if (gf2d_mouse_button_pressed(0) && data->curr_mode == CHARGE_SHOT) {
         player_attack(self, data);
@@ -90,10 +79,12 @@ void player_think(Entity* self) {
         data->change_flag = 1;
     }
     else if ((gf2d_mouse_button_pressed(0) || gf2d_mouse_button_held(0)) &&
-        data->shot_delay <= time) {
+        data->shot_delay <= time &&
+        !data->mid_roll &&
+        data->curr_mode != CHARGE_SHOT
+    ){
         data->next_charged_shot = time + 2.5;
         player_attack(self, data);
-        //slog("Time: %0.3f", data->next_charged_shot);
     }
 
     if (gfc_input_command_pressed("freelook")) {
@@ -105,20 +96,32 @@ void player_think(Entity* self) {
 
 //gf3d_camera.h
 void player_update(Entity* self) {
-    PlayerData* playdata;
-    ReticleData* retdata;
-    Entity* reticle;
+    PlayerData* data;
+    float time;
 
-    playdata = self->data;
-    if (!playdata) return;
+    data = self->data;
+    if (!data) return;
 
-    //reticle = playdata->reticle;
-    //if (!reticle) return;
 
-    //retdata = reticle->data;
+    player_cam(self, data);
+    time = SDL_GetTicks() / 1000.0;
 
-    player_cam(self, playdata);
-    //if (!retdata) return;
+    if (time >= data->next_charged_shot && time < data->next_charged_shot + 0.03 && data->curr_mode != WAVE_SHOT) {
+        data->curr_mode = CHARGE_SHOT;
+        gf3d_model_free(self->model);
+        self->model = gf3d_model_load("models/player_ship/player_ship_charged.model");
+    }
+    else if (time < data->next_charged_shot && data->change_flag && data->curr_mode != WAVE_SHOT) {
+        data->curr_mode = SINGLE_SHOT;
+        gf3d_model_free(self->model);
+        self->model = gf3d_model_load("models/player_ship/player_ship_single.model");
+        data->change_flag = 0;
+    }
+    else if (data->curr_mode == WAVE_SHOT && !data->change_flag) {
+        gf3d_model_free(self->model);
+        self->model = gf3d_model_load("models/player_ship/player_ship_wave.model");
+        data->change_flag = 1;
+    }
 
     //updates hurtbox
     self->hurtbox = gfc_rect(
@@ -173,11 +176,11 @@ void player_attack(Entity* self, PlayerData* data) {
 
     gfc_vector3d_copy(attack_start, self->position);
     gfc_vector3d_copy(cursor_pos, data->reticle->position);
-    //attack_start.z -= 3;
+    attack_start.z -= 3;
 
     curr_time = SDL_GetTicks() / 1000.0;
 
-    proj_spawn(attack_start, cursor_pos, data->curr_mode, curr_time);
+    player_proj_spawn(attack_start, cursor_pos, self, curr_time);
 
     //slog("ShipX: %f, ShipY: %f", self->position.x, self->position.z);
     /*
@@ -200,14 +203,6 @@ void player_attack(Entity* self, PlayerData* data) {
         }
             
     }
-    */
-
-    /*
-    ray = gf2d_mouse_get_cast_ray();
-    slog("\nPoint A: %f, %f, %f\nPoint B: %f, %f, %f", 
-        ray.a.x, ray.a.y, ray.a.z,
-        ray.b.x, ray.b.y, ray.b.z
-        );
     */
 }
 

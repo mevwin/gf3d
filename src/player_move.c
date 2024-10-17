@@ -2,6 +2,7 @@
 #include "gf3d_camera.h"
 #include "gf3d_vgraphics.h"
 #include "player_move.h"
+#include "projectile.h"
 
 void player_movement(Entity* self, PlayerData* data) {
     if (!data) return;
@@ -12,6 +13,8 @@ void player_movement(Entity* self, PlayerData* data) {
 
     gfc_vector3d_rotate_about_x(&updir, self->rotation.x);
     rigdir = gfc_vector2d_rotate(rigdir, self->rotation.z);
+
+
 
     if (gfc_input_command_down("moveup")) {
         if (!check_movebounds(self, updir, data))
@@ -150,6 +153,9 @@ void barrel_roll(Entity* self, PlayerData* data){
 
     gfc_vector3d_rotate_about_x(&updir, self->rotation.x);
     rigdir = gfc_vector2d_rotate(rigdir, self->rotation.z);
+
+    if (gf2d_mouse_button_pressed(0))
+        data->curr_mode = WAVE_SHOT;
 
     if (data->roll == DOWN) {
         gfc_vector3d_negate(updir, updir);

@@ -1,28 +1,43 @@
 #include "simple_logger.h"
 #include "projectile.h"
+#include "player.h"
 
 int proj_count = 0;
+int wave_count = 0;
 float next_shot_time = 0;
 
-void proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, ProjType type, float curr_time) {
-    Entity* self;
+void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* player, float curr_time) {
+    Entity* self, *play;
     ProjData* data;
+    PlayerData* playdata;
     float dist_x, dist_y, conver, z_angle, y_angle;
 
     self = entity_new();
     if (!self) return NULL;
 
-    if (proj_count == MAX_PROJ) return NULL;
+    if (proj_count == MAX_PROJ) {
+        entity_free(self);
+        return;
+    }
 
     data = gfc_allocate_array(sizeof(ProjData), 1);
     if (data) self->data = data;
+
+    data->owner = player;
+    play = data->owner;
+    playdata = play->data;
+
+    if (playdata->curr_mode == WAVE_SHOT && wave_count == MAX_WAVE) {
+        entity_free(self);
+        return;
+    }
 
     self->update = proj_update;
     self->entity_type = PROJECTILE;
     self->position = position;
     self->free = proj_free;
 
-    data->type = type;
+    data->type = playdata->curr_mode;
     data->reticle_pos = reticle_pos;
     data->y_bound = -180.0;
 
@@ -36,18 +51,19 @@ void proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, ProjType type, 
     y_angle = atan(dist_y / data->reticle_pos.y);
     self->rotation.y += y_angle;
 
-    if (type == SINGLE_SHOT || type == CHARGE_SHOT) {
+    if (data->type == SINGLE_SHOT || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
-        self->model = type == SINGLE_SHOT ? gf3d_model_load("models/projectiles/single_shot.model") : gf3d_model_load("models/projectiles/charge_shot.model");
-        data->forspeed = type == SINGLE_SHOT ? 9 : 11;
+        self->model = data->type == SINGLE_SHOT ? gf3d_model_load("models/projectiles/single_shot.model") : gf3d_model_load("models/projectiles/charge_shot.model");
+        data->forspeed = data->type == SINGLE_SHOT ? 9 : 11;
         conver = data->reticle_pos.y / data->forspeed;
         data->rigspeed = (dist_x / conver);
         data->upspeed = (dist_y / conver);
     }
-    if (type == SPREAD_SHOT) {
-        self->think = proj_think_spread_shot;
-        self->model = gf3d_model_load("models/projectiles/single_shot.model");
+    if (data->type == WAVE_SHOT) {
+        self->think = proj_think_wave_shot;
+        self->model = gf3d_model_load("models/projectiles/wave_shot.model");
         data->forspeed = 4;
+        wave_count++;
     }
 
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
@@ -99,8 +115,24 @@ void proj_think_basic(Entity* self) {
 void proj_think_missile(Entity* self) {
 
 }
-void proj_think_spread_shot(Entity* self) {
+void proj_think_wave_shot(Entity* self) {
+    ProjData* data;
+    Entity* player;
+    PlayerData* playdata;
 
+    data = self->data;
+    if (!data) return;
+
+    player = data->owner;
+    playdata = player->data;
+    self->position.y -= data->forspeed;
+
+    if (!proj_exist(self, self->data)) {
+        playdata->curr_mode = SINGLE_SHOT;
+        wave_count--;
+        entity_free(self);
+    }
+        
 }
 void proj_think_super_nuke(Entity* self) {
 
