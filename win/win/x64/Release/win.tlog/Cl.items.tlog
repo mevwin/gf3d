@@ -54,6 +54,8 @@ C:\Users\vielg\gf3d\src\gf3d_uniform_buffers.c;C:\Users\vielg\gf3d\win\win\x64\R
 C:\Users\vielg\gf3d\src\gf3d_validation.c;C:\Users\vielg\gf3d\win\win\x64\Release\gf3d_validation.obj
 C:\Users\vielg\gf3d\src\gf3d_vgraphics.c;C:\Users\vielg\gf3d\win\win\x64\Release\gf3d_vgraphics.obj
 C:\Users\vielg\gf3d\src\gf3d_vqueues.c;C:\Users\vielg\gf3d\win\win\x64\Release\gf3d_vqueues.obj
+C:\Users\vielg\gf3d\src\item.c;C:\Users\vielg\gf3d\win\win\x64\Release\item.obj
+C:\Users\vielg\gf3d\src\level.c;C:\Users\vielg\gf3d\win\win\x64\Release\level.obj
 C:\Users\vielg\gf3d\src\player.c;C:\Users\vielg\gf3d\win\win\x64\Release\player.obj
 C:\Users\vielg\gf3d\src\player_move.c;C:\Users\vielg\gf3d\win\win\x64\Release\player_move.obj
 C:\Users\vielg\gf3d\src\projectile.c;C:\Users\vielg\gf3d\win\win\x64\Release\projectile.obj

@@ -57,7 +57,6 @@ void entity_draw(Entity *self){
         self->scale
     );
 
-
     gf3d_model_draw(
         self->model,
         matrix,

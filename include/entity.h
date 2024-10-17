@@ -7,12 +7,12 @@
 #include "gfc_shape.h"
 #include "gf3d_model.h"
 
-enum Entity_Type {
+typedef enum {
     PLAYER,
     ENEMY,
     PROJECTILE,
     RETICLE
-};
+}Entity_Type;
 
 typedef struct Entity_S{
     Uint8           _inuse;     // flag for memory management
@@ -26,14 +26,12 @@ typedef struct Entity_S{
     void (*think)   (struct Entity_S *self);    // called every frame for the entity to decide things
     void (*update)  (struct Entity_S *self);    // called every frame for the entity to update its state
 
-    //decide things
-    void (*draw)    (struct Entity_S *self);    // called for custom drawing code
-
     void (*free)    (struct Entity_S *self);    // called when the entity is cleaned up
-    void            *data;
+    void (*draw)    (struct Entity_S* self);    // for custom draw calls
+    void            *data;                      // entity data
 
-    int             entity_type;
-    GFC_Rect        hurtbox;
+    Entity_Type     entity_type;                // type of entity
+    GFC_Rect        hurtbox;                    // entity's hurtbox
     
 }Entity;
 /**
@@ -46,6 +44,10 @@ typedef struct Entity_S{
  */
 void entity_system_init(Uint32 maxEnts);
 
+
+/**
+ * @brief close the entity subsystem when game is closed
+ */
 void entity_system_close();
 
 /**
@@ -76,6 +78,9 @@ Entity *entity_new();
  */
 void entity_free(Entity* self);
 
+/**
+ * @brief returns the big ass list of entities
+ */
 Entity* get_entityList();
 
 #endif

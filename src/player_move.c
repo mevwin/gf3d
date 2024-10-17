@@ -1,7 +1,6 @@
 #include "simple_logger.h"
 #include "gf3d_camera.h"
 #include "gf3d_vgraphics.h"
-#include "player.h"
 #include "player_move.h"
 
 void player_movement(Entity* self, PlayerData* data) {

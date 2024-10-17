@@ -1,10 +1,7 @@
 #include "simple_logger.h"
-#include "gf3d_camera.h"
-#include "gf3d_draw.h"
 #include "gfc_input.h"
 #include "player.h"
 #include "player_move.h"
-#include "enemy.h"
 #include "projectile.h"
 #include "reticle.h"
 
@@ -14,16 +11,23 @@ Entity* player_spawn(GFC_Vector3D position) {
     PlayerData* data;
     GFC_Vector2D cursor;
 
+    // sanity check
     self = entity_new();
     if (!self) return NULL;
 
     self->model = gf3d_model_load("models/player_ship/player_ship_single.model");
     self->think = player_think;
     self->update = player_update;
-
     self->position = position;
     self->free = player_free;
     self->entity_type = PLAYER;
+
+    self->hurtbox = gfc_rect(
+        self->position.x - 3,
+        self->position.z + 3,
+        6.0,
+        -6.0
+    );
 
     data = gfc_allocate_array(sizeof(PlayerData), 1);
     if (data) self->data = data;
@@ -44,14 +48,7 @@ Entity* player_spawn(GFC_Vector3D position) {
 
     data->change_flag = 1;
 
-    data->hurt_box = gfc_rect(
-        self->position.x - 3,
-        self->position.z + 3,
-        6.0,
-        -6.0
-    );
-
-    data->reticle = reticle_spawn(gfc_vector3d(position.x, -40, position.z));
+    data->reticle = reticle_spawn(gfc_vector3d(position.x, -50, position.z));
 
 
     return self;
@@ -115,27 +112,21 @@ void player_update(Entity* self) {
     playdata = self->data;
     if (!playdata) return;
 
-    reticle = playdata->reticle;
-    if (!reticle) return;
+    //reticle = playdata->reticle;
+    //if (!reticle) return;
 
-    retdata = reticle->data;
+    //retdata = reticle->data;
 
     player_cam(self, playdata);
-    if (!retdata) return;
+    //if (!retdata) return;
 
     //updates hurtbox
-    playdata->hurt_box = gfc_rect(
+    self->hurtbox = gfc_rect(
         self->position.x - 3,
         self->position.z + 3,
         6.0,
         -6.0
     );
-
-    gf3d_draw_init();
-
-    gf3d_draw_edge_3d(
-        gfc_edge3d_from_vectors(self->position, gfc_vector3d(100, 0, 0)),
-        gfc_vector3d(0, 0, 0), gfc_vector3d(0, 0, 0), gfc_vector3d(1, 1, 1), 0.1, gfc_color(1, 0, 0, 1));
 }
 
 
@@ -150,10 +141,7 @@ void player_free(Entity* self){
 }
 
 void player_attack(Entity* self, PlayerData* data) {
-    //Entity* entity_list;
-    Entity* proj;
-    GFC_Vector3D attack_start, attack_dest, center;
-    GFC_Vector2D cursor_pos;
+    GFC_Vector3D attack_start, cursor_pos;
     float curr_time;
     //GFC_Edge3D ray;
     //int i;
@@ -184,11 +172,12 @@ void player_attack(Entity* self, PlayerData* data) {
     */
 
     gfc_vector3d_copy(attack_start, self->position);
-    attack_start.z -= 3;
+    gfc_vector3d_copy(cursor_pos, data->reticle->position);
+    //attack_start.z -= 3;
 
     curr_time = SDL_GetTicks() / 1000.0;
 
-    proj = proj_spawn(attack_start, data->curr_mode, curr_time);
+    proj_spawn(attack_start, cursor_pos, data->curr_mode, curr_time);
 
     //slog("ShipX: %f, ShipY: %f", self->position.x, self->position.z);
     /*

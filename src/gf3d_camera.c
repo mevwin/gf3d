@@ -318,7 +318,7 @@ void gf3d_camera_controls_update()
         {
             gf3d_camera_walk_forward(-moveSpeed);
         }
-        if (keys[SDL_SCANCODE_K])
+        if (keys[SDL_SCANCODE_L])
         {
             gf3d_camera_walk_right(moveSpeed);
         }

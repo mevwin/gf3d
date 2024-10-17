@@ -56,7 +56,7 @@ void reticle_update(Entity* self) {
     self->position.x = cursor.x / (-res.x / (2 * data->x_bound));
     self->position.z = cursor.y / (-res.y / (2 * data->z_bound));
 
-    slog("CursorX: %f, CursorY: %f", cursor.x, cursor.y);
+    //slog("CursorX: %f, CursorY: %f", cursor.x, cursor.y);
 
     if (self->position.x >= data->x_bound - 1)
         self->position.x = data->x_bound - 2;

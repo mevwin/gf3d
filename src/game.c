@@ -88,7 +88,7 @@ int main(int argc,char *argv[])
     slog_sync();
 
     //game setup
-    gf2d_mouse_load("actors/mouse.actor");
+    //gf2d_mouse_load("actors/mouse.actor");
     sky = gf3d_model_load("models/sky.model");
     gfc_matrix4_identity(skyMat);
     
@@ -105,7 +105,7 @@ int main(int argc,char *argv[])
 
     //player initialization
     player = player_spawn(gfc_vector3d(0, 0, -10));
-    enemy = enemy_spawn(gfc_vector3d(30, -40, 20));
+    enemy = enemy_spawn(gfc_vector3d(30, -50, 20));
 
     //windows
 

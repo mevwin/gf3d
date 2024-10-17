@@ -1,7 +1,6 @@
 #ifndef __PLAYER_MOVE_H_
 #define __PLAYER_MOVE_H_
 
-#include "entity.h"
 #include "player.h"
 
 enum roll_type {
@@ -17,7 +16,7 @@ enum roll_type {
 void player_movement(Entity* self, PlayerData* data);
 
 /**
- * @brief sets player's camera
+ * @brief sets player's camera offset
  */
 void player_cam(Entity* self, PlayerData* data);
 
@@ -25,7 +24,6 @@ void player_cam(Entity* self, PlayerData* data);
  * @brief do a barrel roll!
  */
 void barrel_roll(Entity* self, PlayerData* data);
-
 
 /**
 * @brief make sure player is in camera view

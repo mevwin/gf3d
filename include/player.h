@@ -1,32 +1,42 @@
 #ifndef __PLAYER_H__
 #define __PLAYER_H__
 
+#include "gfc_shape.h"
 #include "entity.h"
 
 typedef struct {
+    // debug camera
     Uint8           freelook;
 
-    float           upspeed;
-    float           rigspeed;
-    float           forspeed;
+    GFC_Vector3D    og_pos;             // container for keeping model in place due to constant rotation
+    Entity*         reticle;            // pointer to player reticle
 
-    GFC_Vector3D    og_pos;
-    int             mid_roll;
-    int             roll;
+    // player values
+    float           upspeed;            // vertical speed
+    float           rigspeed;           // horizontal speed
 
-    int             x_bound;
-    int             z_bound;
+    GFC_List        inventory;          // list of items
+    GFC_List        upgrades;           // list of upgrades currently active
 
-    int             curr_mode;
+    float           maxHealth;          // player's maximum health
+    float           currHealth;         // player's current health
+    float           maxShipParts;       // maximum amount of ship parts a player can hold
+    float           currShipParts;      // player's currrent amount of ship parts
 
-    float           next_charged_shot; // time to release charge shot
-    float           shot_delay;
+    // movement bounds (keeps player within camera view)
+    int             x_bound;            // from origin to leftmost side
+    int             z_bound;            // from origin to topmost side
 
-    int             change_flag;
+    // CHARGE_SHOT timing
+    float           next_charged_shot;  // the next time for CHARGE_SHOT to be active
+    float           shot_delay;         // the small delay time after releasing a CHARGE_SHOT
 
-    GFC_Rect        hurt_box;
-    
-    Entity*         reticle;
+    // player flags
+    int             change_flag;        // flag for model switching
+    int             mid_roll;           // flag for player's barrel roll mechanic
+    int             roll;               // type of barrel roll
+    int             curr_mode;          // current attack mode
+
 }PlayerData;
 
 Entity* player_spawn(GFC_Vector3D position);
@@ -34,6 +44,6 @@ void player_think(Entity* self);
 void player_update(Entity* self);
 void player_free(Entity*  self);
 void player_attack(Entity* self, PlayerData* data);
-
+void player_death(Entity* self);
 
 #endif

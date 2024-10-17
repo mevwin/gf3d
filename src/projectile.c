@@ -4,11 +4,10 @@
 int proj_count = 0;
 float next_shot_time = 0;
 
-Entity* proj_spawn(GFC_Vector3D position, int curr_mode, float curr_time) {
+void proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, ProjType type, float curr_time) {
     Entity* self;
-    Entity* entity_list;
     ProjData* data;
-    int i;
+    float dist_x, dist_y, conver, z_angle, y_angle;
 
     self = entity_new();
     if (!self) return NULL;
@@ -23,24 +22,36 @@ Entity* proj_spawn(GFC_Vector3D position, int curr_mode, float curr_time) {
     self->position = position;
     self->free = proj_free;
 
-    data->curr_mode = curr_mode;
+    data->type = type;
+    data->reticle_pos = reticle_pos;
+    data->y_bound = -180.0;
 
-    if (curr_mode == SINGLE_SHOT) {
+    // rotating to reticle;
+    dist_x = data->reticle_pos.x - position.x;
+    dist_y = data->reticle_pos.z - position.z;    
+
+    z_angle = atan(dist_x / data->reticle_pos.y);
+    self->rotation.z -= z_angle;
+
+    y_angle = atan(dist_y / data->reticle_pos.y);
+    self->rotation.y += y_angle;
+
+    if (type == SINGLE_SHOT || type == CHARGE_SHOT) {
         self->think = proj_think_basic;
+        self->model = type == SINGLE_SHOT ? gf3d_model_load("models/projectiles/single_shot.model") : gf3d_model_load("models/projectiles/charge_shot.model");
+        data->forspeed = type == SINGLE_SHOT ? 9 : 11;
+        conver = data->reticle_pos.y / data->forspeed;
+        data->rigspeed = (dist_x / conver);
+        data->upspeed = (dist_y / conver);
+    }
+    if (type == SPREAD_SHOT) {
+        self->think = proj_think_spread_shot;
         self->model = gf3d_model_load("models/projectiles/single_shot.model");
-        data->forspeed = 15;
-    }
-    if (curr_mode == CHARGE_SHOT) {
-        self->think = proj_think_basic;
-        self->model = gf3d_model_load("models/projectiles/charge_shot.model");
-        data->forspeed = 20;
+        data->forspeed = 4;
     }
 
-    //data->forspeed = 15;
-    data->upspeed = 2;
-    data->rigspeed = 2;
+    //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
 
-    data->y_bound = -180;
     proj_count++;
 
     return self;
@@ -77,11 +88,12 @@ void proj_think_basic(Entity* self) {
     data = self->data;
     if (!data) return;
 
+    self->position.x -= data->rigspeed;
     self->position.y -= data->forspeed;
+    self->position.z -= data->upspeed;
 
     if (!proj_exist(self, self->data))
         entity_free(self);
-
 }
 
 void proj_think_missile(Entity* self) {
