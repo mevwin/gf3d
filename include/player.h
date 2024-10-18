@@ -9,7 +9,7 @@ typedef struct {
     Uint8           freelook;
 
     GFC_Vector3D    og_pos;             // container for keeping model in place due to constant rotation
-    Entity*         reticle;            // pointer to player reticle
+    GFC_Vector3D*   reticle_pos;        // pointer to reticle's position
 
     // player values
     float           upspeed;            // vertical speed
@@ -44,9 +44,10 @@ typedef struct {
     Uint8           curr_mode;          // current attack mode
     Uint8           wave_flag;
     Uint8           nuke_flag;
-    int             proj_count;
+    Uint8           proj_count;
 
 }PlayerData;
+
 
 Entity* player_spawn();
 void player_think(Entity* self);

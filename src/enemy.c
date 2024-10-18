@@ -3,40 +3,45 @@
 #include "enemy.h"
 #include "player.h"
 
-Entity* enemy_spawn() {
+Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 	Entity* self;
 	EnemyData* data;
 	GFC_Vector3D position;
+	Enemy_Type type;
 
 	self = entity_new();
 	if (!self) return NULL;
 
-	self->model = gf3d_model_load("models/dino.model");
+	data = gfc_allocate_array(sizeof(EnemyData), 1);
+	if (data) self->data = data;
+
+	type = gfc_random_int(4);
+
+	self->model = gf3d_model_load("models/player_ship/test_ship.model");
 	self->think = enemy_think;
 	self->update = enemy_update;
 	self->free = enemy_free;
 	self->entity_type = ENEMY;
-
-	data = gfc_allocate_array(sizeof(EnemyData), 1);
-	if (data) self->data = data;
+	data->enemy_type = type;
 
 	data->took_damage = 0;
-	data->currHealth = 10;
-	data->maxHealth = 10;
+	data->currHealth = 30;
+	data->maxHealth = 30;
+	data->player_pos = player_pos;
 
 	//data->upspeed = (float)1.2;
 	//data->rigspeed = (float)1.2;
 
-	data->x_bound = 72; // left is positive, right is negative
-	data->z_bound = 48;
+	data->x_bound = 74; // left is positive, right is negative
+	data->z_bound = 50;
+	data->dist_to_player = -65;
 
-	position = gfc_vector3d_random_pos(data->x_bound, -50, data->z_bound);
+	position = gfc_vector3d_random_pos(data->x_bound, data->dist_to_player, data->z_bound);
 	self->position = position;
 
-	self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, self->model->bounds.h / 10);
+	self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, self->model->bounds.h / 5);
 
-	enemy_count += 1;
-
+	enemy_count++;
 
 	return self;
 }
@@ -45,6 +50,7 @@ void enemy_think(Entity* self) {
 }
 void enemy_update(Entity* self) {
 	EnemyData* data;
+	float dist_x, dist_y, z_angle, y_angle;
 
 	if (!self) return;
 
@@ -56,6 +62,15 @@ void enemy_update(Entity* self) {
 	if (data->currHealth <= 0.0)
 		enemy_die(self);
 
+	// rotating enemy to player
+	dist_x = data->player_pos->x - self->position.x;
+	dist_y = data->player_pos->z - self->position.z;
+
+	z_angle = atan(dist_x / (data->dist_to_player + 5));
+	self->rotation.z = z_angle;
+
+	y_angle = atan(dist_y / (data->dist_to_player + 5));
+	self->rotation.y = -y_angle;
 }
 void enemy_free(Entity* self) {
 	EnemyData* data;
@@ -65,7 +80,7 @@ void enemy_free(Entity* self) {
 	data = self->data;
 	free(data);
 	self->data = NULL;
-	enemy_count -= 1;
+	enemy_count--;
 }
 
 void enemy_take_damage(Entity* self, EnemyData* data) {

@@ -67,6 +67,7 @@ int main(int argc,char *argv[])
     parse_arguments(argc,argv);
     init_logger("gf3d.log",0); //append_mode is 0, meaning the file overwrites the previous
     slog("gf3d begin"); //writes the state to the log
+    gfc_config_def_init();
 
     //gfc init
     gfc_input_init("config/input.cfg");
@@ -107,7 +108,7 @@ int main(int argc,char *argv[])
     enemy_count = 0;
 
     player = player_spawn();
-    enemy = enemy_spawn();
+    enemy = enemy_spawn(&(player->position));
 
     //windows
 
@@ -138,7 +139,7 @@ int main(int argc,char *argv[])
         if (gfc_input_command_down("exit"))_done = 1; // exit condition
 
         if (enemy_count < 3) 
-            enemy = enemy_spawn();
+            enemy = enemy_spawn(&(player->position));
 
         game_frame_delay();
     }    

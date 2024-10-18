@@ -3,7 +3,7 @@
 #include "simple_logger.h"
 #include "reticle.h"
 
-Entity* reticle_spawn(GFC_Vector3D position) {
+GFC_Vector3D* reticle_spawn(GFC_Vector3D position) {
     Entity* self;
     ReticleData* data;
 
@@ -11,7 +11,6 @@ Entity* reticle_spawn(GFC_Vector3D position) {
     if (!self) return NULL;
 
     self->model = gf3d_model_load("models/reticle/reticle.model");
-    self->think = reticle_think;
     self->update = reticle_update;
 
     self->position = position;
@@ -21,20 +20,11 @@ Entity* reticle_spawn(GFC_Vector3D position) {
     data = gfc_allocate_array(sizeof(ReticleData), 1);
     if (data) self->data = data;
 
-    data->upspeed = 2;
-    data->rigspeed = 2;
+    data->x_bound = 74; // left is positive, right is negative
+    data->y_bound = -60;
+    data->z_bound = 50; 
 
-    data->x_bound = 72; // left is positive, right is negative
-    data->z_bound = 48; 
-
-    return self;
-}
-
-void reticle_think(Entity* self) {
-    //constantly check if something is in reticle
-   
-
-    //slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
+    return &(self->position);
 }
 
 void reticle_update(Entity* self) {
@@ -45,14 +35,15 @@ void reticle_update(Entity* self) {
 
     GFC_Vector2D res = gf3d_vgraphics_get_resolution();
     GFC_Vector2D cursor = gf2d_mouse_get_position();
-    cursor.x -= res.x/2 - 25;
-    cursor.y -= res.y/2 - 25;
+    cursor.x -= res.x/2;
+    cursor.y -= res.y/2;
 
     self->position.x = cursor.x / (-res.x / (2 * data->x_bound));
     self->position.z = cursor.y / (-res.y / (2 * data->z_bound));
 
     //slog("CursorX: %f, CursorY: %f", cursor.x, cursor.y);
 
+    // keep reticle within camera
     if (self->position.x >= data->x_bound - 1)
         self->position.x = data->x_bound - 2;
     if (self->position.x <= -data->x_bound + 1)

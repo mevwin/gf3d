@@ -6,11 +6,10 @@
 #include "projectile.h"
 #include "reticle.h"
 
-
 Entity* player_spawn() {
     Entity* self;
     PlayerData* data;
-    GFC_Vector3D position;
+    GFC_Vector3D position, reticle_pos;
 
     // sanity check
     self = entity_new();
@@ -42,13 +41,15 @@ Entity* player_spawn() {
     data->proj_count = 0;
 
     data->curr_mode = SINGLE_SHOT; //default attack
-    data->base_damage = 0.3;
+    data->base_damage = 1.0;
     data->proj_speed = 8.0;
 
-    data->next_charged_shot = (SDL_GetTicks() / 1000.0) + 2.0;
+    data->next_charged_shot = (SDL_GetTicks() / 1000.0) + 1.2;
     data->charge_shot_delay = 0;
 
-    data->reticle = reticle_spawn(gfc_vector3d(position.x, -50, position.z));
+    reticle_pos = gfc_vector3d(position.x, -60, position.z);
+
+    data->reticle_pos = reticle_spawn(reticle_pos);
 
     return self;
 }
@@ -93,11 +94,13 @@ void player_think(Entity* self) {
         gf3d_camera_enable_free_look(data->freelook);
     }
 
+    /*
     if (gfc_input_command_pressed("change_attack")) {
         data->curr_mode++;
         
         if (data->curr_mode > SUPER_NUKE) data->curr_mode = SINGLE_SHOT;
     }
+    */
 
     //slog("weapon: %d", data->curr_mode);
     //slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
@@ -116,7 +119,6 @@ void player_update(Entity* self) {
     time = SDL_GetTicks() / 1000.0;
     
     // updates model based on current attack type
-    /*
     if (time >= data->next_charged_shot && time < data->next_charged_shot + 0.03 && data->curr_mode != WAVE_SHOT) {
         data->curr_mode = CHARGE_SHOT;
         gf3d_model_free(self->model);
@@ -133,10 +135,10 @@ void player_update(Entity* self) {
         self->model = gf3d_model_load("models/player_ship/player_ship_wave.model");
         data->change_flag = 1;
     }
-    */
 
     //updates hurtbox
     self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, self->model->bounds.h / 2);
+
 }
 
 
@@ -155,64 +157,24 @@ void player_free(Entity* self){
 void player_attack(Entity* self, PlayerData* data) {
     GFC_Vector3D attack_start, cursor_pos;
     float curr_time;
-    //GFC_Edge3D ray;
-    //int i;
 
     if (!data) return;
     if (!self) return;
     
-    //entity_list = get_entityList();
-    //if (!entity_list) return;
-
-    /*
-    cursor_pos = gf2d_mouse_get_position();
-    mousepos_to_gamepos(&cursor_pos, data);
-    attack_dest = gfc_vector3d(cursor_pos.x, self->position.y, cursor_pos.y);
-
-    center = gfc_rect_get_center_point(data->hurt_box);
-
-    if (cursor_pos.x > self->position.x - 3 &&
-        cursor_pos.x <= self->position.x + 3 &&
-        cursor_pos.y > self->position.z - 3 &&
-        cursor_pos.y <= self->position.z + 3
-        )
-        slog("Attack Hit");
-    else {
-        slog("ShipX: %f, ShipY: %f", self->position.x, self->position.z);
-        slog("CursorX: %f, CursorY: %f", cursor_pos.x, cursor_pos.y);
-    }
-    */
-
     gfc_vector3d_copy(attack_start, self->position);
-    gfc_vector3d_copy(cursor_pos, data->reticle->position);
+    cursor_pos.x = data->reticle_pos->x;
+    cursor_pos.y = data->reticle_pos->y;
+    cursor_pos.z = data->reticle_pos->z;
+
     attack_start.z -= 3;
 
     curr_time = SDL_GetTicks() / 1000.0;
 
     player_proj_spawn(attack_start, cursor_pos, self, curr_time);
+}
 
-    //slog("ShipX: %f, ShipY: %f", self->position.x, self->position.z);
-    /*
-    for (i = 0; i < MAX_ENEMY; i++) {
-        if (entity_list[i].entity_type != ENEMY)
-            continue;
+void player_death(Entity* self) {
 
-        enemy = &entity_list[i];
-        if (!enemy) continue;
-
-        
-        if (enemy->position.x == attack_dest.x &&
-            enemy->position.y == attack_dest.y &&
-            enemy->position.z == attack_dest.z ){
-            slog("Attack Hit\n");
-            break;
-        }
-        else {
-            slog("EnemyX: %f, EnemyY: %f", enemy->position.x, enemy->position.z);
-        }
-            
-    }
-    */
 }
 
 
