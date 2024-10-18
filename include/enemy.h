@@ -3,8 +3,6 @@
 
 #include "entity.h"
 
-#define MAX_ENEMY 10
-
 typedef struct {
 	float           upspeed;
 	float           rigspeed;
@@ -13,12 +11,22 @@ typedef struct {
 
 	int             x_bound;
 	int             z_bound;
+
+	float           maxHealth;          // enemy's maximum health
+	float           currHealth;         // enemy's current health
+
+	Uint8			took_damage;
+	float			damage_taken;
 }EnemyData;
 
-Entity* enemy_spawn(GFC_Vector3D position);
+int enemy_count;
+
+Entity* enemy_spawn();
 void enemy_think(Entity* self);
 void enemy_update(Entity* self);
 void enemy_free(Entity* self);
+void enemy_take_damage(Entity* self, EnemyData* data);
+void enemy_die(Entity* self);
 
 
 

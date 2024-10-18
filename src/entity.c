@@ -113,6 +113,7 @@ Entity *entity_new(){
 
         return &entity_manager.entity_list[i];
     }
+    slog("no more entity slots");
     return NULL; // no more entity slots
 }
 
@@ -121,6 +122,8 @@ void entity_free(Entity *self){
     if (!self) return;
     
     if (self->free) self->free(self);
+
+    self->_inuse = 0;
 
     // free up anything that may have been allocated FOR this
     gf3d_model_free(self->model);

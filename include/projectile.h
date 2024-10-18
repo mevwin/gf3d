@@ -21,6 +21,7 @@ typedef struct {
 	GFC_Vector3D    reticle_pos;	// reticle position
 	GFC_Vector3D	spawn_pos;		// projectile's spawn position
 	Entity*			owner;			// who shot the projectile
+	float			damage;
 
 	// projectile movement details
 	float           forspeed;		// y-movement

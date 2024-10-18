@@ -23,6 +23,9 @@ typedef struct {
     float           maxShipParts;       // maximum amount of ship parts a player can hold
     float           currShipParts;      // player's currrent amount of ship parts
 
+    float           base_damage;        // defaults to SINGLE_SHOT dmg
+    float           proj_speed;         // defaults to SINGLE_SHOT speed
+
     // movement bounds (keeps player within camera view)
     int             x_bound;            // from origin to leftmost side
     int             z_bound;            // from origin to topmost side
@@ -45,7 +48,7 @@ typedef struct {
 
 }PlayerData;
 
-Entity* player_spawn(GFC_Vector3D position);
+Entity* player_spawn();
 void player_think(Entity* self);
 void player_update(Entity* self);
 void player_free(Entity*  self);

@@ -25,21 +25,16 @@ Entity* reticle_spawn(GFC_Vector3D position) {
     data->rigspeed = 2;
 
     data->x_bound = 72; // left is positive, right is negative
-    data->z_bound = 48; // 98 x 70
+    data->z_bound = 48; 
 
     return self;
 }
 
 void reticle_think(Entity* self) {
     //constantly check if something is in reticle
-    
-    ReticleData* data;
-    GFC_Edge3D player_to_rec;
+   
 
-    data = self->data;
-    if (!data) return;
-
-
+    //slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
 }
 
 void reticle_update(Entity* self) {

@@ -2,6 +2,7 @@
 #include "gf2d_mouse.h"
 #include "projectile.h"
 #include "player.h"
+#include "enemy.h"
 
 void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* player, float curr_time) {
     Entity* self, *play;
@@ -53,7 +54,10 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     if (data->type == SINGLE_SHOT || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
         self->model = data->type == SINGLE_SHOT ? gf3d_model_load("models/projectiles/single_shot.model") : gf3d_model_load("models/projectiles/charge_shot.model");
-        data->forspeed = data->type == SINGLE_SHOT ? 8 : 11;
+        data->forspeed = data->type == SINGLE_SHOT ? playdata->proj_speed : playdata->proj_speed * 1.25;
+        data->damage = data->type == SINGLE_SHOT ? playdata->base_damage : playdata->base_damage*3;
+
+        self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, self->model->bounds.h / 2);
 
         conver = data->reticle_pos.y / data->forspeed;
         data->rigspeed = (dist_x / conver);
@@ -83,8 +87,39 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
 }
 
 void proj_update(Entity* self) {
+    ProjData* data;
+    PlayerData* playdata;
+    EnemyData* enemydata;
+    Entity* owner, *enemy, *entityList;
 
+    int i;
 
+    if (!self) return;
+
+    data = self->data;
+
+    owner = data->owner;
+    playdata = owner->data;
+    
+    entityList = get_entityList();
+
+    self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, 10.0);
+
+    for (i = 0; i < MAX_ENTITY; i++) {\
+        enemy = &entityList[i];
+        
+        if (enemy->entity_type != ENEMY) continue;
+
+        if (gfc_sphere_overlap(self->hurtbox, enemy->hurtbox)) {
+            enemydata = enemy->data;
+            enemydata->took_damage = 1;
+            enemydata->damage_taken = data->damage;
+
+            slog("attack hit");
+            entity_free(self);
+            break;
+        }
+    }
 }
 
 void proj_free(Entity* self) {

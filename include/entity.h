@@ -7,6 +7,8 @@
 #include "gfc_primitives.h"
 #include "gf3d_model.h"
 
+#define MAX_ENTITY 1000
+
 typedef enum {
     PLAYER,
     ENEMY,

@@ -61,7 +61,7 @@ int main(int argc,char *argv[])
     //local variables
     Model *sky;
     GFC_Matrix4 skyMat;
-    Entity* player, *enemy;
+    Entity* player, * enemy;
 
     //initializtion    
     parse_arguments(argc,argv);
@@ -81,7 +81,7 @@ int main(int argc,char *argv[])
     gf2d_draw_manager_init(1000);//2D
     
     //entity init
-    entity_system_init(1000);
+    entity_system_init(MAX_ENTITY);
 
     //game init
     srand(SDL_GetTicks()); 
@@ -104,8 +104,10 @@ int main(int argc,char *argv[])
     //gf3d_camera_enable_free_look(1);
 
     //player initialization
-    player = player_spawn(gfc_vector3d(0, 0, -10));
-    enemy = enemy_spawn(gfc_vector3d(30, -50, 20));
+    enemy_count = 0;
+
+    player = player_spawn();
+    enemy = enemy_spawn();
 
     //windows
 
@@ -134,6 +136,10 @@ int main(int argc,char *argv[])
                 gf2d_font_draw_line_tag("ALT+F4 to exit",FT_H1,GFC_COLOR_WHITE, gfc_vector2d(10,10));
         gf3d_vgraphics_render_end();
         if (gfc_input_command_down("exit"))_done = 1; // exit condition
+
+        if (enemy_count < 3) 
+            enemy = enemy_spawn();
+
         game_frame_delay();
     }    
     vkDeviceWaitIdle(gf3d_vgraphics_get_default_logical_device());    
