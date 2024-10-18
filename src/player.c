@@ -38,7 +38,6 @@ Entity* player_spawn(GFC_Vector3D position) {
     data->og_pos = self->position;
     data->mid_roll = 0;
     data->wave_flag = 0;
-    data->missile_flag = 0;
     data->nuke_flag = 0;
     data->change_flag = 1;
     data->proj_count = 0;
@@ -49,7 +48,7 @@ Entity* player_spawn(GFC_Vector3D position) {
     
     data->curr_mode = SINGLE_SHOT; //default attack
     data->next_charged_shot = (SDL_GetTicks() / 1000.0) + 2.0;
-    data->shot_delay = 0;
+    data->charge_shot_delay = 0;
 
     
 
@@ -76,15 +75,16 @@ void player_think(Entity* self) {
     time = SDL_GetTicks() / 1000.0;
     //slog("Time: %0.3f Next_shot %0.3f", time, data->next_charged_shot);
     
-
+    // CHARGE_SHOT attack
     if (gf2d_mouse_button_pressed(0) && data->curr_mode == CHARGE_SHOT) {
         player_attack(self, data);
         data->next_charged_shot = time + 2.0;
-        data->shot_delay = time + 0.75;
+        data->charge_shot_delay = time + 0.75;
         data->change_flag = 1;
     }
+    // SINGLE_SHOT, WAVE_SHOT, MISSILE
     else if ((gf2d_mouse_button_pressed(0) || gf2d_mouse_button_held(0)) &&
-        data->shot_delay <= time &&
+        data->charge_shot_delay <= time &&
         !data->mid_roll &&
         data->curr_mode != CHARGE_SHOT
     ){
@@ -92,10 +92,19 @@ void player_think(Entity* self) {
         player_attack(self, data);
     }
 
+    // debug tools
     if (gfc_input_command_pressed("freelook")) {
         data->freelook = !data->freelook;
         gf3d_camera_enable_free_look(data->freelook);
     }
+
+    if (gfc_input_command_pressed("change_attack")) {
+        data->curr_mode++;
+        
+        if (data->curr_mode > SUPER_NUKE) data->curr_mode = SINGLE_SHOT;
+    }
+
+    slog("weapon: %d", data->curr_mode);
     //slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
 }
 
@@ -110,7 +119,9 @@ void player_update(Entity* self) {
 
     player_cam(self, data);
     time = SDL_GetTicks() / 1000.0;
-
+    
+    // updates model based on current attack type
+    /*
     if (time >= data->next_charged_shot && time < data->next_charged_shot + 0.03 && data->curr_mode != WAVE_SHOT) {
         data->curr_mode = CHARGE_SHOT;
         gf3d_model_free(self->model);
@@ -127,6 +138,7 @@ void player_update(Entity* self) {
         self->model = gf3d_model_load("models/player_ship/player_ship_wave.model");
         data->change_flag = 1;
     }
+    */
 
     //updates hurtbox
     self->hurtbox = gfc_rect(

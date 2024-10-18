@@ -4,7 +4,7 @@
 #include "gfc_types.h"
 #include "gfc_text.h"
 #include "gfc_vector.h"
-#include "gfc_shape.h"
+#include "gfc_primitives.h"
 #include "gf3d_model.h"
 
 typedef enum {
@@ -31,7 +31,7 @@ typedef struct Entity_S{
     void            *data;                      // entity data
 
     Entity_Type     entity_type;                // type of entity
-    GFC_Rect        hurtbox;                    // entity's hurtbox
+    GFC_Sphere      hurtbox;                    // entity's hurtbox
     
 }Entity;
 /**

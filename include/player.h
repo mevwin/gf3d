@@ -27,17 +27,19 @@ typedef struct {
     int             x_bound;            // from origin to leftmost side
     int             z_bound;            // from origin to topmost side
 
+    // SINGLE_SHOT timing
+    float           next_single_shot;
+
     // CHARGE_SHOT timing
     float           next_charged_shot;  // the next time for CHARGE_SHOT to be active
-    float           shot_delay;         // the small delay time after releasing a CHARGE_SHOT
+    float           charge_shot_delay;  // the small delay time after releasing a CHARGE_SHOT
 
     // player flags
     Uint8           change_flag;        // flag for model switching
     Uint8           mid_roll;           // flag for player's barrel roll mechanic
-    int             roll;               // type of barrel roll
-    int             curr_mode;          // current attack mode
+    Uint8           roll;               // type of barrel roll
+    Uint8           curr_mode;          // current attack mode
     Uint8           wave_flag;
-    Uint8           missile_flag;
     Uint8           nuke_flag;
     int             proj_count;
 

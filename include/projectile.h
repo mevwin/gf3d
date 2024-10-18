@@ -3,8 +3,9 @@
 
 #include "entity.h"
 
-#define MAX_PROJ 10
+#define MAX_PROJ 20
 #define MAX_WAVE 1
+#define MAX_MISSILE 7
 
 typedef enum{
 	SINGLE_SHOT,
@@ -45,6 +46,8 @@ void proj_think_basic(Entity* self);
 void proj_think_missile(Entity* self);
 void proj_think_wave_shot(Entity* self);
 void proj_think_super_nuke(Entity* self);
-void rotate_proj(Entity* self, float* dist_x, float* dist_y);
+Uint8 proj_hit(Entity* self, ProjData* data);
+
+
 
 #endif

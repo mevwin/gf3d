@@ -1,4 +1,5 @@
 #include "simple_logger.h"
+#include "gf2d_mouse.h"
 #include "projectile.h"
 #include "player.h"
 
@@ -19,7 +20,10 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     playdata = play->data;
 
     // make sure only 1 wave shot is active per user
-    if ((playdata->curr_mode == WAVE_SHOT && playdata->wave_flag == MAX_WAVE) || playdata->proj_count == MAX_PROJ) {
+    if ((playdata->curr_mode == WAVE_SHOT && playdata->wave_flag == MAX_WAVE) || 
+        (playdata->curr_mode == MISSILE && playdata->proj_count == MAX_MISSILE) ||
+        playdata->proj_count == MAX_PROJ
+        ) {
         entity_free(self);
         free(data);
         return;
@@ -32,9 +36,9 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
 
     data->type = playdata->curr_mode;
     data->reticle_pos = reticle_pos;
-    data->y_bound = -180.0;
+    data->y_bound = -170.0;
 
-    // rotating to reticle;
+    // rotating projectile to reticle
     if (data->type == SINGLE_SHOT || data->type == CHARGE_SHOT || data->type == MISSILE) {
         dist_x = data->reticle_pos.x - position.x;
         dist_y = data->reticle_pos.z - position.z;
@@ -49,7 +53,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     if (data->type == SINGLE_SHOT || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
         self->model = data->type == SINGLE_SHOT ? gf3d_model_load("models/projectiles/single_shot.model") : gf3d_model_load("models/projectiles/charge_shot.model");
-        data->forspeed = data->type == SINGLE_SHOT ? 7 : 10;
+        data->forspeed = data->type == SINGLE_SHOT ? 8 : 11;
 
         conver = data->reticle_pos.y / data->forspeed;
         data->rigspeed = (dist_x / conver);
@@ -136,16 +140,19 @@ void proj_think_missile(Entity* self) {
     owner = data->owner;
     playdata = owner->data;
 
-    if (gf2d_mouse_button_held(0) && self->position.y == data->spawn_pos.y && owner->entity_type == PLAYER) {
+    if ((gf2d_mouse_button_held(0) || gf2d_mouse_button_pressed(0)) && 
+        self->position.y >= data->spawn_pos.y - 5 && 
+        owner->entity_type == PLAYER) {
         return;
     }
 
     self->position.x -= data->rigspeed;
     self->position.y -= data->forspeed;
     self->position.z -= data->upspeed;
-
-    if (!proj_exist(self, self->data))
+  
+    if (!proj_exist(self, self->data)) 
         entity_free(self);
+    
 }
 
 void proj_think_wave_shot(Entity* self) {
@@ -168,5 +175,9 @@ void proj_think_wave_shot(Entity* self) {
         
 }
 void proj_think_super_nuke(Entity* self) {
+
+}
+
+Uint8 proj_hit(Entity* self, ProjData* data) {
 
 }
