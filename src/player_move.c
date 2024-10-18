@@ -1,6 +1,7 @@
 #include "simple_logger.h"
 #include "gf3d_camera.h"
 #include "gf3d_vgraphics.h"
+#include "gf2d_mouse.h"
 #include "player_move.h"
 #include "projectile.h"
 
@@ -13,8 +14,6 @@ void player_movement(Entity* self, PlayerData* data) {
 
     gfc_vector3d_rotate_about_x(&updir, self->rotation.x);
     rigdir = gfc_vector2d_rotate(rigdir, self->rotation.z);
-
-
 
     if (gfc_input_command_down("moveup")) {
         if (!check_movebounds(self, updir, data))
@@ -105,8 +104,8 @@ void player_movement(Entity* self, PlayerData* data) {
     if (gfc_input_command_down("movedown") && 
         gfc_input_command_released("roll")
         ){
-            data->mid_roll = 1;
-            data->roll = DOWN;
+        data->mid_roll = 1;
+        data->roll = DOWN;
     }
     if (gfc_input_command_down("moveright") &&
         gfc_input_command_released("roll")
@@ -139,7 +138,6 @@ void player_cam(Entity* self, PlayerData* data) {
         gfc_vector3d_copy(lookTarget, gfc_vector3d(0, self->position.y, 0));
         camera = gfc_vector3d(0, self->position.y + 90, 0);
         gf3d_camera_look_at(lookTarget, &camera);
-        //gf3d_camera_set_position(gfc_vector3d(0, self->position.y + 90, 3));
     }
     else slog("Free Look Enabled");
 }
@@ -154,7 +152,7 @@ void barrel_roll(Entity* self, PlayerData* data){
     gfc_vector3d_rotate_about_x(&updir, self->rotation.x);
     rigdir = gfc_vector2d_rotate(rigdir, self->rotation.z);
 
-    if (gf2d_mouse_button_pressed(0))
+    if (gf2d_mouse_button_released(0))
         data->curr_mode = WAVE_SHOT;
 
     if (data->roll == DOWN) {
@@ -221,7 +219,7 @@ void barrel_roll(Entity* self, PlayerData* data){
     }
 }
 
-int check_movebounds(Entity* self, GFC_Vector3D movement, PlayerData* data) {
+Uint8 check_movebounds(Entity* self, GFC_Vector3D movement, PlayerData* data) {
     if (!self) return;
     if (!data) return;
 
@@ -235,21 +233,3 @@ int check_movebounds(Entity* self, GFC_Vector3D movement, PlayerData* data) {
 
     return 1;
 }
-
-/*
-void mousepos_to_gamepos(GFC_Vector2D* cursor_pos, PlayerData* data) {
-    GFC_Vector2D res = gf3d_vgraphics_get_resolution();
-
-    cursor_pos->x = -(cursor_pos->x / (res.x / (2*data->x_bound)));
-    cursor_pos->x += 46.5;
-
-    if (cursor_pos->x > data->x_bound) cursor_pos->x = data->x_bound;
-    if (cursor_pos->x < -data->x_bound) cursor_pos->x = -data->x_bound;
-  
-    cursor_pos->y = -(cursor_pos->y / (res.y / (2*data->z_bound)));
-    cursor_pos->y += 32.5;
-
-    if (cursor_pos->y > data->z_bound) cursor_pos->y = data->z_bound;
-    if (cursor_pos->y < -data->z_bound) cursor_pos->y = -data->z_bound;
-}
-*/

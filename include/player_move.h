@@ -28,8 +28,6 @@ void barrel_roll(Entity* self, PlayerData* data);
 /**
 * @brief make sure player is in camera view
 */
-int check_movebounds(Entity* self, GFC_Vector3D movement, PlayerData* data);
-
-//void mousepos_to_gamepos(GFC_Vector2D* cursor_pos, PlayerData* data);
+Uint8 check_movebounds(Entity* self, GFC_Vector3D movement, PlayerData* data);
 
 #endif

@@ -2,10 +2,6 @@
 #include "projectile.h"
 #include "player.h"
 
-int proj_count = 0;
-int wave_count = 0;
-float next_shot_time = 0;
-
 void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* player, float curr_time) {
     Entity* self, *play;
     ProjData* data;
@@ -15,11 +11,6 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     self = entity_new();
     if (!self) return NULL;
 
-    if (proj_count == MAX_PROJ) {
-        entity_free(self);
-        return;
-    }
-
     data = gfc_allocate_array(sizeof(ProjData), 1);
     if (data) self->data = data;
 
@@ -27,8 +18,10 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     play = data->owner;
     playdata = play->data;
 
-    if (playdata->curr_mode == WAVE_SHOT && wave_count == MAX_WAVE) {
+    // make sure only 1 wave shot is active per user
+    if ((playdata->curr_mode == WAVE_SHOT && playdata->wave_flag == MAX_WAVE) || playdata->proj_count == MAX_PROJ) {
         entity_free(self);
+        free(data);
         return;
     }
 
@@ -42,54 +35,74 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     data->y_bound = -180.0;
 
     // rotating to reticle;
-    dist_x = data->reticle_pos.x - position.x;
-    dist_y = data->reticle_pos.z - position.z;    
+    if (data->type == SINGLE_SHOT || data->type == CHARGE_SHOT || data->type == MISSILE) {
+        dist_x = data->reticle_pos.x - position.x;
+        dist_y = data->reticle_pos.z - position.z;
 
-    z_angle = atan(dist_x / data->reticle_pos.y);
-    self->rotation.z -= z_angle;
+        z_angle = atan(dist_x / data->reticle_pos.y);
+        self->rotation.z -= z_angle;
 
-    y_angle = atan(dist_y / data->reticle_pos.y);
-    self->rotation.y += y_angle;
+        y_angle = atan(dist_y / data->reticle_pos.y);
+        self->rotation.y += y_angle;
+    }
 
     if (data->type == SINGLE_SHOT || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
         self->model = data->type == SINGLE_SHOT ? gf3d_model_load("models/projectiles/single_shot.model") : gf3d_model_load("models/projectiles/charge_shot.model");
-        data->forspeed = data->type == SINGLE_SHOT ? 9 : 11;
+        data->forspeed = data->type == SINGLE_SHOT ? 7 : 10;
+
         conver = data->reticle_pos.y / data->forspeed;
         data->rigspeed = (dist_x / conver);
         data->upspeed = (dist_y / conver);
     }
-    if (data->type == WAVE_SHOT) {
+    else if (data->type == WAVE_SHOT) {
         self->think = proj_think_wave_shot;
         self->model = gf3d_model_load("models/projectiles/wave_shot.model");
         data->forspeed = 4;
-        wave_count++;
+        playdata->wave_flag = 1;
+    }
+    else if (data->type == MISSILE) {
+        self->think = proj_think_missile;
+        self->model = gf3d_model_load("models/projectiles/single_shot.model");
+        data->forspeed = 6;
+
+        conver = data->reticle_pos.y / data->forspeed;
+        data->rigspeed = (dist_x / conver);
+        data->upspeed = (dist_y / conver);
     }
 
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
 
-    proj_count++;
+    playdata->proj_count++;
 
     return self;
 }
 
 void proj_update(Entity* self) {
 
+
 }
 
 void proj_free(Entity* self) {
     ProjData* data;
+    PlayerData* playdata;
+    Entity* owner;
 
     if (!self) return;
 
     data = (ProjData*) self->data;
+
+    owner = data->owner;
+    playdata = owner->data;
+
+    playdata->proj_count--;
+
     free(data);
     self->data = NULL;
 
-    proj_count--;
 }
 
-int	proj_exist(Entity* self, ProjData* data) {
+Uint8 proj_exist(Entity* self, ProjData* data) {
     if (!data) return;
     
     if (data->y_bound >= self->position.y)
@@ -113,8 +126,28 @@ void proj_think_basic(Entity* self) {
 }
 
 void proj_think_missile(Entity* self) {
+    ProjData* data;
+    PlayerData* playdata;
+    Entity* owner;
 
+    data = self->data;
+    if (!data) return;
+
+    owner = data->owner;
+    playdata = owner->data;
+
+    if (gf2d_mouse_button_held(0) && self->position.y == data->spawn_pos.y && owner->entity_type == PLAYER) {
+        return;
+    }
+
+    self->position.x -= data->rigspeed;
+    self->position.y -= data->forspeed;
+    self->position.z -= data->upspeed;
+
+    if (!proj_exist(self, self->data))
+        entity_free(self);
 }
+
 void proj_think_wave_shot(Entity* self) {
     ProjData* data;
     Entity* player;
@@ -129,7 +162,7 @@ void proj_think_wave_shot(Entity* self) {
 
     if (!proj_exist(self, self->data)) {
         playdata->curr_mode = SINGLE_SHOT;
-        wave_count--;
+        playdata->wave_flag = 0;
         entity_free(self);
     }
         

@@ -6,8 +6,6 @@ typedef struct {
 
 	int             x_bound;
 	int             z_bound;
-
-	GFC_Vector2D	mouse_move;
 }ReticleData;
 
 Entity* reticle_spawn(GFC_Vector3D position);

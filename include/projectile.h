@@ -3,7 +3,7 @@
 
 #include "entity.h"
 
-#define MAX_PROJ 20
+#define MAX_PROJ 10
 #define MAX_WAVE 1
 
 typedef enum{
@@ -18,12 +18,13 @@ typedef struct {
 	ProjType		type;			// projectile_type
 	int				y_bound;		// limit to how far a projectile travels
 	GFC_Vector3D    reticle_pos;	// reticle position
-	Entity*			owner;
+	GFC_Vector3D	spawn_pos;		// projectile's spawn position
+	Entity*			owner;			// who shot the projectile
 
 	// projectile movement details
 	float           forspeed;		// y-movement
-	float			upspeed;
-	float			rigspeed;
+	float			upspeed;		// z-movement
+	float			rigspeed;		// x-movement
 }ProjData;
 
 
@@ -34,7 +35,7 @@ void proj_free(Entity* self);
 /**
 * @brief checks to see if projectile is within its y-bound;
 */
-int	proj_exist(Entity* self, ProjData* data);
+Uint8 proj_exist(Entity* self, ProjData* data);
 
 /**
 * @brief thinking for SINGLE_SHOT and CHARGE_SHOT
@@ -44,5 +45,6 @@ void proj_think_basic(Entity* self);
 void proj_think_missile(Entity* self);
 void proj_think_wave_shot(Entity* self);
 void proj_think_super_nuke(Entity* self);
+void rotate_proj(Entity* self, float* dist_x, float* dist_y);
 
 #endif

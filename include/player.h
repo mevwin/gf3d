@@ -32,10 +32,14 @@ typedef struct {
     float           shot_delay;         // the small delay time after releasing a CHARGE_SHOT
 
     // player flags
-    int             change_flag;        // flag for model switching
-    int             mid_roll;           // flag for player's barrel roll mechanic
+    Uint8           change_flag;        // flag for model switching
+    Uint8           mid_roll;           // flag for player's barrel roll mechanic
     int             roll;               // type of barrel roll
     int             curr_mode;          // current attack mode
+    Uint8           wave_flag;
+    Uint8           missile_flag;
+    Uint8           nuke_flag;
+    int             proj_count;
 
 }PlayerData;
 

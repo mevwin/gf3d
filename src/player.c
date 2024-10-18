@@ -37,6 +37,11 @@ Entity* player_spawn(GFC_Vector3D position) {
 
     data->og_pos = self->position;
     data->mid_roll = 0;
+    data->wave_flag = 0;
+    data->missile_flag = 0;
+    data->nuke_flag = 0;
+    data->change_flag = 1;
+    data->proj_count = 0;
 
     data->x_bound = 49; // left is positive, right is negative
     data->z_bound = 35; // 98 x 70
@@ -46,7 +51,7 @@ Entity* player_spawn(GFC_Vector3D position) {
     data->next_charged_shot = (SDL_GetTicks() / 1000.0) + 2.0;
     data->shot_delay = 0;
 
-    data->change_flag = 1;
+    
 
     data->reticle = reticle_spawn(gfc_vector3d(position.x, -50, position.z));
 
