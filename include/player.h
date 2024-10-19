@@ -37,15 +37,16 @@ typedef struct {
     float           next_charged_shot;  // the next time for CHARGE_SHOT to be active
     float           charge_shot_delay;  // the small delay time after releasing a CHARGE_SHOT
 
-    // player flags
+    // player flags/checks
     Uint8           change_flag;        // flag for model switching
     Uint8           mid_roll;           // flag for player's barrel roll mechanic
     Uint8           roll;               // type of barrel roll
     Uint8           curr_mode;          // current attack mode
-    Uint8           wave_flag;
-    Uint8           nuke_flag;
-    Uint8           proj_count;
-
+    Uint8           wave_flag;          // flag for making sure only one wave_shot is on-screen
+    Uint8           nuke_flag;          // flag for making sure only one super_nuke is on-screen
+    int             proj_count;         // current amount of projectiles fired
+    Uint8           took_damage;        // flag for activating player_take_damage
+    float           damage_taken;       // damage received from enemy
 }PlayerData;
 
 
@@ -54,6 +55,8 @@ void player_think(Entity* self);
 void player_update(Entity* self);
 void player_free(Entity*  self);
 void player_attack(Entity* self, PlayerData* data);
+void player_take_damage(Entity* self, PlayerData* data);
+void player_die(Entity* self);
 void player_death(Entity* self);
 
 #endif

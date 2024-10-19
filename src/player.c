@@ -1,6 +1,7 @@
 #include "simple_logger.h"
 #include "gfc_input.h"
 #include "gfc_vector.h"
+#include "gf2d_mouse.h"
 #include "player.h"
 #include "player_move.h"
 #include "projectile.h"
@@ -39,12 +40,16 @@ Entity* player_spawn() {
     data->nuke_flag = 0;
     data->change_flag = 1;
     data->proj_count = 0;
+    data->took_damage = 0;
+    data->damage_taken = 0;
+    data->currHealth = 1;
+    data->maxHealth = 50;
 
     data->curr_mode = SINGLE_SHOT; //default attack
     data->base_damage = 1.0;
     data->proj_speed = 8.0;
 
-    data->next_charged_shot = (SDL_GetTicks() / 1000.0) + 1.2;
+    data->next_charged_shot = (SDL_GetTicks() / 1000.0) + 0.9;
     data->charge_shot_delay = 0;
 
     reticle_pos = gfc_vector3d(position.x, -60, position.z);
@@ -136,9 +141,17 @@ void player_update(Entity* self) {
         data->change_flag = 1;
     }
 
-    //updates hurtbox
+    // updates hurtbox
     self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, self->model->bounds.h / 2);
 
+    // check if player was hurt
+    if (data->damage_taken)
+        player_take_damage(self, data);
+
+    // check if player is dead
+    if (data->currHealth <= 0.0)
+        player_die(self);
+    
 }
 
 
@@ -171,6 +184,18 @@ void player_attack(Entity* self, PlayerData* data) {
     curr_time = SDL_GetTicks() / 1000.0;
 
     player_proj_spawn(attack_start, cursor_pos, self, curr_time);
+}
+
+void player_take_damage(Entity* self, PlayerData* data) {
+    if (!data) return;
+
+    data->currHealth -= data->damage_taken;
+    data->took_damage = 0;
+    data->damage_taken = 0;
+}
+
+void player_die(Entity* self) {
+    entity_free(self);
 }
 
 void player_death(Entity* self) {

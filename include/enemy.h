@@ -32,8 +32,9 @@ typedef struct {
 	int				dist_to_player;
 	
 	// enemy flags
-	Uint8			proj_count;
+	int				proj_count;
 	Uint8			took_damage;
+	Uint8			has_shot;
 	float			damage_taken;
 
 	// other

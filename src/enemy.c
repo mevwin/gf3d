@@ -1,7 +1,9 @@
 #include "simple_logger.h"
 #include "gf3d_draw.h"
+#include "gf2d_mouse.h"
 #include "enemy.h"
 #include "player.h"
+#include "projectile.h"
 
 Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 	Entity* self;
@@ -22,12 +24,15 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 	self->update = enemy_update;
 	self->free = enemy_free;
 	self->entity_type = ENEMY;
-	data->enemy_type = type;
+	data->enemy_type = PEAS;
 
 	data->took_damage = 0;
 	data->currHealth = 30;
 	data->maxHealth = 30;
 	data->player_pos = player_pos;
+	data->pea_speed = 2.5;
+	data->proj_count = 0;
+	
 
 	//data->upspeed = (float)1.2;
 	//data->rigspeed = (float)1.2;
@@ -40,12 +45,26 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 	self->position = position;
 
 	self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, self->model->bounds.h / 5);
-
 	enemy_count++;
 
 	return self;
 }
 void enemy_think(Entity* self) {
+	EnemyData* data;
+	GFC_Vector3D player_pos;
+
+	if (!self) return;
+	data = self->data;
+	if (!data) return;
+
+	player_pos.x = data->player_pos->x;
+	player_pos.y = data->player_pos->y;
+	player_pos.z = data->player_pos->z;
+
+	
+	enemy_proj_spawn(self->position, player_pos, self);
+	
+	
 	//slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
 }
 void enemy_update(Entity* self) {
@@ -72,6 +91,7 @@ void enemy_update(Entity* self) {
 	y_angle = atan(dist_y / (data->dist_to_player + 5));
 	self->rotation.y = -y_angle;
 }
+
 void enemy_free(Entity* self) {
 	EnemyData* data;
 

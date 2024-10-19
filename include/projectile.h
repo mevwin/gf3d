@@ -30,8 +30,8 @@ typedef struct {
 }ProjData;
 
 
-void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* player, float curr_time);
-void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* player);
+void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* owner, float curr_time);
+void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* owner);
 void proj_update(Entity* self);
 void proj_free(Entity* self);
 
@@ -44,6 +44,7 @@ Uint8 proj_exist(Entity* self, ProjData* data);
 * @brief thinking for SINGLE_SHOT and CHARGE_SHOT
 */
 void proj_think_basic(Entity* self);
+void proj_think_basic_enemy(Entity* self);
 
 void proj_think_missile(Entity* self);
 void proj_think_wave_shot(Entity* self);

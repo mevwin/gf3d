@@ -62,6 +62,7 @@ int main(int argc,char *argv[])
     Model *sky;
     GFC_Matrix4 skyMat;
     Entity* player, * enemy;
+    Uint8 player_dead = 0;
 
     //initializtion    
     parse_arguments(argc,argv);
@@ -138,7 +139,7 @@ int main(int argc,char *argv[])
         gf3d_vgraphics_render_end();
         if (gfc_input_command_down("exit"))_done = 1; // exit condition
 
-        if (enemy_count < 3) 
+        if (enemy_count == 0) 
             enemy = enemy_spawn(&(player->position));
 
         game_frame_delay();

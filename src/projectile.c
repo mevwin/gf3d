@@ -4,7 +4,7 @@
 #include "player.h"
 #include "enemy.h"
 
-void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* player, float curr_time) {
+void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* owner, float curr_time) {
     Entity* self, *play;
     ProjData* data;
     PlayerData* playdata;
@@ -16,7 +16,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     data = gfc_allocate_array(sizeof(ProjData), 1);
     if (data) self->data = data;
 
-    data->owner = player;
+    data->owner = owner;
     play = data->owner;
     playdata = play->data;
 
@@ -26,12 +26,14 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
         playdata->proj_count == MAX_PROJ
         ) {
         entity_free(self);
-        free(data);
         return;
     }
 
+    playdata->proj_count++;
+
     self->update = proj_update;
     self->entity_type = PROJECTILE;
+    data->owner_type = PLAYER;
     self->position = position;
     self->free = proj_free;
 
@@ -82,12 +84,10 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
 
-    playdata->proj_count++;
-
-    return self;
+    
 }
 
-void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* enemy) {
+void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* owner) {
     Entity* self, *enem;
     ProjData* data;
     EnemyData* enemydata;
@@ -99,19 +99,22 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* en
     data = gfc_allocate_array(sizeof(ProjData), 1);
     if (data) self->data = data;
 
-    data->owner = enemy;
+    data->owner = owner;
     enem = data->owner;
-    enemydata = enemy->data;
+    enemydata = enem->data;
 
     // enforcing maximum projectile count per entity
-    if (enemydata->proj_count == MAX_PROJ) {
+    if (enemydata->proj_count != 0) {
+        slog("%i", enemydata->proj_count);
         entity_free(self);
-        free(data);
         return;
     }
 
+    enemydata->proj_count++;
+
     self->update = proj_update;
     self->entity_type = PROJECTILE;
+    data->owner_type = ENEMY;
     self->position = position;
     self->free = proj_free;
 
@@ -144,9 +147,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* en
 
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
 
-    enemydata->proj_count++;
-
-    return self;
+    
 }
 
 void proj_update(Entity* self) {
@@ -160,29 +161,38 @@ void proj_update(Entity* self) {
     if (!self) return;
 
     data = self->data;
-
     owner = data->owner;
-    
-    playdata = owner->data;
+    if (owner->entity_type == PLAYER)
+        playdata = owner->data;
+    else
+        enemydata = owner->data;
     
     entityList = get_entityList();
 
-    // updates hurtbox;
+    // updates hurtbox
     self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, self->model->bounds.w / 2);
 
-    for (i = 0; i < MAX_ENTITY; i++) {\
+
+    for (i = 0; i < MAX_ENTITY; i++) {
         enemy = &entityList[i];
         
-        if (enemy->entity_type != ENEMY) continue;
+        if ((enemy->entity_type != ENEMY && data->owner_type == PLAYER) ||
+            (enemy->entity_type != PLAYER && data->owner_type == ENEMY))
+            continue;
 
         // collision detection check
         if (gfc_sphere_overlap(self->hurtbox, enemy->hurtbox)) {
-            enemydata = enemy->data;
-            enemydata->took_damage = 1;
-            enemydata->damage_taken = data->damage;
-            
-            slog("Enemy Radius: %f", enemy->hurtbox.r);
-            slog("Proj Radius: %f", self->hurtbox.r);
+            if (data->owner_type == PLAYER) {
+                enemydata = enemy->data;
+                enemydata->took_damage = 1;
+                enemydata->damage_taken = data->damage;
+            }
+            else if (data->owner_type == ENEMY) {
+                playdata = enemy->data;
+                playdata->took_damage = 1;
+                playdata->damage_taken = data->damage;
+            }
+
             entity_free(self);
             break;
         }
@@ -192,7 +202,7 @@ void proj_update(Entity* self) {
 void proj_free(Entity* self) {
     ProjData* data;
     PlayerData* playdata;
-    PlayerData* enemydata;
+    EnemyData* enemydata;
     Entity* owner;
 
     if (!self) return;
@@ -201,11 +211,11 @@ void proj_free(Entity* self) {
 
     owner = data->owner;
     
-    if (owner->entity_type == PLAYER) {
+    if (data->owner_type == PLAYER) {
         playdata = owner->data;
         playdata->proj_count--;
     }
-    else if (owner->entity_type == ENEMY) {
+    else if (data->owner_type == ENEMY) {
         enemydata = owner->data;
         enemydata->proj_count--;
     }
@@ -218,9 +228,12 @@ void proj_free(Entity* self) {
 Uint8 proj_exist(Entity* self, ProjData* data) {
     if (!data) return;
     
-    if (data->y_bound >= self->position.y)
-        return 0;
+    if (data->owner_type == PLAYER && self->position.y < data->y_bound) 
+       return 0;
 
+    else if (data->owner_type == ENEMY && self->position.y > data->y_bound) 
+        return 0;
+    
     return 1;
 }
 
@@ -230,35 +243,30 @@ void proj_think_basic(Entity* self) {
     data = self->data;
     if (!data) return;
 
-    if (data->owner->entity_type == PLAYER) {
-        self->position.x -= data->rigspeed;
+    if (data->owner_type == PLAYER)
         self->position.y -= data->forspeed;
-        self->position.z -= data->upspeed;
-    }
-    else if (data->owner->entity_type == ENEMY) {
-        self->position.x += data->rigspeed;
+    else
         self->position.y += data->forspeed;
-        self->position.z += data->upspeed;
-    }
 
+    self->position.x -= data->rigspeed;    
+    self->position.z -= data->upspeed;
+    
     if (!proj_exist(self, self->data))
         entity_free(self);
 }
 
 void proj_think_missile(Entity* self) {
     ProjData* data;
-    PlayerData* playdata;
     Entity* owner;
 
     data = self->data;
     if (!data) return;
 
     owner = data->owner;
-    playdata = owner->data;
 
     if ((gf2d_mouse_button_held(0) || gf2d_mouse_button_pressed(0)) && 
         self->position.y >= data->spawn_pos.y - 5 && 
-        owner->entity_type == PLAYER) {
+        data->owner_type == PLAYER) {
         return;
     }
 
@@ -268,7 +276,6 @@ void proj_think_missile(Entity* self) {
   
     if (!proj_exist(self, self->data)) 
         entity_free(self);
-    
 }
 
 void proj_think_wave_shot(Entity* self) {
