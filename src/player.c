@@ -39,11 +39,13 @@ Entity* player_spawn() {
     data->wave_flag = 0;
     data->nuke_flag = 0;
     data->change_flag = 1;
+
     data->proj_count = 0;
     data->took_damage = 0;
     data->damage_taken = 0;
-    data->currHealth = 1;
+    data->currHealth = 2;
     data->maxHealth = 50;
+    data->player_dead = 0;
 
     data->curr_mode = SINGLE_SHOT; //default attack
     data->base_damage = 1.0;
@@ -56,6 +58,8 @@ Entity* player_spawn() {
 
     data->reticle_pos = reticle_spawn(reticle_pos);
 
+    player_count++;
+
     return self;
 }
 
@@ -67,6 +71,8 @@ void player_think(Entity* self) {
 
     data = self->data;
     if (!data) return;
+
+    if (data->player_dead) return;
     
     if (!data->mid_roll)
         player_movement(self, data);
@@ -195,11 +201,22 @@ void player_take_damage(Entity* self, PlayerData* data) {
 }
 
 void player_die(Entity* self) {
-    entity_free(self);
+    PlayerData* data;
+
+    data = self->data;
+    
+    data->player_dead = 1;
+
+    if (data->proj_count > 0) {
+        return;
+    }
+    player_death(self);
+
 }
 
 void player_death(Entity* self) {
-
+    player_count--;
+    entity_free(self);
 }
 
 

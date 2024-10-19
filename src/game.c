@@ -62,7 +62,6 @@ int main(int argc,char *argv[])
     Model *sky;
     GFC_Matrix4 skyMat;
     Entity* player, * enemy;
-    Uint8 player_dead = 0;
 
     //initializtion    
     parse_arguments(argc,argv);
@@ -141,6 +140,10 @@ int main(int argc,char *argv[])
 
         if (enemy_count == 0) 
             enemy = enemy_spawn(&(player->position));
+
+        if (gf2d_mouse_button_released(1) && player_count == 0) 
+            player = player_spawn();
+        
 
         game_frame_delay();
     }    

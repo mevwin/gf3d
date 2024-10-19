@@ -32,7 +32,7 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 	data->player_pos = player_pos;
 	data->pea_speed = 2.5;
 	data->proj_count = 0;
-	
+	data->base_damage = 1.0;
 
 	//data->upspeed = (float)1.2;
 	//data->rigspeed = (float)1.2;
@@ -54,6 +54,8 @@ void enemy_think(Entity* self) {
 	GFC_Vector3D player_pos;
 
 	if (!self) return;
+	if (player_count == 0) return;
+
 	data = self->data;
 	if (!data) return;
 
@@ -64,7 +66,6 @@ void enemy_think(Entity* self) {
 	
 	enemy_proj_spawn(self->position, player_pos, self);
 	
-	
 	//slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
 }
 void enemy_update(Entity* self) {
@@ -72,6 +73,8 @@ void enemy_update(Entity* self) {
 	float dist_x, dist_y, z_angle, y_angle;
 
 	if (!self) return;
+
+	if (player_count == 0) return;
 
 	data = self->data;
 

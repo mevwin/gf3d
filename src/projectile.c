@@ -105,7 +105,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
 
     // enforcing maximum projectile count per entity
     if (enemydata->proj_count != 0) {
-        slog("%i", enemydata->proj_count);
+        //slog("%i", enemydata->proj_count);
         entity_free(self);
         return;
     }
@@ -119,7 +119,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     self->free = proj_free;
 
     data->type = enemydata->enemy_type;
-    data->y_bound = 100;
+    data->y_bound = 90;
 
     // rotating projectile to player
     if (data->type == PEAS || data->type == CHARGERS) {
@@ -146,8 +146,6 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     }
 
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
-
-    
 }
 
 void proj_update(Entity* self) {
