@@ -108,7 +108,7 @@ int main(int argc,char *argv[])
     enemy_count = 0;
 
     player = player_spawn();
-    enemy = enemy_spawn(&(player->position));
+    enemy = enemy_spawn(&(player->position), player->data);
 
     //windows
 
@@ -139,9 +139,9 @@ int main(int argc,char *argv[])
         if (gfc_input_command_down("exit"))_done = 1; // exit condition
 
         if (enemy_count == 0) 
-            enemy = enemy_spawn(&(player->position));
+            enemy = enemy_spawn(&(player->position), player->data);
 
-        if (gf2d_mouse_button_released(1) && player_count == 0) 
+        if (gf2d_mouse_button_released(2) && player_count == 0) 
             player = player_spawn();
         
 

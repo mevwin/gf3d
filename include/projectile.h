@@ -41,10 +41,9 @@ void proj_free(Entity* self);
 Uint8 proj_exist(Entity* self, ProjData* data);
 
 /**
-* @brief thinking for SINGLE_SHOT and CHARGE_SHOT
+* @brief thinking for SINGLE_SHOT/PEAS and CHARGE_SHOT/CHARGERS
 */
 void proj_think_basic(Entity* self);
-void proj_think_basic_enemy(Entity* self);
 
 void proj_think_missile(Entity* self);
 void proj_think_wave_shot(Entity* self);

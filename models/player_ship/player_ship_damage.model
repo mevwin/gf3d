@@ -1,0 +1,7 @@
+{
+    "model":
+    {
+        "obj":"models/player_ship/player_ship.obj",
+        "texture":"models/player_ship/color_EE.png"
+    }
+}

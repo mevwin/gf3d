@@ -5,9 +5,6 @@
 #include "entity.h"
 
 typedef struct {
-    // debug camera
-    Uint8           freelook;
-
     GFC_Vector3D    og_pos;             // container for keeping model in place due to constant rotation
     GFC_Vector3D*   reticle_pos;        // pointer to reticle's position
 
@@ -26,6 +23,8 @@ typedef struct {
     float           base_damage;        // defaults to SINGLE_SHOT dmg
     float           proj_speed;         // defaults to SINGLE_SHOT speed
 
+    Uint8           curr_mode;          // current attack mode
+
     // movement bounds (keeps player within camera view)
     int             x_bound;            // from origin to leftmost side
     int             z_bound;            // from origin to topmost side
@@ -41,16 +40,20 @@ typedef struct {
     Uint8           change_flag;        // flag for model switching
     Uint8           mid_roll;           // flag for player's barrel roll mechanic
     Uint8           roll;               // type of barrel roll
-    Uint8           curr_mode;          // current attack mode
     Uint8           wave_flag;          // flag for making sure only one wave_shot is on-screen
     Uint8           nuke_flag;          // flag for making sure only one super_nuke is on-screen
     int             proj_count;         // current amount of projectiles fired
     Uint8           took_damage;        // flag for activating player_take_damage
     float           damage_taken;       // damage received from enemy
-    Uint8           player_dead;
+    Uint8           player_dead;        // flag for player death state
+
+    // debug camera
+    Uint8           freelook;           // debug camera
+    Uint8           no_attack;          // flag for no attack;
+
 }PlayerData;
 
-int player_count;
+Uint8 player_count;
 
 Entity* player_spawn();
 void player_think(Entity* self);

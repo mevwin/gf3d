@@ -25,38 +25,45 @@ Entity* player_spawn() {
     data = gfc_allocate_array(sizeof(PlayerData), 1);
     if (data) self->data = data;
 
+    // position init
     data->upspeed = 1.2;
     data->rigspeed = 1.2;
 
     data->x_bound = 49; // left is positive, right is negative
     data->z_bound = 35; // 98 x 70
-
     position = gfc_vector3d_random_pos(data->x_bound, 0, data->z_bound);
-    self->position = position;
 
+    self->position = position;
     data->og_pos = self->position;
+
+    reticle_pos = gfc_vector3d(position.x, -60, position.z);
+    data->reticle_pos = reticle_spawn(reticle_pos);
+
+    // remaining data init
+    data->change_flag = 1;
     data->mid_roll = 0;
     data->wave_flag = 0;
     data->nuke_flag = 0;
-    data->change_flag = 1;
-
     data->proj_count = 0;
     data->took_damage = 0;
     data->damage_taken = 0;
+
     data->currHealth = 2;
     data->maxHealth = 50;
     data->player_dead = 0;
 
-    data->curr_mode = SINGLE_SHOT; //default attack
+    // default attack init
+    data->curr_mode = SINGLE_SHOT; 
     data->base_damage = 1.0;
     data->proj_speed = 8.0;
 
+    // charge_shot init
     data->next_charged_shot = (SDL_GetTicks() / 1000.0) + 0.9;
     data->charge_shot_delay = 0;
 
-    reticle_pos = gfc_vector3d(position.x, -60, position.z);
-
-    data->reticle_pos = reticle_spawn(reticle_pos);
+    // debug init
+    data->freelook = 0;
+    data->no_attack = 0;
 
     player_count++;
 
@@ -72,15 +79,16 @@ void player_think(Entity* self) {
     data = self->data;
     if (!data) return;
 
+    // can't do anything if player is dead
     if (data->player_dead) return;
     
+    // movement checks
     if (!data->mid_roll)
         player_movement(self, data);
     else
         barrel_roll(self, data);
 
     time = SDL_GetTicks() / 1000.0;
-    //slog("Time: %0.3f Next_shot %0.3f", time, data->next_charged_shot);
     
     // CHARGE_SHOT attack
     if (gf2d_mouse_button_pressed(0) && data->curr_mode == CHARGE_SHOT) {
@@ -105,13 +113,15 @@ void player_think(Entity* self) {
         gf3d_camera_enable_free_look(data->freelook);
     }
 
-    /*
     if (gfc_input_command_pressed("change_attack")) {
-        data->curr_mode++;
+        //data->curr_mode++;
         
-        if (data->curr_mode > SUPER_NUKE) data->curr_mode = SINGLE_SHOT;
+        //if (data->curr_mode > SUPER_NUKE) data->curr_mode = SINGLE_SHOT;
+        if (!data->no_attack)
+            data->no_attack = 1;
+        else
+            data->no_attack = 0;
     }
-    */
 
     //slog("weapon: %d", data->curr_mode);
     //slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
@@ -125,41 +135,59 @@ void player_update(Entity* self) {
     data = self->data;
     if (!data) return;
 
-
+    // update camera
     player_cam(self, data);
-    time = SDL_GetTicks() / 1000.0;
-    
+
     // updates model based on current attack type
-    if (time >= data->next_charged_shot && time < data->next_charged_shot + 0.03 && data->curr_mode != WAVE_SHOT) {
+    time = SDL_GetTicks() / 1000.0;
+
+    // CHARGE_SHOT model
+    if (time >= data->next_charged_shot && 
+        time < data->next_charged_shot + 0.03 && 
+        data->curr_mode != WAVE_SHOT &&
+        !data->took_damage
+        ){
         data->curr_mode = CHARGE_SHOT;
         gf3d_model_free(self->model);
         self->model = gf3d_model_load("models/player_ship/player_ship_charged.model");
     }
-    else if (time < data->next_charged_shot && data->change_flag && data->curr_mode != WAVE_SHOT) {
+    // SINGLE_SHOT model
+    else if (time < data->next_charged_shot && 
+             data->change_flag && 
+             data->curr_mode != WAVE_SHOT &&
+             !data->took_damage
+        ) {
         data->curr_mode = SINGLE_SHOT;
         gf3d_model_free(self->model);
         self->model = gf3d_model_load("models/player_ship/player_ship_single.model");
         data->change_flag = 0;
     }
-    else if (data->curr_mode == WAVE_SHOT && !data->change_flag) {
+    // WAVE_SHOT model
+    else if (data->curr_mode == WAVE_SHOT && 
+            !data->change_flag &&
+            !data->took_damage
+        ) {
         gf3d_model_free(self->model);
         self->model = gf3d_model_load("models/player_ship/player_ship_wave.model");
         data->change_flag = 1;
+    }
+    // IN_PAIN model
+    else if (data->took_damage) {
+        gf3d_model_free(self->model);
+        self->model = gf3d_model_load("models/player_ship/player_ship_damage.model");
     }
 
     // updates hurtbox
     self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, self->model->bounds.h / 2);
 
     // check if player was hurt
-    if (data->damage_taken)
+    if (data->took_damage)
         player_take_damage(self, data);
 
     // check if player is dead
     if (data->currHealth <= 0.0)
         player_die(self);
-    
 }
-
 
 void player_free(Entity* self){
     PlayerData *data;
@@ -185,6 +213,7 @@ void player_attack(Entity* self, PlayerData* data) {
     cursor_pos.y = data->reticle_pos->y;
     cursor_pos.z = data->reticle_pos->z;
 
+    // creates projectile under the ship
     attack_start.z -= 3;
 
     curr_time = SDL_GetTicks() / 1000.0;
@@ -216,6 +245,8 @@ void player_die(Entity* self) {
 
 void player_death(Entity* self) {
     player_count--;
+    if (player_count != 0) player_count = 0;
+
     entity_free(self);
 }
 

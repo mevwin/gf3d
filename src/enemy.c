@@ -5,9 +5,10 @@
 #include "player.h"
 #include "projectile.h"
 
-Entity* enemy_spawn(GFC_Vector3D* player_pos) {
+Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 	Entity* self;
 	EnemyData* data;
+	PlayerData* player_data;
 	GFC_Vector3D position;
 	Enemy_Type type;
 
@@ -24,18 +25,21 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 	self->update = enemy_update;
 	self->free = enemy_free;
 	self->entity_type = ENEMY;
-	data->enemy_type = PEAS;
 
+	data->enemy_type = PEAS;
+	data->proj_count = 0;
 	data->took_damage = 0;
+	data->has_shot = 0;
+
 	data->currHealth = 30;
 	data->maxHealth = 30;
-	data->player_pos = player_pos;
 	data->pea_speed = 2.5;
-	data->proj_count = 0;
 	data->base_damage = 1.0;
 
 	//data->upspeed = (float)1.2;
 	//data->rigspeed = (float)1.2;
+	data->player_pos = player_pos;
+	data->player_data = (PlayerData*) p_data;
 
 	data->x_bound = 74; // left is positive, right is negative
 	data->z_bound = 50;
@@ -51,48 +55,63 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 }
 void enemy_think(Entity* self) {
 	EnemyData* data;
+	PlayerData* player_data;
 	GFC_Vector3D player_pos;
 
 	if (!self) return;
-	if (player_count == 0) return;
 
 	data = self->data;
 	if (!data) return;
+
+	// don't do anything if player is dead
+	if (player_count == 0) return;
+
+	player_data = data->player_data;
 
 	player_pos.x = data->player_pos->x;
 	player_pos.y = data->player_pos->y;
 	player_pos.z = data->player_pos->z;
 
-	
-	enemy_proj_spawn(self->position, player_pos, self);
+	if (!player_data->no_attack)
+		enemy_proj_spawn(self->position, player_pos, self);
 	
 	//slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
 }
 void enemy_update(Entity* self) {
 	EnemyData* data;
+	PlayerData* player_data;
 	float dist_x, dist_y, z_angle, y_angle;
 
 	if (!self) return;
 
-	if (player_count == 0) return;
-
 	data = self->data;
+	if (!data) return;
+
+	// don't do anything if player is dead
+	if (player_count == 0 ) return;
+
+	// rotating enemy to player
+	player_data = data->player_data;
+	if (!player_data->no_attack) {
+		dist_x = data->player_pos->x - self->position.x;
+		dist_y = data->player_pos->z - self->position.z;
+
+		z_angle = atan(dist_x / (data->dist_to_player + 5));
+		self->rotation.z = z_angle;
+
+		y_angle = atan(dist_y / (data->dist_to_player + 5));
+		self->rotation.y = -y_angle;
+	}
+	else {
+		self->rotation.z = 0;
+		self->rotation.x = 0;
+	}
 
 	if (data->took_damage)
 		enemy_take_damage(self, data);
 
 	if (data->currHealth <= 0.0)
 		enemy_die(self);
-
-	// rotating enemy to player
-	dist_x = data->player_pos->x - self->position.x;
-	dist_y = data->player_pos->z - self->position.z;
-
-	z_angle = atan(dist_x / (data->dist_to_player + 5));
-	self->rotation.z = z_angle;
-
-	y_angle = atan(dist_y / (data->dist_to_player + 5));
-	self->rotation.y = -y_angle;
 }
 
 void enemy_free(Entity* self) {

@@ -20,9 +20,9 @@ GFC_Vector3D* reticle_spawn(GFC_Vector3D position) {
     data = gfc_allocate_array(sizeof(ReticleData), 1);
     if (data) self->data = data;
 
-    data->x_bound = 74; // left is positive, right is negative
+    data->x_bound = 86; // left is positive, right is negative
     data->y_bound = -60;
-    data->z_bound = 50; 
+    data->z_bound = 58; 
 
     return &(self->position);
 }

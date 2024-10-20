@@ -99,7 +99,6 @@ void player_movement(Entity* self, PlayerData* data) {
     // resets barrel roll rotation
     if (self->rotation.x < -5 || self->rotation.x > 5) self->rotation.x = 0;
 
-
     // barrel_roll checks
     if (gfc_input_command_down("movedown") && 
         gfc_input_command_released("roll")

@@ -3,12 +3,12 @@
 
 #include "player.h"
 
-enum roll_type {
+typedef enum {
 	UP,
 	RIGHT,
 	DOWN,
 	LEFT
-};
+}Roll_Type;
 
 /**
  * @brief reads player input and turns it into movement

@@ -13,21 +13,21 @@ typedef enum {
 
 typedef struct {
 	// enemy stats
-	Enemy_Type		enemy_type;
+	Enemy_Type		enemy_type;			// type of enemy
 	float           maxHealth;          // enemy's maximum health
 	float           currHealth;         // enemy's current health
-	float			base_damage;
+	float			base_damage;		// starting damage
 
 	// enemy attack values
-	float			pea_speed;
+	float			pea_speed;			// SINGLE_SHOT projectile speed
 
 	// enemy movement
-	float			forspeed;
+	float			forspeed;			
 	float           upspeed;
 	float           rigspeed;
 	
 	// enemy bounds
-	int             x_bound;
+	int             x_bound;			
 	int             z_bound;
 	int				dist_to_player;
 	
@@ -39,12 +39,13 @@ typedef struct {
 
 	// other
 	GFC_Vector3D*	player_pos;
+	void			*player_data;
 	GFC_Vector3D    spawn_pos;
 }EnemyData;
 
-int enemy_count;
+Uint8 enemy_count;
 
-Entity* enemy_spawn(GFC_Vector3D* player_pos);
+Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data);
 void enemy_think(Entity* self);
 void enemy_update(Entity* self);
 void enemy_free(Entity* self);
