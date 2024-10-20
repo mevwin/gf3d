@@ -151,8 +151,8 @@ void barrel_roll(Entity* self, PlayerData* data){
     gfc_vector3d_rotate_about_x(&updir, self->rotation.x);
     rigdir = gfc_vector2d_rotate(rigdir, self->rotation.z);
 
-    if (gf2d_mouse_button_released(0))
-        data->curr_mode = WAVE_SHOT;
+    //if (gf2d_mouse_button_released(0))
+        //data->curr_mode = WAVE_SHOT;
 
     if (data->roll == DOWN) {
         gfc_vector3d_negate(updir, updir);

@@ -13,7 +13,8 @@ typedef enum {
     PLAYER,
     ENEMY,
     PROJECTILE,
-    RETICLE
+    RETICLE,
+    ITEM
 }Entity_Type;
 
 typedef struct Entity_S{

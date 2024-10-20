@@ -4,6 +4,7 @@
 #include "enemy.h"
 #include "player.h"
 #include "projectile.h"
+#include "item.h"
 
 Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 	Entity* self;
@@ -29,7 +30,8 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 	data->enemy_type = PEAS;
 	data->proj_count = 0;
 	data->took_damage = 0;
-	data->has_shot = 0;
+	data->scrap_made = 0;
+	data->scrap_taken = 0;
 
 	data->currHealth = 10;
 	data->maxHealth = 10;
@@ -73,8 +75,8 @@ void enemy_think(Entity* self) {
 	if (!data) return;
 
 	// don't do anything if player is dead
-	if (player_count == 0) return;
-
+	if (player_count == 0 || data->currHealth <= 0.0) return;
+	
 	player_data = data->player_data;
 
 	player_pos.x = data->player_pos->x;
@@ -102,36 +104,38 @@ void enemy_update(Entity* self) {
 	// don't do anything if player is dead
 	if (player_count == 0 ) return;
 
-	// rotating enemy to player
-	player_data = data->player_data;
-	if (!player_data->no_attack || !player_no_attack) {
-		dist_x = data->player_pos->x - self->position.x;
-		dist_y = data->player_pos->z - self->position.z;
+	if (data->currHealth > 0.0) {
+		// rotating enemy to player
+		player_data = data->player_data;
+		if (!player_data->no_attack || !player_no_attack) {
+			dist_x = data->player_pos->x - self->position.x;
+			dist_y = data->player_pos->z - self->position.z;
 
-		z_angle = atan(dist_x / (data->dist_to_player + 5));
-		self->rotation.z = z_angle;
+			z_angle = atan(dist_x / (data->dist_to_player + 5));
+			self->rotation.z = z_angle;
 
-		y_angle = atan(dist_y / (data->dist_to_player + 5));
-		self->rotation.y = -y_angle;
+			y_angle = atan(dist_y / (data->dist_to_player + 5));
+			self->rotation.y = -y_angle;
+		}
+		else {
+			self->rotation.z = 0;
+			self->rotation.x = 0;
+		}
+
+		// update hurtbox
+		self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
+			self->position.y - (self->model->bounds.h / 2),
+			self->position.z - (self->model->bounds.d / 2),
+			self->model->bounds.w,
+			self->model->bounds.h,
+			self->model->bounds.d);
+
+		if (data->took_damage)
+			enemy_take_damage(self, data);
 	}
-	else {
-		self->rotation.z = 0;
-		self->rotation.x = 0;
-	}
-
-	// update hurtbox
-	self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-							self->position.y - (self->model->bounds.h / 2),
-							self->position.z - (self->model->bounds.d / 2),
-							self->model->bounds.w,
-							self->model->bounds.h,
-							self->model->bounds.d);
-
-	if (data->took_damage)
-		enemy_take_damage(self, data);
 
 	if (data->currHealth <= 0.0)
-		enemy_die(self);
+		enemy_die(self, data);
 }
 
 void enemy_free(Entity* self) {
@@ -153,8 +157,16 @@ void enemy_take_damage(Entity* self, EnemyData* data) {
 	data->damage_taken = 0;
 }
 
-void enemy_die(Entity* self) {
-	entity_free(self);
+void enemy_die(Entity* self, EnemyData* data) {
+	if (!data->scrap_made) {
+		item_spawn(SCRAP, self->position, data);
+		self->rotation.y = 0;
+	}	
+	self->rotation.y -= 0.02;
+	if (data->scrap_taken) {
+		slog("model gone");
+		entity_free(self);
+	}
 }
 /*
 void check_rand_position(Entity* self) {

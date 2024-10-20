@@ -1,0 +1,7 @@
+{
+    "model":
+    {
+        "obj":"models/projectiles/single_shot.obj",
+        "texture": "models/projectiles/color_BC.png"
+    }
+}

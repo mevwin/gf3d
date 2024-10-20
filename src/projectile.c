@@ -66,12 +66,14 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
         data->rigspeed = (dist_x / conver);
         data->upspeed = (dist_y / conver);
     }
+    /*
     else if (data->type == WAVE_SHOT) {
         self->think = proj_think_wave_shot;
         self->model = gf3d_model_load("models/projectiles/wave_shot.model");
         data->forspeed = player_data->proj_speed / 2;
         player_data->wave_flag = 1;
     }
+    */
     else if (data->type == MISSILE) {
         self->think = proj_think_missile;
         self->model = gf3d_model_load("models/projectiles/single_shot.model");
@@ -147,7 +149,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
 
     if (data->type == PEAS || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
-        self->model = data->type == PEAS ? gf3d_model_load("models/projectiles/single_shot.model") : gf3d_model_load("models/projectiles/charge_shot.model");
+        self->model = data->type == PEAS ? gf3d_model_load("models/projectiles/single_shot_enem.model") : gf3d_model_load("models/projectiles/charge_shot.model");
         data->forspeed = data->type == PEAS ? enemy_data->pea_speed : enemy_data->pea_speed * 1.25;
         data->damage = data->type == PEAS ? enemy_data->base_damage : enemy_data->base_damage * 3;
         enemy_data->next_single_shot = data->type == PEAS ? curr_time + 1.0 : 3.0;
@@ -173,8 +175,7 @@ void proj_update(Entity* self) {
     PlayerData* player_data;
     EnemyData* enemy_data;
     Entity* owner, * target, * entityList;
-
-    int i, entity_type;
+    int i;
 
     if (!self) return;
 
@@ -224,7 +225,7 @@ void proj_free(Entity* self) {
 
     if (!self) return;
 
-    data = (ProjData*) self->data;
+    data = self->data;
 
     owner = data->owner;
     
@@ -294,28 +295,21 @@ void proj_think_missile(Entity* self) {
 
 void proj_think_wave_shot(Entity* self) {
     ProjData* data;
-    Entity* player;
     PlayerData* player_data;
 
     data = self->data;
     if (!data) return;
 
-    player = data->owner;
-    player_data = player->data;
+    player_data = data->owner->data;
     self->position.y -= data->forspeed;
 
     if (!proj_exist(self, self->data)) {
         player_data->curr_mode = SINGLE_SHOT;
+        player_data->change_flag = 1;
         player_data->wave_flag = 0;
         entity_free(self);
     }    
 }
 void proj_think_super_nuke(Entity* self) {
 
-}
-
-Uint8 shot_delay(Entity* self, float curr_time) {
-    
-
-    return 0;
 }
