@@ -36,6 +36,7 @@ typedef struct {
 	Uint8			took_damage;
 	Uint8			has_shot;
 	float			damage_taken;
+	float			next_single_shot;
 
 	// other
 	GFC_Vector3D*	player_pos;
@@ -51,7 +52,7 @@ void enemy_update(Entity* self);
 void enemy_free(Entity* self);
 void enemy_take_damage(Entity* self, EnemyData* data);
 void enemy_die(Entity* self);
-
+//void check_rand_position(Entity* self);
 
 
 

@@ -8,7 +8,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     Entity* self;
     ProjData* data;
     PlayerData* player_data;
-    float dist_x, dist_y, conver, z_angle, y_angle;
+    float dist_x, dist_y, conver, z_angle, y_angle, time;
 
     self = entity_new();
     if (!self) return NULL;
@@ -19,15 +19,18 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     data->owner = owner;
     player_data = owner->data;
 
+    time = SDL_GetTicks() / 1000.0;
+
     // make sure to enforce max projectile restrictions
-    if ((player_data->curr_mode == WAVE_SHOT && player_data->wave_flag == MAX_WAVE) || 
+    if ((player_data->curr_mode == WAVE_SHOT && player_data->wave_flag == MAX_WAVE) ||
         (player_data->curr_mode == MISSILE && player_data->proj_count == MAX_MISSILE) ||
-        player_data->proj_count == MAX_PROJ
+        player_data->proj_count >= MAX_PROJ ||
+        time < player_data->next_shot
         ) {
         entity_free(self);
         return;
     }
-
+    
     player_data->proj_count++;
 
     self->update = proj_update;
@@ -56,7 +59,8 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
         self->think = proj_think_basic;
         self->model = data->type == SINGLE_SHOT ? gf3d_model_load("models/projectiles/single_shot.model") : gf3d_model_load("models/projectiles/charge_shot.model");
         data->forspeed = data->type == SINGLE_SHOT ? player_data->proj_speed : player_data->proj_speed * 1.25;
-        data->damage = data->type == SINGLE_SHOT ? player_data->base_damage : player_data->base_damage*3;
+        data->damage = data->type == SINGLE_SHOT ? player_data->base_damage : player_data->base_damage*5;
+        player_data->next_shot = data->type == SINGLE_SHOT ? curr_time + 0.15 : 0;
 
         conver = reticle_pos.y / data->forspeed;
         data->rigspeed = (dist_x / conver);
@@ -72,7 +76,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
         self->think = proj_think_missile;
         self->model = gf3d_model_load("models/projectiles/single_shot.model");
         data->forspeed = player_data->proj_speed * 0.75;
-        data->damage = player_data->base_damage * 5;
+        data->damage = player_data->base_damage * 3;
 
         conver = reticle_pos.y / data->forspeed;
         data->rigspeed = (dist_x / conver);
@@ -96,7 +100,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     Entity* self;
     ProjData* data;
     EnemyData* enemy_data;
-    float dist_x, dist_y, conver, z_angle, y_angle;
+    float dist_x, dist_y, conver, z_angle, y_angle, time;
 
     self = entity_new();
     if (!self) return NULL;
@@ -107,8 +111,12 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     data->owner = owner;
     enemy_data = owner->data;
 
+    time = SDL_GetTicks() / 1000.0;
+
     // enforcing maximum projectile count per entity
-    if (enemy_data->proj_count != 0) {
+    if (enemy_data->proj_count == MAX_PROJ || 
+        time < enemy_data->next_single_shot
+    ) {
         //slog("%i", enemydata->proj_count);
         entity_free(self);
         return;
@@ -142,6 +150,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
         self->model = data->type == PEAS ? gf3d_model_load("models/projectiles/single_shot.model") : gf3d_model_load("models/projectiles/charge_shot.model");
         data->forspeed = data->type == PEAS ? enemy_data->pea_speed : enemy_data->pea_speed * 1.25;
         data->damage = data->type == PEAS ? enemy_data->base_damage : enemy_data->base_damage * 3;
+        enemy_data->next_single_shot = data->type == PEAS ? curr_time + 1.0 : 3.0;
 
         conver = enemy_data->dist_to_player / data->forspeed;
         data->rigspeed = (dist_x / conver);

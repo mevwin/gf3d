@@ -31,9 +31,9 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 	data->took_damage = 0;
 	data->has_shot = 0;
 
-	data->currHealth = 30;
-	data->maxHealth = 30;
-	data->pea_speed = 2.5;
+	data->currHealth = 10;
+	data->maxHealth = 10;
+	data->pea_speed = 1.5;
 	data->base_damage = 1.0;
 
 	//data->upspeed = (float)1.2;
@@ -54,6 +54,8 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 							self->model->bounds.w,
 							self->model->bounds.h,
 							self->model->bounds.d);
+	//check_rand_position(self);
+
 
 	enemy_count++;
 
@@ -154,6 +156,32 @@ void enemy_take_damage(Entity* self, EnemyData* data) {
 void enemy_die(Entity* self) {
 	entity_free(self);
 }
+/*
+void check_rand_position(Entity* self) {
+	Entity* entityList, * entity;
+	int i;
+
+	entityList = get_entityList();
+
+	for (i = 0; i < MAX_ENTITY; i++) {
+		entity = &entityList[i];
+
+		if (entity->entity_type != ENEMY)
+			continue;
+
+		// spawn collision check
+		while (gfc_box_overlap(self->hurtbox, entity->hurtbox)) {
+			self->position = gfc_vector3d_random_pos(74, self->position.y, 50);
+			self->hurtbox = self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
+				self->position.y - (self->model->bounds.h / 2),
+				self->position.z - (self->model->bounds.d / 2),
+				self->model->bounds.w,
+				self->model->bounds.h,
+				self->model->bounds.d);
+		}
+	}
+}
+*/
 /**
 * define enemy/AI behavior as a FSA
 * define states of the enemy through enumerations

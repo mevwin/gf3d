@@ -29,15 +29,14 @@ typedef struct {
     int             x_bound;            // from origin to leftmost side
     int             z_bound;            // from origin to topmost side
 
-    // SINGLE_SHOT timing
-    float           next_single_shot;
-
-    // CHARGE_SHOT timing
+    // shot timing
+    float           next_shot;          // time til next projectile fire
     float           next_charged_shot;  // the next time for CHARGE_SHOT to be active
     float           charge_shot_delay;  // the small delay time after releasing a CHARGE_SHOT
 
     // player flags/checks
     Uint8           change_flag;        // flag for model switching
+    float           take_damage_timing;
     Uint8           mid_roll;           // flag for player's barrel roll mechanic
     Uint8           roll;               // type of barrel roll
     Uint8           wave_flag;          // flag for making sure only one wave_shot is on-screen
@@ -61,7 +60,7 @@ void player_think(Entity* self);
 void player_update(Entity* self);
 void player_free(Entity*  self);
 void player_attack(Entity* self, PlayerData* data);
-void player_take_damage(Entity* self, PlayerData* data);
+void player_take_damage(Entity* self, PlayerData* data, float time);
 void player_die(Entity* self);
 void player_death(Entity* self);
 

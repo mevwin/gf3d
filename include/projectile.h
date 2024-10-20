@@ -20,8 +20,8 @@ typedef struct {
 	int				y_bound;		// limit to how far a projectile travels
 	GFC_Vector3D	spawn_pos;		// projectile's spawn position
 	Entity*			owner;			// who shot the projectile
-	Entity_Type		owner_type;
-	float			damage;
+	Entity_Type		owner_type;		// enemy or player
+	float			damage;			// damage it will deal to target
 
 	// projectile movement details
 	float           forspeed;		// y-movement

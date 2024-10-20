@@ -25,13 +25,19 @@ Entity* player_spawn() {
     data = gfc_allocate_array(sizeof(PlayerData), 1);
     if (data) self->data = data;
 
-    // position init
+       
     data->upspeed = 1.2;
     data->rigspeed = 1.2;
-
     data->x_bound = 49; // left is positive, right is negative
     data->z_bound = 35; // 98 x 70
+
     position = gfc_vector3d_random_pos(data->x_bound, 0, data->z_bound);
+    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
+                            self->position.y - (self->model->bounds.h / 2),
+                            self->position.z - (self->model->bounds.d / 2),
+                            self->model->bounds.w,
+                            self->model->bounds.h,
+                            self->model->bounds.d);
 
     self->position = position;
     data->og_pos = self->position;
@@ -41,6 +47,7 @@ Entity* player_spawn() {
 
     // remaining data init
     data->change_flag = 1;
+    data->take_damage_timing = 0;
     data->mid_roll = 0;
     data->wave_flag = 0;
     data->nuke_flag = 0;
@@ -51,14 +58,6 @@ Entity* player_spawn() {
     data->currHealth = 2;
     data->maxHealth = 50;
     data->player_dead = 0;
-
-    // hurtbox init
-    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-                            self->position.y - (self->model->bounds.h / 2),
-                            self->position.z - (self->model->bounds.d / 2),
-                            self->model->bounds.w,
-                            self->model->bounds.h,
-                            self->model->bounds.d);
 
     // default attack init
     data->curr_mode = SINGLE_SHOT; 
@@ -153,40 +152,32 @@ void player_update(Entity* self) {
     // updates model based on current attack type
     time = SDL_GetTicks() / 1000.0;
 
-    // CHARGE_SHOT model
+    // CHARGE_SHOT texture
     if (time >= data->next_charged_shot && 
         time < data->next_charged_shot + 0.03 && 
         data->curr_mode != WAVE_SHOT &&
         !data->took_damage
         ){
         data->curr_mode = CHARGE_SHOT;
-        gf3d_model_free(self->model);
-        self->model = gf3d_model_load("models/player_ship/player_ship_charged.model");
+        self->model->texture = gf3d_texture_load("models/player_ship/color_44.png");
     }
-    // SINGLE_SHOT model
-    else if (time < data->next_charged_shot && 
+    // SINGLE_SHOT texture
+    else if (data->take_damage_timing < time &&
              data->change_flag && 
              data->curr_mode != WAVE_SHOT &&
              !data->took_damage
         ) {
         data->curr_mode = SINGLE_SHOT;
-        gf3d_model_free(self->model);
-        self->model = gf3d_model_load("models/player_ship/player_ship_single.model");
+        self->model->texture = gf3d_texture_load("models/player_ship/color_77.png");
         data->change_flag = 0;
     }
-    // WAVE_SHOT model
+    // WAVE_SHOT texture
     else if (data->curr_mode == WAVE_SHOT && 
             !data->change_flag &&
             !data->took_damage
         ) {
-        gf3d_model_free(self->model);
-        self->model = gf3d_model_load("models/player_ship/player_ship_wave.model");
+        self->model->texture = gf3d_texture_load("models/player_ship/color_66.png");
         data->change_flag = 1;
-    }
-    // IN_PAIN model
-    else if (data->took_damage) {
-        gf3d_model_free(self->model);
-        self->model = gf3d_model_load("models/player_ship/player_ship_damage.model");
     }
 
     // updates hurtbox
@@ -199,7 +190,7 @@ void player_update(Entity* self) {
 
     // check if player was hurt
     if (data->took_damage)
-        player_take_damage(self, data);
+        player_take_damage(self, data, time);
 
     // check if player is dead
     if (data->currHealth <= 0.0)
@@ -238,8 +229,13 @@ void player_attack(Entity* self, PlayerData* data) {
     player_proj_spawn(attack_start, cursor_pos, self, curr_time);
 }
 
-void player_take_damage(Entity* self, PlayerData* data) {
+void player_take_damage(Entity* self, PlayerData* data, float time) {
     if (!data) return;
+
+    slog("test");
+    self->model->texture = gf3d_texture_load("models/player_ship/color_EE.png");
+    data->change_flag = 1;
+    data->take_damage_timing = time + 0.5;
 
     data->currHealth -= data->damage_taken;
     data->took_damage = 0;
