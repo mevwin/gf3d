@@ -54,6 +54,7 @@ typedef struct {
 }PlayerData;
 
 Uint8 player_count;
+Uint8 player_no_attack;
 
 Entity* player_spawn();
 void player_think(Entity* self);

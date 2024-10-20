@@ -31,7 +31,7 @@ typedef struct {
 
 
 void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* owner, float curr_time);
-void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* owner);
+void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* owner, float curr_time);
 void proj_update(Entity* self);
 void proj_free(Entity* self);
 
@@ -48,7 +48,7 @@ void proj_think_basic(Entity* self);
 void proj_think_missile(Entity* self);
 void proj_think_wave_shot(Entity* self);
 void proj_think_super_nuke(Entity* self);
-
+Uint8 shot_delay(Entity* self, float curr_time);
 
 
 #endif

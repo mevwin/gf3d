@@ -33,7 +33,7 @@ typedef struct Entity_S{
     void            *data;                      // entity data
 
     Entity_Type     entity_type;                // type of entity
-    GFC_Sphere      hurtbox;                    // entity's hurtbox
+    GFC_Box         hurtbox;                    // entity's hurtbox
     
 }Entity;
 /**

@@ -52,6 +52,14 @@ Entity* player_spawn() {
     data->maxHealth = 50;
     data->player_dead = 0;
 
+    // hurtbox init
+    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
+                            self->position.y - (self->model->bounds.h / 2),
+                            self->position.z - (self->model->bounds.d / 2),
+                            self->model->bounds.w,
+                            self->model->bounds.h,
+                            self->model->bounds.d);
+
     // default attack init
     data->curr_mode = SINGLE_SHOT; 
     data->base_damage = 1.0;
@@ -117,10 +125,14 @@ void player_think(Entity* self) {
         //data->curr_mode++;
         
         //if (data->curr_mode > SUPER_NUKE) data->curr_mode = SINGLE_SHOT;
-        if (!data->no_attack)
+        if (!data->no_attack) {
             data->no_attack = 1;
-        else
+            player_no_attack = 1;
+        }
+        else {
             data->no_attack = 0;
+            player_no_attack = 0;
+        }
     }
 
     //slog("weapon: %d", data->curr_mode);
@@ -178,7 +190,12 @@ void player_update(Entity* self) {
     }
 
     // updates hurtbox
-    self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, self->model->bounds.h / 2);
+    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
+                            self->position.y - (self->model->bounds.h / 2),
+                            self->position.z - (self->model->bounds.d / 2),
+                            self->model->bounds.w,
+                            self->model->bounds.h,
+                            self->model->bounds.d);
 
     // check if player was hurt
     if (data->took_damage)
@@ -246,7 +263,7 @@ void player_die(Entity* self) {
 void player_death(Entity* self) {
     player_count--;
     if (player_count != 0) player_count = 0;
-
+    player_no_attack = 1;
     entity_free(self);
 }
 

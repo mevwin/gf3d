@@ -48,7 +48,13 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 	position = gfc_vector3d_random_pos(data->x_bound, data->dist_to_player, data->z_bound);
 	self->position = position;
 
-	self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, self->model->bounds.h / 5);
+	self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
+							self->position.y - (self->model->bounds.h / 2),
+							self->position.z - (self->model->bounds.d / 2),
+							self->model->bounds.w,
+							self->model->bounds.h,
+							self->model->bounds.d);
+
 	enemy_count++;
 
 	return self;
@@ -57,6 +63,7 @@ void enemy_think(Entity* self) {
 	EnemyData* data;
 	PlayerData* player_data;
 	GFC_Vector3D player_pos;
+	float time;
 
 	if (!self) return;
 
@@ -72,11 +79,14 @@ void enemy_think(Entity* self) {
 	player_pos.y = data->player_pos->y;
 	player_pos.z = data->player_pos->z;
 
-	if (!player_data->no_attack)
-		enemy_proj_spawn(self->position, player_pos, self);
+	time = SDL_GetTicks() / 1000.0;
+
+	if (!player_data->no_attack || !player_no_attack)
+		enemy_proj_spawn(self->position, player_pos, self, time);
 	
 	//slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
 }
+
 void enemy_update(Entity* self) {
 	EnemyData* data;
 	PlayerData* player_data;
@@ -92,7 +102,7 @@ void enemy_update(Entity* self) {
 
 	// rotating enemy to player
 	player_data = data->player_data;
-	if (!player_data->no_attack) {
+	if (!player_data->no_attack || !player_no_attack) {
 		dist_x = data->player_pos->x - self->position.x;
 		dist_y = data->player_pos->z - self->position.z;
 
@@ -106,6 +116,14 @@ void enemy_update(Entity* self) {
 		self->rotation.z = 0;
 		self->rotation.x = 0;
 	}
+
+	// update hurtbox
+	self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
+							self->position.y - (self->model->bounds.h / 2),
+							self->position.z - (self->model->bounds.d / 2),
+							self->model->bounds.w,
+							self->model->bounds.h,
+							self->model->bounds.d);
 
 	if (data->took_damage)
 		enemy_take_damage(self, data);

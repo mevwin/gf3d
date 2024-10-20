@@ -5,9 +5,9 @@
 #include "enemy.h"
 
 void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* owner, float curr_time) {
-    Entity* self, *play;
+    Entity* self;
     ProjData* data;
-    PlayerData* playdata;
+    PlayerData* player_data;
     float dist_x, dist_y, conver, z_angle, y_angle;
 
     self = entity_new();
@@ -17,19 +17,18 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     if (data) self->data = data;
 
     data->owner = owner;
-    play = data->owner;
-    playdata = play->data;
+    player_data = owner->data;
 
     // make sure to enforce max projectile restrictions
-    if ((playdata->curr_mode == WAVE_SHOT && playdata->wave_flag == MAX_WAVE) || 
-        (playdata->curr_mode == MISSILE && playdata->proj_count == MAX_MISSILE) ||
-        playdata->proj_count == MAX_PROJ
+    if ((player_data->curr_mode == WAVE_SHOT && player_data->wave_flag == MAX_WAVE) || 
+        (player_data->curr_mode == MISSILE && player_data->proj_count == MAX_MISSILE) ||
+        player_data->proj_count == MAX_PROJ
         ) {
         entity_free(self);
         return;
     }
 
-    playdata->proj_count++;
+    player_data->proj_count++;
 
     self->update = proj_update;
     self->entity_type = PROJECTILE;
@@ -37,7 +36,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     self->position = position;
     self->free = proj_free;
 
-    data->type = playdata->curr_mode;
+    data->type = player_data->curr_mode;
     data->y_bound = -170.0;
 
     // rotating projectile to reticle
@@ -56,10 +55,9 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     if (data->type == SINGLE_SHOT || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
         self->model = data->type == SINGLE_SHOT ? gf3d_model_load("models/projectiles/single_shot.model") : gf3d_model_load("models/projectiles/charge_shot.model");
-        data->forspeed = data->type == SINGLE_SHOT ? playdata->proj_speed : playdata->proj_speed * 1.25;
-        data->damage = data->type == SINGLE_SHOT ? playdata->base_damage : playdata->base_damage*3;
+        data->forspeed = data->type == SINGLE_SHOT ? player_data->proj_speed : player_data->proj_speed * 1.25;
+        data->damage = data->type == SINGLE_SHOT ? player_data->base_damage : player_data->base_damage*3;
 
-        self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, self->model->bounds.w / 2);
         conver = reticle_pos.y / data->forspeed;
         data->rigspeed = (dist_x / conver);
         data->upspeed = (dist_y / conver);
@@ -67,30 +65,37 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     else if (data->type == WAVE_SHOT) {
         self->think = proj_think_wave_shot;
         self->model = gf3d_model_load("models/projectiles/wave_shot.model");
-        data->forspeed = playdata->proj_speed / 2;
-        playdata->wave_flag = 1;
+        data->forspeed = player_data->proj_speed / 2;
+        player_data->wave_flag = 1;
     }
     else if (data->type == MISSILE) {
         self->think = proj_think_missile;
         self->model = gf3d_model_load("models/projectiles/single_shot.model");
-        data->forspeed = playdata->proj_speed * 0.75;
-        data->damage = playdata->base_damage * 5;
+        data->forspeed = player_data->proj_speed * 0.75;
+        data->damage = player_data->base_damage * 5;
 
-        self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, self->model->bounds.w / 2);
         conver = reticle_pos.y / data->forspeed;
         data->rigspeed = (dist_x / conver);
         data->upspeed = (dist_y / conver);
     }
     
+    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
+                            self->position.y - (self->model->bounds.h / 2),
+                            self->position.z - (self->model->bounds.d / 2),
+                            self->model->bounds.w,
+                            self->model->bounds.h,
+                            self->model->bounds.d
+    );
+
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
 
     
 }
 
-void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* owner) {
-    Entity* self, *enem;
+void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* owner, float curr_time) {
+    Entity* self;
     ProjData* data;
-    EnemyData* enemydata;
+    EnemyData* enemy_data;
     float dist_x, dist_y, conver, z_angle, y_angle;
 
     self = entity_new();
@@ -100,17 +105,16 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     if (data) self->data = data;
 
     data->owner = owner;
-    enem = data->owner;
-    enemydata = enem->data;
+    enemy_data = owner->data;
 
     // enforcing maximum projectile count per entity
-    if (enemydata->proj_count != 0) {
+    if (enemy_data->proj_count != 0) {
         //slog("%i", enemydata->proj_count);
         entity_free(self);
         return;
     }
 
-    enemydata->proj_count++;
+    enemy_data->proj_count++;
 
     self->update = proj_update;
     self->entity_type = PROJECTILE;
@@ -118,7 +122,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     self->position = position;
     self->free = proj_free;
 
-    data->type = enemydata->enemy_type;
+    data->type = enemy_data->enemy_type;
     data->y_bound = 90;
 
     // rotating projectile to player
@@ -126,69 +130,75 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
         dist_x = player_pos.x - position.x;
         dist_y = player_pos.z - position.z;
 
-        z_angle = atan(dist_x / enemydata->dist_to_player);
+        z_angle = atan(dist_x / enemy_data->dist_to_player);
         self->rotation.z += z_angle;
 
-        y_angle = atan(dist_y / enemydata->dist_to_player);
+        y_angle = atan(dist_y / enemy_data->dist_to_player);
         self->rotation.y -= y_angle;
     }
 
     if (data->type == PEAS || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
         self->model = data->type == PEAS ? gf3d_model_load("models/projectiles/single_shot.model") : gf3d_model_load("models/projectiles/charge_shot.model");
-        data->forspeed = data->type == PEAS ? enemydata->pea_speed : enemydata->pea_speed * 1.25;
-        data->damage = data->type == PEAS ? enemydata->base_damage : enemydata->base_damage * 3;
+        data->forspeed = data->type == PEAS ? enemy_data->pea_speed : enemy_data->pea_speed * 1.25;
+        data->damage = data->type == PEAS ? enemy_data->base_damage : enemy_data->base_damage * 3;
 
-        self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, 1);
-        conver = enemydata->dist_to_player / data->forspeed;
+        conver = enemy_data->dist_to_player / data->forspeed;
         data->rigspeed = (dist_x / conver);
         data->upspeed = (dist_y / conver);
     }
+
+    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
+                            self->position.y - (self->model->bounds.h / 2),
+                            self->position.z - (self->model->bounds.d / 2),
+                            self->model->bounds.w,
+                            self->model->bounds.h,
+                            self->model->bounds.d
+    );
 
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
 }
 
 void proj_update(Entity* self) {
     ProjData* data;
-    PlayerData* playdata;
-    EnemyData* enemydata;
-    Entity* owner, *enemy, *entityList;
+    PlayerData* player_data;
+    EnemyData* enemy_data;
+    Entity* owner, * target, * entityList;
 
     int i, entity_type;
 
     if (!self) return;
 
     data = self->data;
-    owner = data->owner;
-    if (owner->entity_type == PLAYER)
-        playdata = owner->data;
-    else
-        enemydata = owner->data;
-    
     entityList = get_entityList();
 
     // updates hurtbox
-    self->hurtbox = gfc_sphere(self->position.x, self->position.y, self->position.z, self->model->bounds.w / 2);
+    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
+                            self->position.y - (self->model->bounds.h / 2),
+                            self->position.z - (self->model->bounds.d / 2),
+                            self->model->bounds.w,
+                            self->model->bounds.h,
+                            self->model->bounds.d);
 
-
+    // checks if projectile hits anything
     for (i = 0; i < MAX_ENTITY; i++) {
-        enemy = &entityList[i];
+        target = &entityList[i];
         
-        if ((enemy->entity_type != ENEMY && data->owner_type == PLAYER) ||
-            (enemy->entity_type != PLAYER && data->owner_type == ENEMY))
+        if ((target->entity_type != ENEMY && data->owner_type == PLAYER) ||
+            (target->entity_type != PLAYER && data->owner_type == ENEMY))
             continue;
 
         // collision detection check
-        if (gfc_sphere_overlap(self->hurtbox, enemy->hurtbox)) {
+        if (gfc_box_overlap(self->hurtbox, target->hurtbox)) {
             if (data->owner_type == PLAYER) {
-                enemydata = enemy->data;
-                enemydata->took_damage = 1;
-                enemydata->damage_taken = data->damage;
+                enemy_data = target->data;
+                enemy_data->took_damage = 1;
+                enemy_data->damage_taken = data->damage;
             }
             else if (data->owner_type == ENEMY) {
-                playdata = enemy->data;
-                playdata->took_damage = 1;
-                playdata->damage_taken = data->damage;
+                player_data = target->data;
+                player_data->took_damage = 1;
+                player_data->damage_taken = data->damage;
             }
 
             entity_free(self);
@@ -255,12 +265,9 @@ void proj_think_basic(Entity* self) {
 
 void proj_think_missile(Entity* self) {
     ProjData* data;
-    Entity* owner;
 
     data = self->data;
     if (!data) return;
-
-    owner = data->owner;
 
     if ((gf2d_mouse_button_held(0) || gf2d_mouse_button_pressed(0)) && 
         self->position.y >= data->spawn_pos.y - 5 && 
@@ -279,21 +286,27 @@ void proj_think_missile(Entity* self) {
 void proj_think_wave_shot(Entity* self) {
     ProjData* data;
     Entity* player;
-    PlayerData* playdata;
+    PlayerData* player_data;
 
     data = self->data;
     if (!data) return;
 
     player = data->owner;
-    playdata = player->data;
+    player_data = player->data;
     self->position.y -= data->forspeed;
 
     if (!proj_exist(self, self->data)) {
-        playdata->curr_mode = SINGLE_SHOT;
-        playdata->wave_flag = 0;
+        player_data->curr_mode = SINGLE_SHOT;
+        player_data->wave_flag = 0;
         entity_free(self);
     }    
 }
 void proj_think_super_nuke(Entity* self) {
 
+}
+
+Uint8 shot_delay(Entity* self, float curr_time) {
+    
+
+    return 0;
 }

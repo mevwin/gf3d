@@ -203,6 +203,8 @@
     <ClCompile Include="..\src\player_move.c" />
     <ClCompile Include="..\src\projectile.c" />
     <ClCompile Include="..\src\reticle.c" />
+    <ClCompile Include="..\src\shop.c" />
+    <ClCompile Include="..\src\upgrades.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\gfc\include\gfc_actions.h" />
@@ -269,6 +271,8 @@
     <ClInclude Include="..\include\player_move.h" />
     <ClInclude Include="..\include\projectile.h" />
     <ClInclude Include="..\include\reticle.h" />
+    <ClInclude Include="..\include\shop.h" />
+    <ClInclude Include="..\include\upgrades.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
