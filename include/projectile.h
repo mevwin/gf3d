@@ -21,8 +21,11 @@ typedef struct {
 	GFC_Vector3D	spawn_pos;		// projectile's spawn position
 	Entity*			owner;			// who shot the projectile
 	Entity_Type		owner_type;		// enemy or player
-	float			damage;			// damage it will deal 
-	Uint8			missile_active;
+	float			damage;			// damage it will deal
+
+	// missile data
+	Uint8			missile_active;	// is missile in motion
+	GFC_Vector3D*	missile_target;	// pointer to the missile target
 
 	// projectile movement details
 	float           forspeed;		// y-movement

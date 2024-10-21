@@ -116,6 +116,7 @@ void player_think(Entity* self) {
         data->next_charged_shot = time + 2.5;
         player_attack(self, data);
     }
+    // MISSILE
     else if ((gf2d_mouse_button_held(2) && data->currScrap > 4 && data->missile_count <= 5)) {
         data->curr_mode = MISSILE;
         data->next_charged_shot = time + 2.5;
@@ -142,10 +143,10 @@ void player_think(Entity* self) {
         }
     }
 
-    //slog("weapon: %d", data->curr_mode);
+    slog("weapon: %d", data->curr_mode);
     //slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
     //slog("currScrap: %d", data->currScrap);
-    slog("missile_count: %d", data->missile_count);
+    //slog("missile_count: %d", data->missile_count);
 }
 
 //gf3d_camera.h
@@ -210,9 +211,10 @@ void player_update(Entity* self) {
     if (data->currScrap > data->maxScrap)
         data->currScrap = data->maxScrap;
 
-    if (rec_data->locked_on && data->curr_mode == MISSILE) {
+    if (rec_data->locked_on && data->curr_mode == MISSILE)
         data->missile_spawn = 1;
-    }
+    else
+        data->missile_spawn = 0;
 
     // check if player was hurt
     if (data->took_damage)

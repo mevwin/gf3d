@@ -2,6 +2,7 @@
 
 typedef struct {
 	Uint8			locked_on;
+	GFC_Vector3D*	enemy_pos;
 
 	// reticle bounds
 	int             x_bound;

@@ -34,17 +34,17 @@ Entity* item_spawn(Item_Type type, GFC_Vector3D spawn_pos, void* enemy_data) {
     data->enemy_data = enemy;
 
     data->type = type;
-    dist_to_player = enemy->dist_to_player;
+    dist_to_player = (float) enemy->dist_to_player;
 
     self->model = gf3d_model_load("models/scrap/enemy_scrap.model");
 
     data->forspeed = 1.0;
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-        self->position.y - (self->model->bounds.h / 2),
-        self->position.z - (self->model->bounds.d / 2),
-        self->model->bounds.w,
-        self->model->bounds.h,
-        self->model->bounds.d);
+                            self->position.y - (self->model->bounds.h / 2),
+                            self->position.z - (self->model->bounds.d / 2),
+                            self->model->bounds.w,
+                            self->model->bounds.h,
+                            self->model->bounds.d);
 
     dist_x = enemy->player_pos->x - self->position.x;
     dist_y = enemy->player_pos->z - self->position.z;
@@ -55,6 +55,8 @@ Entity* item_spawn(Item_Type type, GFC_Vector3D spawn_pos, void* enemy_data) {
 
     enemy->scrap_made = 1;
     enemy->scrap_taken = 0;
+
+    return self;
 }
 
 void item_think(Entity* self) {
@@ -101,17 +103,17 @@ void item_update(Entity* self) {
     dist_x = enemy_data->player_pos->x - self->position.x;
     dist_y = enemy_data->player_pos->z - self->position.z;
 
-    conver = (self->position.y) / data->forspeed;
+    conver = self->position.y / data->forspeed;
     data->rigspeed = (dist_x / conver);
     data->upspeed = (dist_y / conver);
 
     // updates hurtbox
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-        self->position.y - (self->model->bounds.h / 2),
-        self->position.z - (self->model->bounds.d / 2),
-        self->model->bounds.w,
-        self->model->bounds.h,
-        self->model->bounds.d);
+                            self->position.y - (self->model->bounds.h / 2),
+                            self->position.z - (self->model->bounds.d / 2),
+                            self->model->bounds.w,
+                            self->model->bounds.h,
+                            self->model->bounds.d);
 
     if (self->position.y > 90.0) {
         enemy_data->scrap_taken = 1;

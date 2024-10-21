@@ -44,8 +44,8 @@ void reticle_update(Entity* self) {
 
     GFC_Vector2D res = gf3d_vgraphics_get_resolution();
     GFC_Vector2D cursor = gf2d_mouse_get_position();
-    cursor.x -= res.x/2;
-    cursor.y -= res.y/2;
+    cursor.x -= res.x/2.0;
+    cursor.y -= res.y/2.0;
 
     self->position.x = cursor.x / (-res.x / (2 * data->x_bound));
     self->position.z = cursor.y / (-res.y / (2 * data->z_bound));
@@ -59,13 +59,15 @@ void reticle_update(Entity* self) {
         if (target->entity_type != ENEMY)
             continue;
 
-        // collision detection check
+        // collision detection check for missile attack
         if (gfc_box_overlap(self->hurtbox, target->hurtbox)) {
             data->locked_on = 1;
+            data->enemy_pos = &(target->position);
             slog("locked in");
             break;
         }
-        data->locked_on = 0;
+        else
+            data->locked_on = 0;
     }
 
     // update hurtbox
@@ -77,14 +79,14 @@ void reticle_update(Entity* self) {
         self->model->bounds.d);
 
     // keep reticle within camera
-    if (self->position.x >= data->x_bound - 1)
-        self->position.x = data->x_bound - 2;
-    if (self->position.x <= -data->x_bound + 1)
-        self->position.x = -data->x_bound + 2;
-    if (self->position.z >= data->z_bound - 1)
-        self->position.z = data->z_bound - 2;
-    if (self->position.z <= -data->z_bound + 1)
-        self->position.z = -data->z_bound + 2;
+    if (self->position.x >= data->x_bound - 1.0)
+        self->position.x = data->x_bound - 2.0;
+    if (self->position.x <= -data->x_bound + 1.0)
+        self->position.x = -data->x_bound + 2.0;
+    if (self->position.z >= data->z_bound - 1.0)
+        self->position.z = data->z_bound - 2.0;
+    if (self->position.z <= -data->z_bound + 1.0)
+        self->position.z = -data->z_bound + 2.0;
 }
 
 void reticle_free(Entity* self) {
