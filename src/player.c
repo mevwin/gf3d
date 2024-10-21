@@ -42,7 +42,7 @@ Entity* player_spawn() {
     data->og_pos = self->position;
 
     reticle_pos = gfc_vector3d(position.x, -60, position.z);
-    data->reticle_pos = reticle_spawn(reticle_pos);
+    data->reticle = reticle_spawn(reticle_pos);
 
     // remaining data init
     data->change_flag = 1;
@@ -51,12 +51,16 @@ Entity* player_spawn() {
     data->wave_flag = 0;
     data->nuke_flag = 0;
     data->proj_count = 0;
+    data->missile_count = 0;
+    data->missile_spawn = 0;
     data->took_damage = 0;
     data->damage_taken = 0;
-
-    data->currHealth = 2;
-    data->maxHealth = 50;
     data->player_dead = 0;
+
+    data->currHealth = 2.0;
+    data->maxHealth = 50.0;
+    data->currScrap = 5;
+    data->maxScrap = 10;   
 
     // default attack init
     data->curr_mode = SINGLE_SHOT; 
@@ -103,12 +107,17 @@ void player_think(Entity* self) {
         data->charge_shot_delay = time + 0.75;
         data->change_flag = 1;
     }
-    // SINGLE_SHOT, WAVE_SHOT, MISSILE
+    // SINGLE_SHOT, SUPER_NUKE
     else if ((gf2d_mouse_button_pressed(0) || gf2d_mouse_button_held(0)) &&
         data->charge_shot_delay <= time &&
         !data->mid_roll &&
         data->curr_mode != CHARGE_SHOT
         ) {
+        data->next_charged_shot = time + 2.5;
+        player_attack(self, data);
+    }
+    else if ((gf2d_mouse_button_held(2) && data->currScrap > 4 && data->missile_count <= 5)) {
+        data->curr_mode = MISSILE;
         data->next_charged_shot = time + 2.5;
         player_attack(self, data);
     }
@@ -135,15 +144,20 @@ void player_think(Entity* self) {
 
     //slog("weapon: %d", data->curr_mode);
     //slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
+    //slog("currScrap: %d", data->currScrap);
+    slog("missile_count: %d", data->missile_count);
 }
 
 //gf3d_camera.h
 void player_update(Entity* self) {
     PlayerData* data;
+    ReticleData* rec_data;
     float time;
 
     data = self->data;
     if (!data) return;
+
+    rec_data = data->reticle->data;
 
     // update camera
     player_cam(self, data);
@@ -151,7 +165,7 @@ void player_update(Entity* self) {
     // updates model based on current attack type
     time = SDL_GetTicks() / 1000.0;
 
-    // CHARGE_SHOT texture
+        // CHARGE_SHOT texture
     if (time >= data->next_charged_shot && 
         time < data->next_charged_shot + 0.03 && 
         data->curr_mode != WAVE_SHOT &&
@@ -161,7 +175,7 @@ void player_update(Entity* self) {
         gf3d_texture_free(self->model->texture);
         self->model->texture = gf3d_texture_load("models/player_ship/color_44.png");
     }
-    // SINGLE_SHOT texture
+        // SINGLE_SHOT texture
     else if (data->take_damage_timing < time &&
              data->change_flag && 
              data->curr_mode != WAVE_SHOT &&
@@ -172,7 +186,7 @@ void player_update(Entity* self) {
         self->model->texture = gf3d_texture_load("models/player_ship/color_77.png");
         data->change_flag = 0;
     }
-    // WAVE_SHOT texture
+        // WAVE_SHOT texture
     /*
     else if (data->curr_mode == WAVE_SHOT && 
             data->change_flag &&
@@ -190,6 +204,16 @@ void player_update(Entity* self) {
                             self->model->bounds.h,
                             self->model->bounds.d);
 
+    // sanity check, making sure player stats are not over the max
+    if (data->currHealth > data->maxHealth)
+        data->currHealth = data->maxHealth;
+    if (data->currScrap > data->maxScrap)
+        data->currScrap = data->maxScrap;
+
+    if (rec_data->locked_on && data->curr_mode == MISSILE) {
+        data->missile_spawn = 1;
+    }
+
     // check if player was hurt
     if (data->took_damage)
         player_take_damage(self, data, time);
@@ -201,12 +225,10 @@ void player_update(Entity* self) {
 
 void player_free(Entity* self){
     PlayerData *data;
-    Entity* enemyList;
 
     if (!self) return;
 
-    data = self->data;
-
+    data = (PlayerData*)self->data;
     free(data);
     self->data = NULL;
 }
@@ -219,9 +241,9 @@ void player_attack(Entity* self, PlayerData* data) {
     if (!self) return;
     
     gfc_vector3d_copy(attack_start, self->position);
-    cursor_pos.x = data->reticle_pos->x;
-    cursor_pos.y = data->reticle_pos->y;
-    cursor_pos.z = data->reticle_pos->z;
+    cursor_pos.x = data->reticle->position.x;
+    cursor_pos.y = data->reticle->position.y;
+    cursor_pos.z = data->reticle->position.z;
 
     // creates projectile under the ship
     attack_start.z -= 3;

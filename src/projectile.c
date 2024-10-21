@@ -23,10 +23,12 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
 
     // make sure to enforce max projectile restrictions
     if ((player_data->curr_mode == WAVE_SHOT && player_data->wave_flag == MAX_WAVE) ||
-        (player_data->curr_mode == MISSILE && player_data->proj_count == MAX_MISSILE) ||
+        (player_data->curr_mode == MISSILE && player_data->missile_count == MAX_MISSILE) ||
+        (player_data->curr_mode == MISSILE && !player_data->missile_spawn) ||
         player_data->proj_count >= MAX_PROJ ||
         time < player_data->next_shot
         ) {
+        slog("%d", player_data->missile_count);
         entity_free(self);
         return;
     }
@@ -83,6 +85,10 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
         conver = reticle_pos.y / data->forspeed;
         data->rigspeed = (dist_x / conver);
         data->upspeed = (dist_y / conver);
+        player_data->missile_count++;
+        //player_data->currScrap--;
+        player_data->missile_spawn = 0;
+        data->missile_active = 0;
     }
     
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
@@ -225,13 +231,15 @@ void proj_free(Entity* self) {
 
     if (!self) return;
 
-    data = self->data;
-
+    data = (ProjData*)self->data;
     owner = data->owner;
     
     if (data->owner_type == PLAYER) {
         playdata = owner->data;
         playdata->proj_count--;
+        if (data->type == MISSILE)
+            playdata->missile_count--;
+
     }
     else if (data->owner_type == ENEMY) {
         enemydata = owner->data;
@@ -275,22 +283,26 @@ void proj_think_basic(Entity* self) {
 
 void proj_think_missile(Entity* self) {
     ProjData* data;
+    PlayerData* player_data;
 
     data = self->data;
     if (!data) return;
 
-    if ((gf2d_mouse_button_held(0) || gf2d_mouse_button_pressed(0)) && 
-        self->position.y >= data->spawn_pos.y - 5 && 
-        data->owner_type == PLAYER) {
+    player_data = data->owner->data;
+
+    if ((gf2d_mouse_button_held(2) || gf2d_mouse_button_pressed(2)) && 
+        !data->missile_active) {
         return;
     }
+    data->missile_active = 1;
 
     self->position.x -= data->rigspeed;
     self->position.y -= data->forspeed;
     self->position.z -= data->upspeed;
   
-    if (!proj_exist(self, self->data)) 
+    if (!proj_exist(self, self->data))
         entity_free(self);
+   
 }
 
 void proj_think_wave_shot(Entity* self) {

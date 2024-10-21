@@ -8,6 +8,7 @@
 * maybe make some global function that can get the item by volume
 * make states that define the behavior of the item at a certain point
 * item pickups should funciton like enemy projectiles, except they're homing
+* two bounding boxes for player, one for enemy targets, one for item pickups
 */
 
 Entity* item_spawn(Item_Type type, GFC_Vector3D spawn_pos, void* enemy_data) {
@@ -81,7 +82,7 @@ void item_think(Entity* self) {
         if (gfc_box_overlap(self->hurtbox, player->hurtbox)) {
             enemy_data = (EnemyData*) data->enemy_data;
             enemy_data->scrap_taken = 1;
-            item_activate(self, player->data);
+            item_activate(self, data->type, player->data);
             break;
         }
     }
@@ -118,15 +119,22 @@ void item_update(Entity* self) {
     }
 }
 
-void item_activate(Entity* self, void* player_data) {
+void item_activate(Entity* self, Item_Type type, void* player_data) {
+    PlayerData* player;
+    player = (PlayerData*) player_data;
     slog("item received");
+    if (type == SCRAP) {
+        slog("scrap received");
+        if (player->currScrap + 1 <= player->maxScrap)
+            player->currScrap++;
+    }
     entity_free(self);
 }
 
 void item_free(Entity* self) {
     ItemData* data;
 
-    data = self->data;
+    data = (ItemData*) self->data;
     free(data);
     self->data = NULL;
 }

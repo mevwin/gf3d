@@ -58,7 +58,6 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 							self->model->bounds.d);
 	//check_rand_position(self);
 
-
 	enemy_count++;
 
 	return self;

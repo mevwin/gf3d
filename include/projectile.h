@@ -5,14 +5,14 @@
 
 #define MAX_PROJ 20
 #define MAX_WAVE 1
-#define MAX_MISSILE 7
+#define MAX_MISSILE 1
 
 typedef enum{
-	SINGLE_SHOT,
-	CHARGE_SHOT,
-	WAVE_SHOT,
-	MISSILE,
-	SUPER_NUKE
+	SINGLE_SHOT,	// player or enemy
+	CHARGE_SHOT,	// player or enemy
+	WAVE_SHOT,			// replace with EMP
+	MISSILE,		// player only
+	SUPER_NUKE		// player only
 }ProjType;
 
 typedef struct {
@@ -21,7 +21,8 @@ typedef struct {
 	GFC_Vector3D	spawn_pos;		// projectile's spawn position
 	Entity*			owner;			// who shot the projectile
 	Entity_Type		owner_type;		// enemy or player
-	float			damage;			// damage it will deal to target
+	float			damage;			// damage it will deal 
+	Uint8			missile_active;
 
 	// projectile movement details
 	float           forspeed;		// y-movement
@@ -45,6 +46,9 @@ Uint8 proj_exist(Entity* self, ProjData* data);
 */
 void proj_think_basic(Entity* self);
 
+/**
+* @brief missiles only spawn when reticle meets enemy
+*/
 void proj_think_missile(Entity* self);
 void proj_think_wave_shot(Entity* self);
 void proj_think_super_nuke(Entity* self);

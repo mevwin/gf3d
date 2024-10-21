@@ -6,7 +6,8 @@
 
 typedef struct {
     GFC_Vector3D    og_pos;             // container for keeping model in place due to constant rotation
-    GFC_Vector3D*   reticle_pos;        // pointer to reticle's position
+    Entity*         reticle;        
+    
 
     // player values
     float           upspeed;            // vertical speed
@@ -17,8 +18,8 @@ typedef struct {
 
     float           maxHealth;          // player's maximum health
     float           currHealth;         // player's current health
-    float           maxShipParts;       // maximum amount of ship parts a player can hold
-    float           currShipParts;      // player's currrent amount of ship parts
+    int             maxScrap;           // maximum amount of ship parts a player can hold
+    int             currScrap;          // player's currrent amount of ship parts
 
     float           base_damage;        // defaults to SINGLE_SHOT dmg
     float           proj_speed;         // defaults to SINGLE_SHOT speed
@@ -34,17 +35,21 @@ typedef struct {
     float           next_charged_shot;  // the next time for CHARGE_SHOT to be active
     float           charge_shot_delay;  // the small delay time after releasing a CHARGE_SHOT
 
-    // player flags/checks
+    // player personal flags/checks
     Uint8           change_flag;        // flag for model switching
-    float           take_damage_timing;
+    float           take_damage_timing; // amount of time player is in damage state for visuals
     Uint8           mid_roll;           // flag for player's barrel roll mechanic
     Uint8           roll;               // type of barrel roll
-    Uint8           wave_flag;          // flag for making sure only one wave_shot is on-screen
-    Uint8           nuke_flag;          // flag for making sure only one super_nuke is on-screen
-    int             proj_count;         // current amount of projectiles fired
     Uint8           took_damage;        // flag for activating player_take_damage
     float           damage_taken;       // damage received from enemy
     Uint8           player_dead;        // flag for player death state
+
+    // player attack flags/checks
+    int             proj_count;         // current amount of projectiles fired
+    Uint8           wave_flag;          // flag for making sure only one wave_shot is on-screen
+    Uint8           nuke_flag;          // flag for making sure only one super_nuke is on-screen
+    int             missile_count;
+    Uint8           missile_spawn;      // missile only spawn if reticle is on enemy
 
     // debug camera
     Uint8           freelook;           // debug camera

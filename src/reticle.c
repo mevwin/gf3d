@@ -3,7 +3,7 @@
 #include "simple_logger.h"
 #include "reticle.h"
 
-GFC_Vector3D* reticle_spawn(GFC_Vector3D position) {
+Entity* reticle_spawn(GFC_Vector3D position) {
     Entity* self;
     ReticleData* data;
 
@@ -24,11 +24,20 @@ GFC_Vector3D* reticle_spawn(GFC_Vector3D position) {
     data->y_bound = -60;
     data->z_bound = 58; 
 
-    return &(self->position);
+    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
+                            self->position.y - (self->model->bounds.h / 2),
+                            self->position.z - (self->model->bounds.d / 2),
+                            self->model->bounds.w,
+                            self->model->bounds.h,
+                            self->model->bounds.d);
+
+    return self;
 }
 
 void reticle_update(Entity* self) {
     ReticleData* data;
+    Entity* entityList, *target;
+    int i;
 
     data = self->data;
     if (!data) return;
@@ -42,6 +51,30 @@ void reticle_update(Entity* self) {
     self->position.z = cursor.y / (-res.y / (2 * data->z_bound));
 
     //slog("CursorX: %f, CursorY: %f", cursor.x, cursor.y);
+
+    entityList = get_entityList();
+    for (i = 0; i < MAX_ENTITY; i++) {
+        target = &entityList[i];
+
+        if (target->entity_type != ENEMY)
+            continue;
+
+        // collision detection check
+        if (gfc_box_overlap(self->hurtbox, target->hurtbox)) {
+            data->locked_on = 1;
+            slog("locked in");
+            break;
+        }
+        data->locked_on = 0;
+    }
+
+    // update hurtbox
+    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
+        self->position.y - (self->model->bounds.h / 2),
+        self->position.z - (self->model->bounds.d / 2),
+        self->model->bounds.w,
+        self->model->bounds.h,
+        self->model->bounds.d);
 
     // keep reticle within camera
     if (self->position.x >= data->x_bound - 1)
@@ -59,12 +92,12 @@ void reticle_free(Entity* self) {
 
     if (!self) return;
 
-    data = (ReticleData*)self->data;
+    data = (ReticleData*) self->data;
     free(data);
     self->data = NULL;
 }
 
-int check_recbounds(Entity* self, GFC_Vector3D movement, ReticleData* data) {
+Uint8 check_recbounds(Entity* self, GFC_Vector3D movement, ReticleData* data) {
     if (!self) return;
     if (!data) return;
 
