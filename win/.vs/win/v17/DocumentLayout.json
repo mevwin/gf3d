@@ -92,8 +92,7 @@
               "ViewState": "AgIAADMAAAAAAAAAAAAAAEAAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-10-18T21:23:10.85Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -116,7 +115,7 @@
               "RelativeDocumentMoniker": "..\\src\\player.c",
               "ToolTip": "C:\\Users\\vielg\\gf3d\\src\\player.c",
               "RelativeToolTip": "..\\src\\player.c",
-              "ViewState": "AgIAAL0AAAAAAAAAAAAAANgAAAAfAAAAAAAAAA==",
+              "ViewState": "AgIAALgAAAD0uZ/7uZ8wwNgAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-10-12T06:04:43.867Z",
               "IsPinned": true,
@@ -133,8 +132,7 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-10-20T11:46:09.41Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -147,8 +145,7 @@
               "ViewState": "AgIAADMAAAAAAAAAAAAAADwAAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-10-14T14:24:00.522Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -161,8 +158,7 @@
               "ViewState": "AgIAADMAAAAAAAAAAAAAAEEAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-10-18T21:31:50.184Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Bookmark",
@@ -214,8 +210,7 @@
               "RelativeToolTip": "..\\src\\projectile.c",
               "ViewState": "AgIAAAkAAAAAAAAAAAAAABYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2024-10-14T14:16:08.501Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-14T14:16:08.501Z"
             }
           ]
         },
@@ -287,8 +282,7 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-10-18T21:23:04.878Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -301,8 +295,7 @@
               "ViewState": "AgIAAB0AAAAAAAAAAAAuwEEAAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-10-19T00:59:10.029Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -315,8 +308,7 @@
               "ViewState": "AgIAABkAAAAAAAAAAAAIwCYAAAAUAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-10-18T16:49:15.23Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -329,8 +321,7 @@
               "ViewState": "AgIAAAkAAAAAAAAAAAAAABAAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-10-10T00:52:44.605Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -343,8 +334,7 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-10-20T18:33:33.072Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -357,8 +347,7 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-10-21T14:14:09.345Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -370,8 +359,7 @@
               "RelativeToolTip": "..\\include\\gf3d_texture.h",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2024-10-20T10:16:45.421Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-20T10:16:45.421Z"
             },
             {
               "$type": "Document",
@@ -383,8 +371,7 @@
               "RelativeToolTip": "..\\src\\entity.c",
               "ViewState": "AgIAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2024-10-21T13:45:04.065Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-21T13:45:04.065Z"
             },
             {
               "$type": "Document",
@@ -396,8 +383,7 @@
               "RelativeToolTip": "..\\include\\player_move.h",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAALAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2024-10-20T05:46:50.424Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-20T05:46:50.424Z"
             },
             {
               "$type": "Document",
@@ -409,8 +395,7 @@
               "RelativeToolTip": "..\\include\\gf3d_draw.h",
               "ViewState": "AgIAABIAAAAAAAAAAAAAABEAAAAKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2024-10-18T17:23:56.956Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-18T17:23:56.956Z"
             }
           ]
         }
