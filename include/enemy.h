@@ -35,6 +35,7 @@ typedef struct {
 	int				proj_count;
 	Uint8			took_damage;
 	float			damage_taken;
+	Uint8           damaged_type;
 	float			next_single_shot;
 	Uint8			scrap_made;
 	Uint8			scrap_taken;
@@ -43,6 +44,7 @@ typedef struct {
 	GFC_Vector3D*	player_pos;
 	void			*player_data;
 	GFC_Vector3D    spawn_pos;
+	Uint8			missile_targeted;
 }EnemyData;
 
 Uint8 enemy_count;

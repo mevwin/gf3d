@@ -2,8 +2,11 @@
 #include "gf3d_vgraphics.h"
 #include "simple_logger.h"
 #include "reticle.h"
+#include "enemy.h"
+#include "player.h"
+#include "projectile.h"
 
-Entity* reticle_spawn(GFC_Vector3D position) {
+Entity* reticle_spawn(GFC_Vector3D position, void* player_data){
     Entity* self;
     ReticleData* data;
 
@@ -22,7 +25,10 @@ Entity* reticle_spawn(GFC_Vector3D position) {
 
     data->x_bound = 86; // left is positive, right is negative
     data->y_bound = -60;
-    data->z_bound = 58; 
+    data->z_bound = 58; // 172 x 116
+
+    data->player_data = (PlayerData*) player_data;
+
 
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
                             self->position.y - (self->model->bounds.h / 2),
@@ -37,6 +43,8 @@ Entity* reticle_spawn(GFC_Vector3D position) {
 void reticle_update(Entity* self) {
     ReticleData* data;
     Entity* entityList, *target;
+    EnemyData* enemy_data;
+    PlayerData* player_data;
     int i;
 
     data = self->data;
@@ -52,22 +60,33 @@ void reticle_update(Entity* self) {
 
     //slog("CursorX: %f, CursorY: %f", cursor.x, cursor.y);
 
-    entityList = get_entityList();
-    for (i = 0; i < MAX_ENTITY; i++) {
-        target = &entityList[i];
+    player_data = data->player_data;
 
-        if (target->entity_type != ENEMY)
-            continue;
+    // only check reticle targeting if in missile mode
+    if (player_data->curr_mode == MISSILE) {
+        entityList = get_entityList();
+        for (i = 0; i < MAX_ENTITY; i++) {
+            target = &entityList[i];
 
-        // collision detection check for missile attack
-        if (gfc_box_overlap(self->hurtbox, target->hurtbox)) {
-            data->locked_on = 1;
-            data->enemy_pos = &(target->position);
-            slog("locked in");
-            break;
+            if (target->entity_type != ENEMY)
+                continue;
+
+            // collision detection check for missile attack
+            if (gfc_box_overlap(self->hurtbox, target->hurtbox)) {
+                enemy_data = target->data;
+                if (!enemy_data->missile_targeted && enemy_data->currHealth > 0.0) {
+                    data->locked_on = 1;
+                    data->enemy_pos = &(target->position);
+                    enemy_data->missile_targeted = 1;
+                    slog("locked in");
+                    break;
+                }
+                else {
+                    slog("enemy already targeted or dead");
+                    data->locked_on = 0;
+                }
+            }
         }
-        else
-            data->locked_on = 0;
     }
 
     // update hurtbox

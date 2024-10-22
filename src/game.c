@@ -138,11 +138,8 @@ int main(int argc,char *argv[])
         gf3d_vgraphics_render_end();
         if (gfc_input_command_down("exit"))_done = 1; // exit condition
 
-        if (enemy_count < 3) 
+        if (enemy_count < 2) 
             enemy = enemy_spawn(&(player->position), player->data);
-
-        if (gf2d_mouse_button_released(2) && player_count == 0) 
-            player = player_spawn();
         
 
         game_frame_delay();

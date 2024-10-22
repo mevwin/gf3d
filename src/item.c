@@ -115,7 +115,7 @@ void item_update(Entity* self) {
                             self->model->bounds.h,
                             self->model->bounds.d);
 
-    if (self->position.y > 90.0) {
+    if (self->position.y > 90.0 || player_count == 0) {
         enemy_data->scrap_taken = 1;
         entity_free(self);
     }

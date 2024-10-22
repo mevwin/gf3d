@@ -32,6 +32,7 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 	data->took_damage = 0;
 	data->scrap_made = 0;
 	data->scrap_taken = 0;
+	data->missile_targeted = 0;
 
 	data->currHealth = 10;
 	data->maxHealth = 10;
@@ -66,7 +67,7 @@ void enemy_think(Entity* self) {
 	EnemyData* data;
 	PlayerData* player_data;
 	GFC_Vector3D player_pos;
-	float time;
+	float time, dx;
 
 	if (!self) return;
 
@@ -84,7 +85,7 @@ void enemy_think(Entity* self) {
 
 	time = SDL_GetTicks() / 1000.0;
 
-	if (!player_data->no_attack || !player_no_attack)
+	if (!player_no_attack)
 		enemy_proj_spawn(self->position, player_pos, self, time);
 	
 	//slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
@@ -100,13 +101,16 @@ void enemy_update(Entity* self) {
 	data = self->data;
 	if (!data) return;
 
-	// don't do anything if player is dead
-	if (player_count == 0 ) return;
+	// dont do anything or find new player
+	if (player_count == 0) {
+		self->rotation.z = 0;
+		self->rotation.x = 0;
+	}
 
 	if (data->currHealth > 0.0) {
 		// rotating enemy to player
 		player_data = data->player_data;
-		if (!player_data->no_attack || !player_no_attack) {
+		if (!player_no_attack) {
 			dist_x = data->player_pos->x - self->position.x;
 			dist_y = data->player_pos->z - self->position.z;
 
@@ -120,6 +124,9 @@ void enemy_update(Entity* self) {
 			self->rotation.z = 0;
 			self->rotation.x = 0;
 		}
+
+		if (player_data->curr_mode != MISSILE)
+			data->missile_targeted = 0;
 
 		// update hurtbox
 		self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
@@ -151,6 +158,9 @@ void enemy_free(Entity* self) {
 void enemy_take_damage(Entity* self, EnemyData* data) {
 	if (!data) return;
 
+	if (data->damaged_type == MISSILE)
+		data->missile_targeted = 0;
+
 	data->currHealth -= data->damage_taken;
 	data->took_damage = 0;
 	data->damage_taken = 0;
@@ -167,7 +177,8 @@ void enemy_die(Entity* self, EnemyData* data) {
 		entity_free(self);
 	}
 }
-/*
+
+/* 
 void check_rand_position(Entity* self) {
 	Entity* entityList, * entity;
 	int i;

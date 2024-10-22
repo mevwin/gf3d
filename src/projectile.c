@@ -32,7 +32,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     *   player can't shoot yet due to shot delay (for single_shot)
     */
     if ((player_data->curr_mode == WAVE_SHOT && player_data->wave_flag == MAX_WAVE) ||
-        (player_data->curr_mode == MISSILE && player_data->missile_count == MAX_MISSILE) ||
+        (player_data->curr_mode == MISSILE && player_data->missile_count >= MAX_MISSILE) ||
         (player_data->curr_mode == MISSILE && !player_data->missile_spawn) ||
         player_data->proj_count >= MAX_PROJ ||
         time < player_data->next_shot
@@ -90,9 +90,11 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
 
         self->think = proj_think_missile;
         self->model = gf3d_model_load("models/projectiles/single_shot.model");
-        data->forspeed = player_data->proj_speed * 0.5;
+        data->forspeed = player_data->proj_speed * 0.75;
+        //data->forspeed = 1.0;
         data->damage = player_data->base_damage * 3;
         data->missile_target = rec_data->enemy_pos;
+        //data->missile_target = &(player_data->reticle->position);
 
         // initial movement speed
         dist_x = data->missile_target->x - self->position.x;
@@ -214,28 +216,32 @@ void proj_update(Entity* self) {
                             self->model->bounds.d);
 
     // update missile trajectory if missile is active
-    
     if (data->type == MISSILE && data->missile_active){
         dist_x = data->missile_target->x - self->position.x;
         dist_y = data->missile_target->z - self->position.z;
 
         z_angle = atan(dist_x / data->missile_target->y);
-        self->rotation.z = z_angle;
+        self->rotation.z = -z_angle;
 
         y_angle = atan(dist_y / data->missile_target->y);
         self->rotation.y = y_angle;
 
-        conver = self->position.y / data->forspeed;
+        conver = (data->missile_target->y - self->position.y) / data->forspeed;
         data->rigspeed = (dist_x / conver);
         data->upspeed = (dist_y / conver);
     }
+    
     
     // checks if projectile hits anything
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
         
         if ((target->entity_type != ENEMY && data->owner_type == PLAYER) ||
-            (target->entity_type != PLAYER && data->owner_type == ENEMY))
+            (target->entity_type != PLAYER && data->owner_type == ENEMY) ||
+            target->entity_type == PROJECTILE ||
+            target->entity_type == RETICLE ||
+            target->entity_type == ITEM
+            )
             continue;
 
         // collision detection check
@@ -243,11 +249,17 @@ void proj_update(Entity* self) {
             if (data->owner_type == PLAYER) {
                 enemy_data = target->data;
                 enemy_data->took_damage = 1;
+                enemy_data->damaged_type = data->type;
                 enemy_data->damage_taken = data->damage;
+                if (data->type = MISSILE) {
+                    player_data = data->owner->data;
+                    player_data->curr_mode = SINGLE_SHOT;
+                }
             }
             else if (data->owner_type == ENEMY) {
                 player_data = target->data;
                 player_data->took_damage = 1;
+                player_data->damaged_type = data->type;
                 player_data->damage_taken = data->damage;
             }
 
@@ -273,7 +285,6 @@ void proj_free(Entity* self) {
         playdata->proj_count--;
         if (data->type == MISSILE)
             playdata->missile_count--;
-
     }
     else if (data->owner_type == ENEMY) {
         enemydata = owner->data;
