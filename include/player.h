@@ -42,7 +42,7 @@ typedef struct {
     Uint8           roll;               // type of barrel roll
     Uint8           took_damage;        // flag for activating player_take_damage
     float           damage_taken;       // damage received from enemy
-    Uint8           damaged_type;
+    Uint8           damaged_type;       // type of enemy attack
     Uint8           player_dead;        // flag for player death state
 
     // player attack flags/checks
@@ -54,11 +54,9 @@ typedef struct {
 
     // debug camera
     Uint8           freelook;           // debug camera
+    Uint8           player_no_attack;
 
 }PlayerData;
-
-Uint8 player_count;
-Uint8 player_no_attack;
 
 Entity* player_spawn();
 void player_think(Entity* self);

@@ -59,6 +59,7 @@ Entity* player_spawn() {
     data->missile_count = 0;
     data->missile_spawn = 0;
     data->took_damage = 0;
+    data->player_no_attack = 0;
     data->damage_taken = 0;
     data->player_dead = 0;
 
@@ -70,11 +71,6 @@ Entity* player_spawn() {
     // charge_shot init
     data->next_charged_shot = (SDL_GetTicks() / 1000.0) + 0.9;
     data->charge_shot_delay = 0;
-
-    // debug init
-    data->freelook = 0;
-
-    player_count++;
 
     return self;
 }
@@ -132,10 +128,10 @@ void player_think(Entity* self) {
         //data->curr_mode++;
         
         //if (data->curr_mode > SUPER_NUKE) data->curr_mode = SINGLE_SHOT;
-        if (!player_no_attack)
-            player_no_attack = 1;
+        if (!data->player_no_attack)
+            data->player_no_attack = 1;
         else
-            player_no_attack = 0;
+            data->player_no_attack = 0;
         
     }
 
@@ -153,6 +149,10 @@ void player_update(Entity* self) {
 
     data = self->data;
     if (!data) return;
+
+    // player_quit
+    if (data->player_dead && gf2d_mouse_button_held(2))
+        player_quit(self);
 
     rec_data = data->reticle->data;
 
@@ -219,15 +219,12 @@ void player_update(Entity* self) {
     // check if player is dead
     if (data->currHealth <= 0.0 && !data->player_dead)
         player_die(self);
-
+    
     // player respawn
-    if (data->player_dead && gf2d_mouse_button_held(0)){
-        player_respawn(self);
-    }
-
-    // player_quit
-    if (data->player_dead && gf2d_mouse_button_held(2)) {
-        player_quit(self);
+    if (data->player_dead) {
+        if (gf2d_mouse_button_held(0))
+            player_respawn(self);
+        return;
     }
 }
 
@@ -264,7 +261,6 @@ void player_attack(Entity* self, PlayerData* data) {
 void player_take_damage(Entity* self, PlayerData* data, float time) {
     if (!data) return;
 
-    //slog("test");
     gf3d_texture_free(self->model->texture);
     self->model->texture = gf3d_texture_load("models/player_ship/color_EE.png");
     data->change_flag = 1;
@@ -279,23 +275,18 @@ void player_die(Entity* self) {
     PlayerData* data;
 
     data = self->data;
-    
+
     data->player_dead = 1;
-
-    self->rotation.y -= 0.2;
-    if (data->proj_count > 0 && self->rotation.y != -0.24) {
-        return;
-    }
     player_death(self);
-
 }
 
 void player_death(Entity* self) {
-    player_count--;
-    if (player_count != 0) player_count = 0;
+    PlayerData* data;
 
-    player_no_attack = 1;
+    data = self->data;
+    data->player_no_attack = 1;
     gf3d_model_free(self->model);
+    slog("player dead");
 }
 
 void player_respawn(Entity* self) {
@@ -303,13 +294,13 @@ void player_respawn(Entity* self) {
 
     data = self->data;
 
-    data->currHealth = 2.0;
+    data->currHealth = 1.0;
     data->currScrap = 5;
     data->curr_mode = SINGLE_SHOT;
     data->player_dead = 0;
     self->model = gf3d_model_load("models/player_ship/player_ship_single.model");
-    player_no_attack = 0;
-    player_count++;
+    data->player_no_attack = 0;
+    slog("player respawn");
 }
 
 void player_quit(Entity* self) {

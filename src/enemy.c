@@ -74,18 +74,18 @@ void enemy_think(Entity* self) {
 	data = self->data;
 	if (!data) return;
 
-	// don't do anything if player is dead
-	if (player_count == 0 || data->currHealth <= 0.0) return;
-	
 	player_data = data->player_data;
 
+	// don't do anything if player is dead
+	if (player_data->player_dead || data->currHealth <= 0.0) return;
+	
 	player_pos.x = data->player_pos->x;
 	player_pos.y = data->player_pos->y;
 	player_pos.z = data->player_pos->z;
 
 	time = SDL_GetTicks() / 1000.0;
 
-	if (!player_no_attack)
+	if (!player_data->player_no_attack)
 		enemy_proj_spawn(self->position, player_pos, self, time);
 	
 	//slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
@@ -101,16 +101,18 @@ void enemy_update(Entity* self) {
 	data = self->data;
 	if (!data) return;
 
+	player_data = data->player_data;
+
 	// dont do anything or find new player
-	if (player_count == 0) {
+	if (player_data->player_dead) {
 		self->rotation.z = 0;
 		self->rotation.x = 0;
 	}
 
 	if (data->currHealth > 0.0) {
 		// rotating enemy to player
-		player_data = data->player_data;
-		if (!player_no_attack) {
+		
+		if (!player_data->player_no_attack) {
 			dist_x = data->player_pos->x - self->position.x;
 			dist_y = data->player_pos->z - self->position.z;
 
@@ -173,7 +175,7 @@ void enemy_die(Entity* self, EnemyData* data) {
 	}	
 	self->rotation.y -= 0.02;
 	if (data->scrap_taken) {
-		slog("model gone");
+		//slog("model gone");
 		entity_free(self);
 	}
 }

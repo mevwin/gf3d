@@ -92,12 +92,14 @@ void item_think(Entity* self) {
 void item_update(Entity* self) {
     ItemData* data;
     EnemyData* enemy_data;
+    PlayerData* player_data;
     float dist_x, dist_y, conver;
 
     data = self->data;
     if (!data) return;
 
     enemy_data = (EnemyData*) data->enemy_data;
+    player_data = (PlayerData*) enemy_data->player_data;
 
     // updates movement
     dist_x = enemy_data->player_pos->x - self->position.x;
@@ -115,7 +117,8 @@ void item_update(Entity* self) {
                             self->model->bounds.h,
                             self->model->bounds.d);
 
-    if (self->position.y > 90.0 || player_count == 0) {
+
+    if (self->position.y > 90.0 || player_data->player_dead ) {
         enemy_data->scrap_taken = 1;
         entity_free(self);
     }
@@ -124,9 +127,9 @@ void item_update(Entity* self) {
 void item_activate(Entity* self, Item_Type type, void* player_data) {
     PlayerData* player;
     player = (PlayerData*) player_data;
-    slog("item received");
+    //slog("item received");
     if (type == SCRAP) {
-        slog("scrap received");
+        //slog("scrap received");
         if (player->currScrap + 1 <= player->maxScrap)
             player->currScrap++;
     }

@@ -22,29 +22,29 @@ typedef struct {
 	float			pea_speed;			// SINGLE_SHOT projectile speed
 
 	// enemy movement
-	float			forspeed;			
-	float           upspeed;
-	float           rigspeed;
+	float			forspeed;			// y movement
+	float           upspeed;			// z movement
+	float           rigspeed;			// x movement
 	
 	// enemy bounds
-	int             x_bound;			
-	int             z_bound;
-	int				dist_to_player;
+	int             x_bound;			// horizontal bounds
+	int             z_bound;			// vertical bounds
+	int				dist_to_player;		// distance to player
 	
 	// enemy flags
-	int				proj_count;
-	Uint8			took_damage;
-	float			damage_taken;
-	Uint8           damaged_type;
-	float			next_single_shot;
-	Uint8			scrap_made;
-	Uint8			scrap_taken;
+	int				proj_count;			// amount of active projectiles
+	Uint8			took_damage;		// have they taken damage?
+	float			damage_taken;		// amount of damage received
+	Uint8           damaged_type;		// type of damage received
+	float			next_single_shot;	// next shot time
+	Uint8			scrap_made;			// has the scrap item been made
+	Uint8			scrap_taken;		// has the scrap item been received by player
 
 	// other
-	GFC_Vector3D*	player_pos;
-	void			*player_data;
-	GFC_Vector3D    spawn_pos;
-	Uint8			missile_targeted;
+	GFC_Vector3D*	player_pos;			// pointer to player's current position
+	void			*player_data;		// pointer to player's data
+	GFC_Vector3D    spawn_pos;			// initial spawn position
+	Uint8			missile_targeted;	// flag for player missile attack
 }EnemyData;
 
 Uint8 enemy_count;

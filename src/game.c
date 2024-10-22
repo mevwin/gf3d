@@ -93,13 +93,12 @@ int main(int argc,char *argv[])
     sky = gf3d_model_load("models/sky.model");
     gfc_matrix4_identity(skyMat);
     
-    //gf2d_mouse_hide();
 
     //camera, definitely needs change for player entity
     gf3d_camera_set_scale(gfc_vector3d(1,1,1));
     gf3d_camera_set_position(gfc_vector3d(15,-15,10));
     gf3d_camera_look_at(gfc_vector3d(0,0,0),NULL);
-    gf3d_camera_set_move_step(0.2);
+    gf3d_camera_set_move_step(0.6);
     gf3d_camera_set_rotate_step(0.05);
     
     //gf3d_camera_enable_free_look(1);
@@ -111,6 +110,8 @@ int main(int argc,char *argv[])
     enemy = enemy_spawn(&(player->position), player->data);
 
     //windows
+    gf2d_draw_rect_filled(gfc_rect(player->position.x, player->position.y, 10, 20), gfc_color(1, 0, 0, 1));
+
 
     // main game loop, constant series of updates  
     while(!_done)
