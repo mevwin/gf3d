@@ -1,5 +1,7 @@
 #include "simple_logger.h"
 #include "gfc_input.h"
+#include "gf2d_font.h"
+#include "gf2d_draw.h"
 #include "gfc_vector.h"
 #include "gf2d_mouse.h"
 #include "player.h"
@@ -62,9 +64,10 @@ Entity* player_spawn() {
     data->player_no_attack = 0;
     data->damage_taken = 0;
     data->player_dead = 0;
+    data->in_shop = 0;
 
-    data->currHealth = 2.0;
-    data->maxHealth = 50.0;
+    data->currHealth = 5.0;
+    data->maxHealth = 10.0;
     data->currScrap = 5;
     data->maxScrap = 10;   
 
@@ -112,7 +115,7 @@ void player_think(Entity* self) {
         player_attack(self, data);
     }
     // MISSILE
-    else if ((gf2d_mouse_button_held(2) && data->currScrap > 4 && data->missile_count <= 5)) {
+    else if ((gf2d_mouse_button_held(2) && data->currScrap % 5 == 0 && data->missile_count <= 5)) {
         data->curr_mode = MISSILE;
         data->next_charged_shot = time + 2.5;
         player_attack(self, data);
@@ -294,7 +297,7 @@ void player_respawn(Entity* self) {
 
     data = self->data;
 
-    data->currHealth = 1.0;
+    data->currHealth = 2.0;
     data->currScrap = 5;
     data->curr_mode = SINGLE_SHOT;
     data->player_dead = 0;
@@ -305,6 +308,50 @@ void player_respawn(Entity* self) {
 
 void player_quit(Entity* self) {
     entity_free(self);
+}
+
+void player_hud(Entity* self, PlayerData* data) {
+    float health, maxhealth, scrap, maxscrap;
+    char test[20];
+    char init;
+    int i;
+
+    if (!data) return;
+    if (data->player_dead || data->in_shop) return;
+
+    health = data->currHealth;
+    maxhealth = data->maxHealth;
+
+    scrap = data->currScrap;
+    maxscrap = data->maxScrap;
+    
+    // health bar draws
+        // current health
+        gf2d_draw_rect_filled(gfc_rect(10, 20, 400.0, 30), GFC_COLOR_BLACK);
+        gf2d_draw_rect_filled(gfc_rect(10, 20, 400.0 * (health / maxhealth), 30), GFC_COLOR_DARKBLUE);
+        
+        // bar outline
+        
+        gf2d_draw_rect(gfc_rect(10, 20, 400, 30), GFC_COLOR_WHITE);
+    
+    // scrap bar draws
+        // current scrap
+        gf2d_draw_rect_filled(gfc_rect(10, 60, 400.0, 30), GFC_COLOR_BLACK);
+        gf2d_draw_rect_filled(gfc_rect(10, 60, 400.0 * (scrap / maxscrap), 30), GFC_COLOR_GREY);
+
+        // bat outline
+        
+        gf2d_draw_rect(gfc_rect(10, 60, 400, 30), GFC_COLOR_WHITE);
+
+
+        /*
+    i = (int) health;
+    init = i + 48;
+    test[0] = init;
+    
+
+    gf2d_font_draw_line_tag(&test, FT_H1, GFC_COLOR_WHITE, gfc_vector2d(10, 10));
+    */
 }
 
 

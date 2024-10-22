@@ -44,6 +44,7 @@ typedef struct {
     float           damage_taken;       // damage received from enemy
     Uint8           damaged_type;       // type of enemy attack
     Uint8           player_dead;        // flag for player death state
+    Uint8           in_shop;
 
     // player attack flags/checks
     int             proj_count;         // current amount of projectiles fired
@@ -68,5 +69,6 @@ void player_die(Entity* self);
 void player_death(Entity* self);
 void player_respawn(Entity* self);
 void player_quit(Entity* self);
+void player_hud(Entity* self, PlayerData* data);
 
 #endif
