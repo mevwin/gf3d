@@ -41,6 +41,7 @@ Entity* reticle_spawn(GFC_Vector3D position, void* player_data){
 }
 
 void reticle_update(Entity* self) {
+    GFC_Vector2D res, cursor;
     ReticleData* data;
     Entity* entityList, *target;
     EnemyData* enemy_data;
@@ -50,15 +51,17 @@ void reticle_update(Entity* self) {
     data = self->data;
     if (!data) return;
 
+    player_data = data->player_data;
+    if (player_data->in_shop) return;
+
     // updating reticle position
-    GFC_Vector2D res = gf3d_vgraphics_get_resolution();
-    GFC_Vector2D cursor = gf2d_mouse_get_position();
+    res = gf3d_vgraphics_get_resolution();
+    cursor = gf2d_mouse_get_position();
     cursor.x -= res.x/2.0;
     cursor.y -= res.y/2.0;
     self->position.x = cursor.x / (-res.x / (2 * data->x_bound));
     self->position.z = cursor.y / (-res.y / (2 * data->z_bound));
 
-    player_data = data->player_data;
 
     // only check reticle targeting if in missile mode
     if (player_data->curr_mode == MISSILE) {

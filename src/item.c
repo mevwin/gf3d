@@ -62,11 +62,17 @@ Entity* item_spawn(Item_Type type, GFC_Vector3D spawn_pos, void* enemy_data) {
 void item_think(Entity* self) {
     ItemData* data;
     EnemyData* enemy_data;
+    PlayerData* player_data;
     Entity* player, *entityList;
     int i;
 
     data = self->data;
     if (!data) return;
+
+    enemy_data = (EnemyData*)data->enemy_data;
+    player_data = (PlayerData*)enemy_data->player_data;
+
+    if (player_data->in_shop) return;
 
     self->position.x -= data->rigspeed;
     self->position.y += data->forspeed;
@@ -82,7 +88,6 @@ void item_think(Entity* self) {
 
         // collision detection check
         if (gfc_box_overlap(self->hurtbox, player->hurtbox)) {
-            enemy_data = (EnemyData*) data->enemy_data;
             enemy_data->scrap_taken = 1;
             item_activate(self, data->type, player->data);
             break;
@@ -100,6 +105,8 @@ void item_update(Entity* self) {
 
     enemy_data = (EnemyData*) data->enemy_data;
     player_data = (PlayerData*) enemy_data->player_data;
+
+    if (player_data->in_shop) return;
 
     // updates movement
     dist_x = enemy_data->player_pos->x - self->position.x;
@@ -126,12 +133,17 @@ void item_update(Entity* self) {
 
 void item_activate(Entity* self, Item_Type type, void* player_data) {
     PlayerData* player;
+    int extra_amount;
+
     player = (PlayerData*) player_data;
     //slog("item received");
     if (type == SCRAP) {
         //slog("scrap received");
-        if (player->currScrap + 1 <= player->maxScrap)
-            player->currScrap++;
+        extra_amount = 1 + gfc_random_int(2);
+        if ((player->currScrap + extra_amount) <= player->maxScrap)
+            player->currScrap += extra_amount;
+        else
+            player->currScrap = player->maxScrap;
     }
     entity_free(self);
 }
