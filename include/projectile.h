@@ -5,7 +5,6 @@
 
 #define MAX_PROJ 20
 #define MAX_WAVE 1
-#define MAX_MISSILE 5
 
 typedef enum{
 	SINGLE_SHOT,	// player or enemy

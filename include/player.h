@@ -24,6 +24,12 @@ typedef struct {
     float           base_damage;        // defaults to SINGLE_SHOT dmg
     float           proj_speed;         // defaults to SINGLE_SHOT speed
 
+    float           single_shot_bonus;  // bonus damage for single_shot from upgrades
+    float           charge_shot_mult;   // charge shot multipler
+    int             max_missile;        // maximum number of missiles a player can spawn per missile attack attempt
+    int             nuke_cost;          // scrap cost of using SUPER_NUKE
+
+
     Uint8           curr_mode;          // current attack mode
 
     // movement bounds (keeps player within camera view)
@@ -44,13 +50,13 @@ typedef struct {
     float           damage_taken;       // damage received from enemy
     Uint8           damaged_type;       // type of enemy attack
     Uint8           player_dead;        // flag for player death state
-    Uint8           in_shop;
+    Uint8           in_shop;            // is player in the shop menu
 
     // player attack flags/checks
     int             proj_count;         // current amount of projectiles fired
     Uint8           wave_flag;          // flag for making sure only one wave_shot is on-screen
     Uint8           nuke_flag;          // flag for making sure only one super_nuke is on-screen
-    int             missile_count;
+    int             missile_count;      // container for checking player's missile count
     Uint8           missile_spawn;      // missile only spawn if reticle is on enemy
 
     // debug camera

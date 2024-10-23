@@ -32,7 +32,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     *   player can't shoot yet due to shot delay (for single_shot)
     */
     if ((player_data->curr_mode == WAVE_SHOT && player_data->wave_flag == MAX_WAVE) ||
-        (player_data->curr_mode == MISSILE && player_data->missile_count >= MAX_MISSILE) ||
+        (player_data->curr_mode == MISSILE && player_data->missile_count >= player_data->max_missile) ||
         (player_data->curr_mode == MISSILE && !player_data->missile_spawn) ||
         player_data->proj_count >= MAX_PROJ ||
         time < player_data->next_shot
@@ -70,7 +70,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
         self->think = proj_think_basic;
         self->model = data->type == SINGLE_SHOT ? gf3d_model_load("models/projectiles/single_shot.model") : gf3d_model_load("models/projectiles/charge_shot.model");
         data->forspeed = data->type == SINGLE_SHOT ? player_data->proj_speed : player_data->proj_speed * 1.25;
-        data->damage = data->type == SINGLE_SHOT ? player_data->base_damage : player_data->base_damage*5;
+        data->damage = data->type == SINGLE_SHOT ? player_data->base_damage + player_data->single_shot_bonus : player_data->base_damage * player_data->charge_shot_mult;
         player_data->next_shot = data->type == SINGLE_SHOT ? curr_time + 0.15 : 0;
 
         conver = reticle_pos.y / data->forspeed;
@@ -105,7 +105,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
         data->upspeed = (dist_y / conver);
 
         player_data->missile_count++;
-        //player_data->currScrap--;
+        player_data->currScrap--;
         player_data->missile_spawn = 0;
         data->missile_active = 0;
     }

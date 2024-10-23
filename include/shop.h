@@ -8,10 +8,10 @@ typedef enum {
 	SCRAP_HELD,
 	SINGLE_SHOT_UP,
 	CHARGE_SHOT_UP,
-	MISSILE_COST_DOWN,
+	MORE_MISSILES,
 	NUKE_COST_DOWN
 }Upgrade_Type;
 
-
+void shop_hud(PlayerData* data);
 
 #endif

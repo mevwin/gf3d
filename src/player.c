@@ -51,7 +51,7 @@ Entity* player_spawn() {
     reticle_pos = gfc_vector3d(position.x, -60, position.z);
     data->reticle = reticle_spawn(reticle_pos, data);
 
-    // remaining data init
+    // remaining default data init
     data->change_flag = 1;
     data->take_damage_timing = 0;
     data->mid_roll = 0;
@@ -68,8 +68,12 @@ Entity* player_spawn() {
 
     data->currHealth = 5.0;
     data->maxHealth = 10.0;
-    data->currScrap = 5;
-    data->maxScrap = 10;   
+    data->currScrap = 10;
+    data->maxScrap = 50;
+    data->single_shot_bonus = 0;
+    data->charge_shot_mult = 3.0;
+    data->max_missile = 5;
+    data->nuke_cost = data->maxScrap;
 
     // charge_shot init
     data->next_charged_shot = (SDL_GetTicks() / 1000.0) + 0.9;
@@ -88,7 +92,7 @@ void player_think(Entity* self) {
     if (!data) return;
 
     // can't do anything if player is dead
-    if (data->player_dead) return;
+    if (data->player_dead || data->in_shop) return;
     
     // movement checks
     if (!data->mid_roll)
@@ -115,7 +119,7 @@ void player_think(Entity* self) {
         player_attack(self, data);
     }
     // MISSILE
-    else if ((gf2d_mouse_button_held(2) && data->currScrap % 5 == 0 && data->missile_count <= 5)) {
+    else if ((gf2d_mouse_button_held(2) && data->currScrap > 0 && data->missile_count <= data->max_missile)) {
         data->curr_mode = MISSILE;
         data->next_charged_shot = time + 2.5;
         player_attack(self, data);
@@ -152,6 +156,8 @@ void player_update(Entity* self) {
 
     data = self->data;
     if (!data) return;
+
+    if (data->in_shop) return;
 
     // player_quit
     if (data->player_dead && gf2d_mouse_button_held(2))
@@ -304,6 +310,28 @@ void player_respawn(Entity* self) {
     self->model = gf3d_model_load("models/player_ship/player_ship_single.model");
     data->player_no_attack = 0;
     slog("player respawn");
+
+    data->change_flag = 1;
+    data->take_damage_timing = 0;
+    data->mid_roll = 0;
+    data->wave_flag = 0;
+    data->nuke_flag = 0;
+    data->proj_count = 0;
+    data->missile_count = 0;
+    data->missile_spawn = 0;
+    data->took_damage = 0;
+    data->player_no_attack = 0;
+    data->damage_taken = 0;
+    data->in_shop = 0;
+    
+    data->currHealth = 5.0;
+    data->maxHealth = 10.0;
+    data->currScrap = 10;
+    data->maxScrap = 50;
+    data->single_shot_bonus = 0;
+    data->charge_shot_mult = 3.0;
+    data->max_missile = 5;
+    data->nuke_cost = data->maxScrap;
 }
 
 void player_quit(Entity* self) {
@@ -311,10 +339,10 @@ void player_quit(Entity* self) {
 }
 
 void player_hud(Entity* self, PlayerData* data) {
-    float health, maxhealth, scrap, maxscrap;
+    float health, maxhealth, scrap, maxscrap, start;
     char test[20];
     char init;
-    int i;
+    int scrap_line_count, new_x, i;
 
     if (!data) return;
     if (data->player_dead || data->in_shop) return;
@@ -333,6 +361,7 @@ void player_hud(Entity* self, PlayerData* data) {
         // bar outline
         
         gf2d_draw_rect(gfc_rect(10, 20, 400, 30), GFC_COLOR_WHITE);
+        gf2d_font_draw_line_tag("HEALTH", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 23));
     
     // scrap bar draws
         // current scrap
@@ -340,9 +369,16 @@ void player_hud(Entity* self, PlayerData* data) {
         gf2d_draw_rect_filled(gfc_rect(10, 60, 400.0 * (scrap / maxscrap), 30), GFC_COLOR_GREY);
 
         // bat outline
-        
+        scrap_line_count = (int)data->maxScrap / data->max_missile;
+        start = 10.0;
+        if (data->maxScrap % data->max_missile != 0) scrap_line_count++;
+        for (i = scrap_line_count; i > 0; i--) {
+            new_x = 400.0 / scrap_line_count;
+            gf2d_draw_rect(gfc_rect(start, 60, 400.0 / scrap_line_count, 30), GFC_COLOR_WHITE);
+            start += new_x;
+        }
         gf2d_draw_rect(gfc_rect(10, 60, 400, 30), GFC_COLOR_WHITE);
-
+        gf2d_font_draw_line_tag("SCRAP", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 63));
 
         /*
     i = (int) health;

@@ -134,7 +134,7 @@ int main(int argc,char *argv[])
                 draw_origin();
              
                 //2D draws
-                gf2d_mouse_draw();
+                //gf2d_mouse_draw();
                 //gf2d_font_draw_line_tag("ALT+F4 to exit",FT_H1,GFC_COLOR_WHITE, gfc_vector2d(10,10));
                 //gf2d_font_draw_text_wrap_tag("ALT+F4 to exit", FT_Normal, gfc_color(0, 1, 0, 1), gfc_rect(player->position.x, player->position.y, 10, 20));
                 player_hud(player, player->data);
