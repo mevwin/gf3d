@@ -1,5 +1,6 @@
 {
     "actor":
+    {
         "sprite": "images/ui/pointer.png",
         "frameWidth": 32,
         "frameHeight": 32,
@@ -16,4 +17,5 @@
                 "type": "loop"
             }
         ]
+    }
 }

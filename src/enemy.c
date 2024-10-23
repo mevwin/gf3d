@@ -178,7 +178,7 @@ void enemy_die(Entity* self, EnemyData* data) {
 		self->rotation.y = 0;
 	}	
 	self->rotation.y -= 0.02;
-	if (data->scrap_taken) {
+	if (data->scrap_taken && data->proj_count == 0) {
 		//slog("model gone");
 		entity_free(self);
 	}

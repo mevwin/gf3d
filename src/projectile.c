@@ -51,6 +51,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     self->free = proj_free;
 
     data->type = player_data->curr_mode;
+    data->player_in_shop = 0;
     data->y_bound = -170;
 
     // rotating projectile to reticle
@@ -157,6 +158,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     self->free = proj_free;
 
     data->type = enemy_data->enemy_type;
+    data->player_in_shop = 0;
     data->y_bound = 90;
 
     // rotating projectile to player
@@ -198,7 +200,7 @@ void proj_update(Entity* self) {
     ProjData* data;
     PlayerData* player_data;
     EnemyData* enemy_data;
-    Entity* owner, * target, * entityList;
+    Entity* target, * entityList;
     int i;
     float dist_x, dist_y, conver, z_angle, y_angle;
 
@@ -206,6 +208,8 @@ void proj_update(Entity* self) {
 
     data = self->data;
     entityList = get_entityList();
+
+    if (data->player_in_shop) return;
 
     // updates hurtbox
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
@@ -262,7 +266,6 @@ void proj_update(Entity* self) {
                 player_data->damaged_type = data->type;
                 player_data->damage_taken = data->damage;
             }
-
             entity_free(self);
             break;
         }
@@ -308,14 +311,29 @@ Uint8 proj_exist(Entity* self, ProjData* data) {
 
 void proj_think_basic(Entity* self) {
     ProjData* data;
+    PlayerData* player_data;
+    EnemyData* enemy_data;
 
     data = self->data;
     if (!data) return;
 
-    if (data->owner_type == PLAYER)
+    if (data->owner_type == PLAYER) {
+        player_data = (PlayerData*) data->owner->data;
+        if (player_data->in_shop) {
+            data->player_in_shop = 1;
+            return;
+        }
         self->position.y -= data->forspeed;
-    else
+    }
+    else {
+        enemy_data = (EnemyData*) data->owner->data;
+        player_data = (PlayerData*) enemy_data->player_data;
+        if (player_data->in_shop) {
+            data->player_in_shop = 1;
+            return;
+        }
         self->position.y += data->forspeed;
+    }
 
     self->position.x -= data->rigspeed;    
     self->position.z -= data->upspeed;
@@ -332,6 +350,11 @@ void proj_think_missile(Entity* self) {
     if (!data) return;
 
     player_data = data->owner->data;
+
+    if (player_data->in_shop) {
+        data->player_in_shop = 1;
+        return;
+    }
 
     if ((gf2d_mouse_button_held(2) || gf2d_mouse_button_pressed(2)) && 
         !data->missile_active) {

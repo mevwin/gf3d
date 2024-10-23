@@ -139,7 +139,7 @@ void item_activate(Entity* self, Item_Type type, void* player_data) {
     //slog("item received");
     if (type == SCRAP) {
         //slog("scrap received");
-        extra_amount = 1 + gfc_random_int(2);
+        extra_amount = 1;
         if ((player->currScrap + extra_amount) <= player->maxScrap)
             player->currScrap += extra_amount;
         else

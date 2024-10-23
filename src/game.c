@@ -91,7 +91,7 @@ int main(int argc,char *argv[])
     slog_sync();
 
     //game setup
-    //gf2d_mouse_load("actors/mouse.actor");
+    gf2d_mouse_load("actors/mouse.actor");
     sky = gf3d_model_load("models/sky.model");
     gfc_matrix4_identity(skyMat);
     
@@ -148,15 +148,17 @@ int main(int argc,char *argv[])
                     else
                         player_data->in_shop = 0;
                 }
+
                 if (player_data->in_shop) {
                     gf2d_mouse_draw();
                     shop_hud(player_data);
                 }
                 else {
                     player_hud(player, player->data);
+                    if (enemy_count < 2)
+                        enemy = enemy_spawn(&(player->position), player->data);
                 }
-                if (enemy_count < 2 && !player_data->in_shop)
-                    enemy = enemy_spawn(&(player->position), player->data);
+
 
         gf3d_vgraphics_render_end();
         if (gfc_input_command_down("exit"))_done = 1; // exit condition

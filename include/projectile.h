@@ -21,6 +21,7 @@ typedef struct {
 	Entity*			owner;			// who shot the projectile
 	Entity_Type		owner_type;		// enemy or player
 	float			damage;			// damage it will deal
+	Uint8			player_in_shop;	
 
 	// missile data
 	Uint8			missile_active;	// is missile in motion
