@@ -259,14 +259,19 @@ void proj_update(Entity* self) {
                     player_data = data->owner->data;
                     player_data->curr_mode = SINGLE_SHOT;
                 }
+                if (enemy_data->currHealth > 0.0) {
+                    entity_free(self);
+                }
             }
             else if (data->owner_type == ENEMY) {
                 player_data = target->data;
                 player_data->took_damage = 1;
                 player_data->damaged_type = data->type;
                 player_data->damage_taken = data->damage;
+                if (player_data->currHealth > 0.0) {
+                    entity_free(self);
+                }
             }
-            entity_free(self);
             break;
         }
     }

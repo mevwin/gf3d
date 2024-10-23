@@ -201,7 +201,7 @@
     <ClCompile Include="..\src\level.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\shop.c">
+    <ClCompile Include="..\src\ui.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -398,7 +398,7 @@
     <ClInclude Include="..\include\level.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\shop.h">
+    <ClInclude Include="..\include\ui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

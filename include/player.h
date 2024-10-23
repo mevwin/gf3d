@@ -75,6 +75,5 @@ void player_die(Entity* self);
 void player_death(Entity* self);
 void player_respawn(Entity* self);
 void player_quit(Entity* self);
-void player_hud(Entity* self, PlayerData* data);
 
 #endif

@@ -1,5 +1,4 @@
 #include "gf2d_mouse.h"
-#include "gf3d_vgraphics.h"
 #include "simple_logger.h"
 #include "reticle.h"
 #include "enemy.h"
@@ -41,7 +40,7 @@ Entity* reticle_spawn(GFC_Vector3D position, void* player_data){
 }
 
 void reticle_update(Entity* self) {
-    GFC_Vector2D res, cursor;
+    GFC_Vector2D cursor;
     ReticleData* data;
     Entity* entityList, *target;
     EnemyData* enemy_data;
@@ -55,12 +54,9 @@ void reticle_update(Entity* self) {
     if (player_data->in_shop) return;
 
     // updating reticle position
-    res = gf3d_vgraphics_get_resolution();
-    cursor = gf2d_mouse_get_position();
-    cursor.x -= res.x/2.0;
-    cursor.y -= res.y/2.0;
-    self->position.x = cursor.x / (-res.x / (2 * data->x_bound));
-    self->position.z = cursor.y / (-res.y / (2 * data->z_bound));
+    cursor = gfc_2DPos_to_3DPos(gf2d_mouse_get_position(), data->x_bound, data->z_bound);
+    self->position.x = cursor.x;
+    self->position.z = cursor.y;
 
 
     // only check reticle targeting if in missile mode
@@ -81,13 +77,10 @@ void reticle_update(Entity* self) {
                     data->locked_on = 1;
                     data->enemy_pos = &(target->position);
                     enemy_data->missile_targeted = 1;
-                    slog("locked in");
                     break;
                 }
-                else {
-                    slog("enemy already targeted or dead");
+                else 
                     data->locked_on = 0;
-                }
             }
         }
     }

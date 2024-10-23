@@ -79,6 +79,8 @@ void enemy_think(Entity* self) {
 	// don't do anything if player is dead
 	if (player_data->player_dead || data->currHealth <= 0.0 || player_data->in_shop) return;
 	
+	self->position.x += 0.1;
+
 	player_pos.x = data->player_pos->x;
 	player_pos.y = data->player_pos->y;
 	player_pos.z = data->player_pos->z;

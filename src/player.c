@@ -1,7 +1,5 @@
 #include "simple_logger.h"
 #include "gfc_input.h"
-#include "gf2d_font.h"
-#include "gf2d_draw.h"
 #include "gfc_vector.h"
 #include "gf2d_mouse.h"
 #include "player.h"
@@ -202,6 +200,7 @@ void player_update(Entity* self) {
         data->change_flag = 0;
     }
     */
+
     // updates hurtbox
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
                             self->position.y - (self->model->bounds.h / 2),
@@ -338,56 +337,6 @@ void player_quit(Entity* self) {
     entity_free(self);
 }
 
-void player_hud(Entity* self, PlayerData* data) {
-    float health, maxhealth, scrap, maxscrap, start;
-    char test[20];
-    char init;
-    int scrap_line_count, new_x, i;
 
-    if (!data) return;
-    if (data->player_dead || data->in_shop) return;
-
-    health = data->currHealth;
-    maxhealth = data->maxHealth;
-
-    scrap = data->currScrap;
-    maxscrap = data->maxScrap;
-    
-    // health bar draws
-        // current health
-        gf2d_draw_rect_filled(gfc_rect(10, 20, 400.0, 30), GFC_COLOR_BLACK);
-        gf2d_draw_rect_filled(gfc_rect(10, 20, 400.0 * (health / maxhealth), 30), GFC_COLOR_DARKBLUE);
-        
-        // bar outline
-        
-        gf2d_draw_rect(gfc_rect(10, 20, 400, 30), GFC_COLOR_WHITE);
-        gf2d_font_draw_line_tag("HEALTH", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 23));
-    
-    // scrap bar draws
-        // current scrap
-        gf2d_draw_rect_filled(gfc_rect(10, 60, 400.0, 30), GFC_COLOR_BLACK);
-        gf2d_draw_rect_filled(gfc_rect(10, 60, 400.0 * (scrap / maxscrap), 30), GFC_COLOR_GREY);
-
-        // bat outline
-        scrap_line_count = (int)data->maxScrap / data->max_missile;
-        start = 10.0;
-        if (data->maxScrap % data->max_missile != 0) scrap_line_count++;
-        for (i = scrap_line_count; i > 0; i--) {
-            new_x = 400.0 / scrap_line_count;
-            gf2d_draw_rect(gfc_rect(start, 60, 400.0 / scrap_line_count, 30), GFC_COLOR_WHITE);
-            start += new_x;
-        }
-        gf2d_draw_rect(gfc_rect(10, 60, 400, 30), GFC_COLOR_WHITE);
-        gf2d_font_draw_line_tag("SCRAP", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 63));
-
-        /*
-    i = (int) health;
-    init = i + 48;
-    test[0] = init;
-    
-
-    gf2d_font_draw_line_tag(&test, FT_H1, GFC_COLOR_WHITE, gfc_vector2d(10, 10));
-    */
-}
 
 

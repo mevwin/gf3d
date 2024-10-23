@@ -28,7 +28,7 @@
 #include "entity.h"
 #include "player.h"
 #include "enemy.h"
-#include "shop.h"
+#include "ui.h"
 
 extern int __DEBUG;
 
@@ -154,17 +154,14 @@ int main(int argc,char *argv[])
                     shop_hud(player_data);
                 }
                 else {
-                    player_hud(player, player->data);
+                    player_hud(player->data);
+                    enemy_hud_all();
                     if (enemy_count < 2)
                         enemy = enemy_spawn(&(player->position), player->data);
                 }
 
-
         gf3d_vgraphics_render_end();
         if (gfc_input_command_down("exit"))_done = 1; // exit condition
-
-
-        
 
         game_frame_delay();
     }    
