@@ -77,7 +77,7 @@ void enemy_think(Entity* self) {
 	player_data = data->player_data;
 
 	// don't do anything if player is dead
-	if (player_data->player_dead || data->currHealth <= 0.0) return;
+	if (player_data->player_dead || data->currHealth <= 0.0 || player_data->in_shop) return;
 	
 	player_pos.x = data->player_pos->x;
 	player_pos.y = data->player_pos->y;
@@ -103,10 +103,14 @@ void enemy_update(Entity* self) {
 
 	player_data = data->player_data;
 
+	if (player_data->in_shop)
+		return;
+
 	// dont do anything or find new player
 	if (player_data->player_dead) {
 		self->rotation.z = 0;
 		self->rotation.x = 0;
+		return;
 	}
 
 	if (data->currHealth > 0.0) {

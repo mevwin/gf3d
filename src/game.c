@@ -28,6 +28,7 @@
 #include "entity.h"
 #include "player.h"
 #include "enemy.h"
+#include "shop.h"
 
 extern int __DEBUG;
 
@@ -62,6 +63,7 @@ int main(int argc,char *argv[])
     Model *sky;
     GFC_Matrix4 skyMat;
     Entity* player, * enemy;
+    PlayerData* player_data;
 
     //initializtion    
     parse_arguments(argc,argv);
@@ -108,6 +110,7 @@ int main(int argc,char *argv[])
 
     player = player_spawn();
     enemy = enemy_spawn(&(player->position), player->data);
+    player_data = player->data;
     
     //windows
     //gf2d_draw_rect_filled(gfc_rect(player->position.x, player->position.y, 10, 20), gfc_color(1, 0, 0, 1));
@@ -137,13 +140,28 @@ int main(int argc,char *argv[])
                 //gf2d_mouse_draw();
                 //gf2d_font_draw_line_tag("ALT+F4 to exit",FT_H1,GFC_COLOR_WHITE, gfc_vector2d(10,10));
                 //gf2d_font_draw_text_wrap_tag("ALT+F4 to exit", FT_Normal, gfc_color(0, 1, 0, 1), gfc_rect(player->position.x, player->position.y, 10, 20));
-                player_hud(player, player->data);
+                
+                // game updates
+                if (gfc_input_command_pressed("shop")) {
+                    if (!player_data->in_shop)
+                        player_data->in_shop = 1;
+                    else
+                        player_data->in_shop = 0;
+                }
+                if (player_data->in_shop) {
+                    gf2d_mouse_draw();
+                    shop_hud(player_data);
+                }
+                else {
+                    player_hud(player, player->data);
+                }
+                if (enemy_count < 2 && !player_data->in_shop)
+                    enemy = enemy_spawn(&(player->position), player->data);
 
         gf3d_vgraphics_render_end();
         if (gfc_input_command_down("exit"))_done = 1; // exit condition
 
-        if (enemy_count < 2) 
-            enemy = enemy_spawn(&(player->position), player->data);
+
         
 
         game_frame_delay();
