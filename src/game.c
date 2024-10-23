@@ -156,7 +156,7 @@ int main(int argc,char *argv[])
                 else {
                     player_hud(player->data);
                     enemy_hud_all();
-                    if (enemy_count < 2)
+                    if (enemy_count < 1)
                         enemy = enemy_spawn(&(player->position), player->data);
                 }
 

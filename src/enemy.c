@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "gf3d_draw.h"
+#include "SDL_scancode.h"
 #include "gf2d_mouse.h"
 #include "enemy.h"
 #include "player.h"
@@ -67,6 +68,7 @@ void enemy_think(Entity* self) {
 	EnemyData* data;
 	PlayerData* player_data;
 	GFC_Vector3D player_pos;
+	const Uint8* keys;
 	float time, dx;
 
 	if (!self) return;
@@ -79,7 +81,18 @@ void enemy_think(Entity* self) {
 	// don't do anything if player is dead
 	if (player_data->player_dead || data->currHealth <= 0.0 || player_data->in_shop) return;
 	
-	self->position.x += 0.1;
+	// TODO: remove this debug tool later
+	keys = SDL_GetKeyboardState(NULL);
+	if (keys[SDL_SCANCODE_I])
+		self->position.z += 1.0;	
+	if (keys[SDL_SCANCODE_K])
+		self->position.z -= 1.0;	
+	if (keys[SDL_SCANCODE_J])
+		self->position.x += 1.0;	
+	if (keys[SDL_SCANCODE_L])
+		self->position.x -= 1.0;
+	
+	
 
 	player_pos.x = data->player_pos->x;
 	player_pos.y = data->player_pos->y;

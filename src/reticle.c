@@ -1,4 +1,5 @@
 #include "gf2d_mouse.h"
+#include "SDL_scancode.h"
 #include "simple_logger.h"
 #include "reticle.h"
 #include "enemy.h"
@@ -46,6 +47,7 @@ void reticle_update(Entity* self) {
     EnemyData* enemy_data;
     PlayerData* player_data;
     int i;
+    const Uint8* keys;
 
     data = self->data;
     if (!data) return;
@@ -103,7 +105,10 @@ void reticle_update(Entity* self) {
     if (self->position.z <= -data->z_bound + 1.0)
         self->position.z = -data->z_bound + 2.0;
 
-    //slog("CursorX: %f, CursorY: %f", cursor.x, cursor.y);
+    // TODO: remove this debug tool later
+    keys = SDL_GetKeyboardState(NULL);
+    if (keys[SDL_SCANCODE_V])
+        slog("CursorX: %f, CursorY: %f", gf2d_mouse_get_position().x, gf2d_mouse_get_position().y);
 }
 
 void reticle_free(Entity* self) {
