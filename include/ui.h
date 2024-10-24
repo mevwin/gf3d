@@ -5,12 +5,14 @@
 #include "enemy.h"
 
 typedef struct {
-    GFC_Rect shields_block;
-    GFC_Rect scrap_block;
-    GFC_Rect single_shot_block;
-    GFC_Rect charge_shot_block;
-    GFC_Rect missiles_block;
-    GFC_Rect nuke_block;
+    GFC_Rect        shields_block;
+    GFC_Rect        scrap_block;
+    GFC_Rect        single_shot_block;
+    GFC_Rect        charge_shot_block;
+    GFC_Rect        missiles_block;
+    GFC_Rect        nuke_block;
+    GFC_Color       shop_color;         // color for shop UI
+    float           shop_color_hue;     // shop 
 }ShopData;
 
 void shop_init();

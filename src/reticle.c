@@ -26,7 +26,7 @@ Entity* reticle_spawn(GFC_Vector3D position, void* player_data){
     data->y_bound = -60;
     data->z_bound = 58; // 172 x 116
 
-    data->player_data = (PlayerData*) player_data;
+    data->player_data = player_data;
 
 
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
@@ -46,19 +46,17 @@ void reticle_update(Entity* self) {
     EnemyData* enemy_data;
     PlayerData* player_data;
     int i;
-    const Uint8* keys;
 
     data = self->data;
     if (!data) return;
 
-    player_data = data->player_data;
-    if (player_data->in_shop || player_data->paused) return;
+    player_data = (PlayerData*) data->player_data;
+    if (player_data->in_shop || player_data->paused || player_data->player_dead) return;
 
     // updating reticle position
     cursor = gfc_2DPos_to_3DPos(gf2d_mouse_get_position(), data->x_bound, data->z_bound);
     self->position.x = cursor.x;
     self->position.z = cursor.y;
-
 
     // only check reticle targeting if in missile mode
     if (player_data->curr_mode == MISSILE) {
@@ -88,11 +86,11 @@ void reticle_update(Entity* self) {
 
     // update hurtbox
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-        self->position.y - (self->model->bounds.h / 2),
-        self->position.z - (self->model->bounds.d / 2),
-        self->model->bounds.w,
-        self->model->bounds.h,
-        self->model->bounds.d);
+                            self->position.y - (self->model->bounds.h / 2),
+                            self->position.z - (self->model->bounds.d / 2),
+                            self->model->bounds.w,
+                            self->model->bounds.h,
+                            self->model->bounds.d);
 
     // keep reticle within camera
     if (self->position.x >= data->x_bound - 1.0)
@@ -103,7 +101,6 @@ void reticle_update(Entity* self) {
         self->position.z = data->z_bound - 2.0;
     if (self->position.z <= -data->z_bound + 1.0)
         self->position.z = -data->z_bound + 2.0;
-
 }
 
 void reticle_free(Entity* self) {

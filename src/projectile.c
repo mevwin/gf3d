@@ -31,8 +31,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     *   player has reached allowed amount of projectiles
     *   player can't shoot yet due to shot delay (for single_shot)
     */
-    if ((player_data->curr_mode == WAVE_SHOT && player_data->wave_flag == MAX_WAVE) ||
-        (player_data->curr_mode == MISSILE && player_data->missile_count >= player_data->max_missile) ||
+    if ((player_data->curr_mode == MISSILE && player_data->missile_count >= player_data->max_missile) ||
         (player_data->curr_mode == MISSILE && !player_data->missile_spawn) ||
         player_data->proj_count >= MAX_PROJ ||
         time < player_data->next_shot
@@ -79,14 +78,6 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
         data->rigspeed = (dist_x / conver);
         data->upspeed = (dist_y / conver);
     }
-    /**
-    else if (data->type == WAVE_SHOT) {
-        self->think = proj_think_wave_shot;
-        self->model = gf3d_model_load("models/projectiles/wave_shot.model");
-        data->forspeed = player_data->proj_speed / 2;
-        player_data->wave_flag = 1;
-    }
-    */
     else if (data->type == MISSILE) {
         rec_data = player_data->reticle->data;
 
@@ -145,7 +136,6 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     if (enemy_data->proj_count == MAX_PROJ || 
         time < enemy_data->next_single_shot
     ) {
-        //slog("%i", enemydata->proj_count);
         entity_free(self);
         return;
     }
@@ -208,7 +198,6 @@ void proj_update(Entity* self) {
     if (!self) return;
 
     data = self->data;
-    entityList = get_entityList();
 
     if (data->player_in_shop || data->player_paused) return;
 
@@ -239,10 +228,10 @@ void proj_update(Entity* self) {
         data->upspeed = (dist_y / conver);
     }
     
-    
     // checks if projectile hits anything
     // only initate check if enemy projectile is close enough to player or if the projectile is from player
-    if ((self->position.y > -20.0 && data->owner_type == ENEMY) || data->owner_type == PLAYER) {
+    if ((self->position.y > -20.0 && data->owner_type == ENEMY) || (data->owner_type == PLAYER && self->position.y < -40.0)) {
+        entityList = get_entityList();
         for (i = 0; i < MAX_ENTITY; i++) {
             target = &entityList[i];
 
@@ -384,9 +373,9 @@ void proj_think_missile(Entity* self) {
     }
 
     if ((gf2d_mouse_button_held(2) || gf2d_mouse_button_pressed(2)) && 
-        !data->missile_active) {
+        !data->missile_active) 
         return;
-    }
+    
     data->missile_active = 1;
 
     self->position.x -= data->rigspeed;
@@ -398,22 +387,8 @@ void proj_think_missile(Entity* self) {
    
 }
 
-void proj_think_wave_shot(Entity* self) {
-    ProjData* data;
-    PlayerData* player_data;
+void proj_think_vortex(Entity* self) {
 
-    data = self->data;
-    if (!data) return;
-
-    player_data = data->owner->data;
-    self->position.y -= data->forspeed;
-
-    if (!proj_exist(self, self->data)) {
-        player_data->curr_mode = SINGLE_SHOT;
-        player_data->change_flag = 1;
-        player_data->wave_flag = 0;
-        entity_free(self);
-    }    
 }
 void proj_think_super_nuke(Entity* self) {
 

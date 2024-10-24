@@ -184,6 +184,10 @@ int main(int argc,char *argv[])
                         pause_menu(player_data);
                         gf2d_mouse_draw();
                     }
+                    else if (player_data->player_dead){
+                        player_death_screen(player_data);
+                        gf2d_mouse_draw();
+                    }
                     else {
                         enemy_hud_all();
                         player_hud(player->data);

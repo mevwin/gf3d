@@ -5,20 +5,18 @@
 
 typedef enum {
 	PEAS,		// SINGLE_SHOT
-	FENCERS,	// restrict player space
 	CHARGERS,	// CHARGE_SHOT
+	FENCERS,	// restrict player space
 	BOMBERS,	// trynamite-type enemy
 	EMPERS		// don't kill it in time, EMP that freezes ship
 }Enemy_Type;
 
 typedef struct {
 	// enemy stats
-	Enemy_Type		enemy_type;			// type of enemy
+	int				enemy_type;			// type of enemy
 	float           maxHealth;          // enemy's maximum health
 	float           currHealth;         // enemy's current health
 	float			base_damage;		// starting damage
-
-	// enemy attack values
 	float			pea_speed;			// SINGLE_SHOT projectile speed
 
 	// enemy movement
@@ -37,8 +35,9 @@ typedef struct {
 	float			damage_taken;		// amount of damage received
 	Uint8           damaged_type;		// type of damage received
 	float			next_single_shot;	// next shot time
-	Uint8			scrap_made;			// has the scrap item been made
-	Uint8			scrap_taken;		// has the scrap item been received by player
+	Uint8			item_made;			// has the item been made
+	Uint8			item_taken;			// has the item been received by player
+	Uint8			enemy_dead;
 
 	// other
 	GFC_Vector3D*	player_pos;			// pointer to player's current position
@@ -54,7 +53,7 @@ void enemy_think(Entity* self);
 void enemy_update(Entity* self);
 void enemy_free(Entity* self);
 void enemy_take_damage(Entity* self, EnemyData* data);
-void enemy_die(Entity* self, EnemyData* data);
+void enemy_die(Entity* self, EnemyData* data, int item_type);
 //void check_rand_position(Entity* self);
 
 

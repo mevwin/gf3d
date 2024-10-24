@@ -4,12 +4,11 @@
 #include "entity.h"
 
 #define MAX_PROJ 20
-#define MAX_WAVE 1
 
 typedef enum{
 	SINGLE_SHOT,	// player or enemy
 	CHARGE_SHOT,	// player or enemy
-	WAVE_SHOT,			// replace with EMP
+	VORTEX,			// player only
 	MISSILE,		// player only
 	SUPER_NUKE		// player only
 }ProjType;
@@ -17,12 +16,13 @@ typedef enum{
 typedef struct {
 	ProjType		type;			// projectile_type
 	int				y_bound;		// limit to how far a projectile travels
-	GFC_Vector3D	spawn_pos;		// projectile's spawn position
 	Entity*			owner;			// who shot the projectile
 	Entity_Type		owner_type;		// enemy or player
 	float			damage;			// damage it will deal
-	Uint8			player_in_shop;	
-	Uint8			player_paused;
+
+	// player flags
+	Uint8			player_in_shop;	// is player in shop
+	Uint8			player_paused;	// is game paused
 
 	// missile data
 	Uint8			missile_active;	// is missile in motion
@@ -54,9 +54,8 @@ void proj_think_basic(Entity* self);
 * @brief missiles only spawn when reticle meets enemy
 */
 void proj_think_missile(Entity* self);
-void proj_think_wave_shot(Entity* self);
+void proj_think_vortex(Entity* self);
 void proj_think_super_nuke(Entity* self);
-Uint8 shot_delay(Entity* self, float curr_time);
 
 
 #endif

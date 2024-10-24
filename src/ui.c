@@ -17,6 +17,9 @@ void shop_init() {
 
     res = gf3d_vgraphics_get_resolution();
 
+    shop_data->shop_color = gfc_color(0, 0, 1, 0.5);
+    shop_data->shop_color_hue = 0.0;
+
     shop_data->shields_block = gfc_rect(res.x/4, res.y/4, 200.0, 100.0);
 
     atexit(shop_free);
@@ -31,16 +34,16 @@ void shop_hud_draw(PlayerData* data) {
     GFC_Vector2D res;
     
     res = gf3d_vgraphics_get_resolution();
-    gf2d_draw_rect_filled(gfc_rect(0, 0, res.x, res.y), data->shop_color);
+    gf2d_draw_rect_filled(gfc_rect(0, 0, res.x, res.y), shop_data->shop_color);
 
-    if (data->shop_color_hue + 0.5 > 360.0)
-        data->shop_color_hue = 0.0;
+    if (shop_data->shop_color_hue + 0.5 > 360.0)
+        shop_data->shop_color_hue = 0.0;
     else {
-        data->shop_color_hue += 0.5;
-        data->shop_color_hue = roundf(10 * data->shop_color_hue) / 10;
+        shop_data->shop_color_hue += 0.5;
+        shop_data->shop_color_hue = roundf(10 * shop_data->shop_color_hue) / 10;
     }
 
-    gfc_color_set_hue(data->shop_color_hue, &(data->shop_color));
+    gfc_color_set_hue(shop_data->shop_color_hue, &(shop_data->shop_color));
     gf2d_draw_rect(gfc_rect(0, 0, res.x, res.y), GFC_COLOR_BLACK);
 
     gf2d_font_draw_line_tag("SHOP", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(605.0, 100.0));

@@ -11,7 +11,7 @@
 * two bounding boxes for player, one for enemy targets, one for item pickups
 */
 
-Entity* item_spawn(Item_Type type, GFC_Vector3D spawn_pos, void* enemy_data) {
+Entity* item_spawn(int type, GFC_Vector3D spawn_pos, void* enemy_data) {
     Entity* self;
     ItemData* data;
     EnemyData* enemy;
@@ -33,6 +33,12 @@ Entity* item_spawn(Item_Type type, GFC_Vector3D spawn_pos, void* enemy_data) {
     enemy = (EnemyData*) enemy_data;
     data->enemy_data = enemy;
 
+    if (type == NONE) {
+        enemy->item_taken = 1;
+        entity_free(self);
+        return;
+    }
+
     data->type = type;
     dist_to_player = (float) enemy->dist_to_player;
 
@@ -53,8 +59,8 @@ Entity* item_spawn(Item_Type type, GFC_Vector3D spawn_pos, void* enemy_data) {
     data->rigspeed = (dist_x / conver);
     data->upspeed = (dist_y / conver);
 
-    enemy->scrap_made = 1;
-    enemy->scrap_taken = 0;
+    enemy->item_made = 1;
+    enemy->item_taken = 0;
 
     return self;
 }
@@ -79,18 +85,20 @@ void item_think(Entity* self) {
     self->position.z -= data->upspeed;
 
     // checks if item hit player
-    entityList = get_entityList();
-    for (i = 0; i < MAX_ENTITY; i++) {
-        player = &entityList[i];
+    if (self->position.y > -40){
+        entityList = get_entityList();
+        for (i = 0; i < MAX_ENTITY; i++) {
+            player = &entityList[i];
 
-        if (player->entity_type != PLAYER)
-            continue;
+            if (player->entity_type != PLAYER)
+                continue;
 
-        // collision detection check
-        if (gfc_box_overlap(self->hurtbox, player->hurtbox)) {
-            enemy_data->scrap_taken = 1;
-            item_activate(self, data->type, player->data);
-            break;
+            // collision detection check
+            if (gfc_box_overlap(self->hurtbox, player->hurtbox)) {
+                enemy_data->item_taken = 1;
+                item_activate(self, data->type, player->data);
+                break;
+            }
         }
     }
 }
@@ -126,24 +134,30 @@ void item_update(Entity* self) {
 
 
     if (self->position.y > 90.0 || player_data->player_dead ) {
-        enemy_data->scrap_taken = 1;
+        enemy_data->item_taken = 1;
         entity_free(self);
     }
 }
 
-void item_activate(Entity* self, Item_Type type, void* player_data) {
+void item_activate(Entity* self, int type, void* player_data) {
     PlayerData* player;
     int extra_amount;
 
     player = (PlayerData*) player_data;
-    //slog("item received");
+
     if (type == SCRAP) {
-        //slog("scrap received");
-        extra_amount = 1 + gfc_random_int(2);
+        extra_amount = 1 + gfc_random_int(3);
         if ((player->currScrap + extra_amount) <= player->maxScrap)
             player->currScrap += extra_amount;
         else
             player->currScrap = player->maxScrap;
+    }
+    else if (type == HEALTH_PICKUP) {
+        extra_amount = 100 * (1 + gfc_random_int(3));
+        if ((player->currHealth + extra_amount) <= player->maxHealth)
+            player->currHealth += extra_amount;
+        else
+            player->currHealth = player->maxHealth;
     }
     entity_free(self);
 }

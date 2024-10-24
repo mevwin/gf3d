@@ -14,17 +14,9 @@ typedef enum {
 }Upgrade_Type;
 
 typedef struct {
-    GFC_Vector3D    og_pos;             // container for keeping model in place due to constant rotation
-    Entity*         reticle;        
-    GFC_Color       shop_color;
-    float           shop_color_hue;
-
     // player values
     float           upspeed;            // vertical speed
     float           rigspeed;           // horizontal speed
-
-    GFC_List        inventory;          // list of items
-    GFC_List        upgrades;           // list of upgrades currently active
 
     float           maxHealth;          // player's maximum health, must change when more shields are added
     float           currHealth;         // player's current health
@@ -34,6 +26,7 @@ typedef struct {
     int             maxScrap;           // maximum amount of ship parts a player can hold
     int             currScrap;          // player's currrent amount of ship parts
 
+    Uint8           curr_mode;          // current attack mode
     float           base_damage;        // defaults to SINGLE_SHOT dmg
     float           proj_speed;         // defaults to SINGLE_SHOT speed
 
@@ -42,8 +35,7 @@ typedef struct {
     int             max_missile;        // maximum number of missiles a player can spawn per missile attack attempt
     int             nuke_cost;          // scrap cost of using SUPER_NUKE
 
-    Uint8           curr_mode;          // current attack mode
-    Uint8           active_item;
+    Uint8           active_item;        // current item in use
 
     // movement bounds (keeps player within camera view)
     int             x_bound;            // from origin to leftmost side
@@ -70,7 +62,6 @@ typedef struct {
 
     // player attack flags/checks
     int             proj_count;         // current amount of projectiles fired
-    Uint8           wave_flag;          // flag for making sure only one wave_shot is on-screen
     Uint8           nuke_flag;          // flag for making sure only one super_nuke is on-screen
     int             missile_count;      // container for checking player's missile count
     Uint8           missile_spawn;      // missile only spawn if reticle is on enemy
@@ -78,13 +69,18 @@ typedef struct {
     // player upgrade checks
     int             shields_check;
 
+    // other
+    GFC_Vector3D    og_pos;             // container for keeping model in place due to constant rotation
+    Entity*         reticle;            // pointer to player reticle
+
     // debug camera
     Uint8           freelook;           // debug camera
-    Uint8           player_no_attack;
+    Uint8           player_no_attack;   // flag to make enemies docile
 
 }PlayerData;
 
 Entity* player_spawn();
+void player_data_init(PlayerData* data);
 void player_think(Entity* self);
 void player_update(Entity* self);
 void player_free(Entity*  self);

@@ -121,9 +121,9 @@ void entity_free(Entity *self){
     // check if pointer is null
     if (!self) return;
     
-    if (self->free) self->free(self);
-
     self->_inuse = 0;
+
+    if (self->free) self->free(self);
 
     // free up anything that may have been allocated FOR this
     gf3d_model_free(self->model);

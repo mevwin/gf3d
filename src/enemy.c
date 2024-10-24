@@ -28,16 +28,20 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 	self->free = enemy_free;
 	self->entity_type = ENEMY;
 
-	data->enemy_type = PEAS;
-	data->proj_count = 0;
-
-	data->currHealth = 1500.0;
+	data->enemy_type = gfc_random_int(1);
 	data->maxHealth = 1500.0;
-	data->pea_speed = 1.5;
+	data->currHealth = 1500.0;
+
 	data->base_damage = 100.0;
+	data->pea_speed = 1.5;
 
 	//data->upspeed = (float)1.2;
 	//data->rigspeed = (float)1.2;
+
+	data->proj_count = 0;
+	data->damage_taken = 0.0;
+	data->next_single_shot = 0.0;
+
 	data->player_pos = player_pos;
 	data->player_data = (PlayerData*) p_data;
 
@@ -47,6 +51,8 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 
 	position = gfc_vector3d_random_pos(data->x_bound, data->dist_to_player, data->z_bound);
 	self->position = position;
+	data->spawn_pos = position;
+
 
 	self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
 							self->position.y - (self->model->bounds.h / 2),
@@ -65,7 +71,7 @@ void enemy_think(Entity* self) {
 	PlayerData* player_data;
 	GFC_Vector3D player_pos;
 	const Uint8* keys;
-	float time, dx;
+	float time;
 
 	if (!self) return;
 
@@ -78,6 +84,7 @@ void enemy_think(Entity* self) {
 	if (player_data->player_dead || data->currHealth <= 0.0 || player_data->in_shop || player_data->paused) return;
 	
 	// TODO: remove this debug tool later
+	/*
 	keys = SDL_GetKeyboardState(NULL);
 	if (keys[SDL_SCANCODE_I])
 		self->position.z += 1.0;	
@@ -87,6 +94,7 @@ void enemy_think(Entity* self) {
 		self->position.x += 1.0;	
 	if (keys[SDL_SCANCODE_L])
 		self->position.x -= 1.0;
+		*/
 
 	player_pos.x = data->player_pos->x;
 	player_pos.y = data->player_pos->y;
@@ -104,6 +112,7 @@ void enemy_update(Entity* self) {
 	EnemyData* data;
 	PlayerData* player_data;
 	float dist_x, dist_y, z_angle, y_angle;
+	int rand;
 
 	if (!self) return;
 
@@ -126,9 +135,8 @@ void enemy_update(Entity* self) {
 	data->currHealth = roundf(10 * data->currHealth) / 10;
 
 	if (data->currHealth > 0.0) {
-		// rotating enemy to player
-		
 		if (!player_data->player_no_attack) {
+			// rotating enemy to player
 			dist_x = data->player_pos->x - self->position.x;
 			dist_y = data->player_pos->z - self->position.z;
 
@@ -143,23 +151,34 @@ void enemy_update(Entity* self) {
 			self->rotation.x = 0;
 		}
 
+		// undo missile_targeted if player is no longer in that mode
 		if (player_data->curr_mode != MISSILE)
 			data->missile_targeted = 0;
 
 		// update hurtbox
 		self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-			self->position.y - (self->model->bounds.h / 2),
-			self->position.z - (self->model->bounds.d / 2),
-			self->model->bounds.w,
-			self->model->bounds.h,
-			self->model->bounds.d);
+						self->position.y - (self->model->bounds.h / 2),
+						self->position.z - (self->model->bounds.d / 2),
+						self->model->bounds.w,
+						self->model->bounds.h,
+						self->model->bounds.d);
 
 		if (data->took_damage)
 			enemy_take_damage(self, data);
+
+		return;
+	}
+	rand = gfc_random_int(3);
+	if (data->currHealth <= 0.0 && !data->enemy_dead) {
+		data->enemy_dead = 1;
+		slog("rand: %d", rand);
+		enemy_die(self, data, rand);
 	}
 
-	if (data->currHealth <= 0.0)
-		enemy_die(self, data);
+	self->rotation.y -= 0.2;
+
+	if (data->item_taken && data->enemy_dead && data->proj_count == 0)
+		entity_free(self);
 }
 
 void enemy_free(Entity* self) {
@@ -176,25 +195,15 @@ void enemy_free(Entity* self) {
 void enemy_take_damage(Entity* self, EnemyData* data) {
 	if (!data) return;
 
-	if (data->damaged_type == MISSILE)
-		data->missile_targeted = 0;
-
 	data->currHealth -= data->damage_taken;
 	data->took_damage = 0;
-	data->damage_taken = 0;
+	data->damage_taken = 0.0;
 }
 
-void enemy_die(Entity* self, EnemyData* data) {
-	if (!data->scrap_made) {
-		item_spawn(SCRAP, self->position, data);
-		self->rotation.y = 0;
-		self->hurtbox.x = 200.0;	// move hurtbox outside player view
-	}	
-	self->rotation.y -= 0.02;
-	if (data->scrap_taken && data->proj_count == 0) {
-		//slog("model gone");
-		entity_free(self);
-	}
+void enemy_die(Entity* self, EnemyData* data, int item_type) {
+	item_spawn(item_type, self->position, data);
+	self->rotation.y = 0;
+	self->hurtbox.x = 200.0;	// move hurtbox outside player view
 }
 
 /* 
