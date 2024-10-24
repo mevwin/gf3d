@@ -30,15 +30,11 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 
 	data->enemy_type = PEAS;
 	data->proj_count = 0;
-	data->took_damage = 0;
-	data->scrap_made = 0;
-	data->scrap_taken = 0;
-	data->missile_targeted = 0;
 
-	data->currHealth = 10;
-	data->maxHealth = 10;
+	data->currHealth = 1500.0;
+	data->maxHealth = 1500.0;
 	data->pea_speed = 1.5;
-	data->base_damage = 1.0;
+	data->base_damage = 100.0;
 
 	//data->upspeed = (float)1.2;
 	//data->rigspeed = (float)1.2;
@@ -79,7 +75,7 @@ void enemy_think(Entity* self) {
 	player_data = data->player_data;
 
 	// don't do anything if player is dead
-	if (player_data->player_dead || data->currHealth <= 0.0 || player_data->in_shop) return;
+	if (player_data->player_dead || data->currHealth <= 0.0 || player_data->in_shop || player_data->paused) return;
 	
 	// TODO: remove this debug tool later
 	keys = SDL_GetKeyboardState(NULL);
@@ -118,7 +114,7 @@ void enemy_update(Entity* self) {
 
 	player_data = data->player_data;
 
-	if (player_data->in_shop)
+	if (player_data->in_shop || player_data->paused)
 		return;
 
 	// dont do anything or find new player
@@ -127,6 +123,9 @@ void enemy_update(Entity* self) {
 		self->rotation.x = 0;
 		return;
 	}
+
+	// rounding floats to nearest tenth
+	data->currHealth = roundf(10 * data->currHealth) / 10;
 
 	if (data->currHealth > 0.0) {
 		// rotating enemy to player

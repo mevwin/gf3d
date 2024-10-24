@@ -64,6 +64,7 @@ int main(int argc,char *argv[])
     GFC_Matrix4 skyMat;
     Entity* player, * enemy;
     PlayerData* player_data;
+    Uint8 game_start;
 
     //initializtion    
     parse_arguments(argc,argv);
@@ -89,6 +90,7 @@ int main(int argc,char *argv[])
     //game init
     srand(SDL_GetTicks()); 
     slog_sync();
+    shop_init();
 
     //game setup
     gf2d_mouse_load("actors/mouse.actor");
@@ -107,10 +109,10 @@ int main(int argc,char *argv[])
 
     //player initialization
     enemy_count = 0;
-
-    player = player_spawn();
-    enemy = enemy_spawn(&(player->position), player->data);
-    player_data = player->data;
+    game_start = 0;
+    player = NULL;
+    player_data = NULL;
+    enemy = NULL;
     
     //windows
     //gf2d_draw_rect_filled(gfc_rect(player->position.x, player->position.y, 10, 20), gfc_color(1, 0, 0, 1));
@@ -141,23 +143,53 @@ int main(int argc,char *argv[])
                 //gf2d_font_draw_line_tag("ALT+F4 to exit",FT_H1,GFC_COLOR_WHITE, gfc_vector2d(10,10));
                 //gf2d_font_draw_text_wrap_tag("ALT+F4 to exit", FT_Normal, gfc_color(0, 1, 0, 1), gfc_rect(player->position.x, player->position.y, 10, 20));
                 
-                // game updates
-                if (gfc_input_command_pressed("shop")) {
-                    if (!player_data->in_shop)
-                        player_data->in_shop = 1;
-                    else
-                        player_data->in_shop = 0;
+                // game start
+                if (!game_start && gf2d_mouse_button_released(0)) {
+                    game_start++;
+                    player = player_spawn();
+                    enemy_spawn(&(player->position), player->data);
+                    player_data = player->data;
                 }
 
-                if (player_data->in_shop) {
-                    gf2d_mouse_draw();
-                    shop_hud(player_data);
-                }
-                else {
-                    player_hud(player->data);
-                    enemy_hud_all();
-                    if (enemy_count < 1)
-                        enemy = enemy_spawn(&(player->position), player->data);
+                // game updates
+                if (game_start) {
+                    if (gfc_input_command_pressed("shop")) {
+                        if (!player_data->in_shop) {
+                            if (player_data->paused)
+                                player_data->paused = 0;
+
+                            player_data->in_shop = 1;
+                        }
+                        else
+                            player_data->in_shop = 0;
+                    }
+
+                    if (gfc_input_command_pressed("escape")) {
+                        if (!player_data->paused) {
+                            if (player_data->in_shop)
+                                player_data->in_shop = 0;
+
+                            player_data->paused = 1;
+                        }
+                        else
+                            player_data->paused = 0;
+                    }
+
+                    if (player_data->in_shop) {
+                        shop_hud_draw(player_data);
+                        gf2d_mouse_draw();
+                        shop_think(player_data);
+                    }
+                    else if (player_data->paused) {
+                        pause_menu(player_data);
+                        gf2d_mouse_draw();
+                    }
+                    else {
+                        enemy_hud_all();
+                        player_hud(player->data);
+                        if (enemy_count < 5)
+                            enemy_spawn(&(player->position), player->data);
+                    }
                 }
 
         gf3d_vgraphics_render_end();

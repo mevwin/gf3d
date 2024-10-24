@@ -72,7 +72,7 @@ void item_think(Entity* self) {
     enemy_data = (EnemyData*)data->enemy_data;
     player_data = (PlayerData*)enemy_data->player_data;
 
-    if (player_data->in_shop) return;
+    if (player_data->in_shop || player_data->paused) return;
 
     self->position.x -= data->rigspeed;
     self->position.y += data->forspeed;
@@ -106,7 +106,7 @@ void item_update(Entity* self) {
     enemy_data = (EnemyData*) data->enemy_data;
     player_data = (PlayerData*) enemy_data->player_data;
 
-    if (player_data->in_shop) return;
+    if (player_data->in_shop || player_data->paused) return;
 
     // updates movement
     dist_x = enemy_data->player_pos->x - self->position.x;
@@ -139,7 +139,7 @@ void item_activate(Entity* self, Item_Type type, void* player_data) {
     //slog("item received");
     if (type == SCRAP) {
         //slog("scrap received");
-        extra_amount = 1;
+        extra_amount = 1 + gfc_random_int(2);
         if ((player->currScrap + extra_amount) <= player->maxScrap)
             player->currScrap += extra_amount;
         else

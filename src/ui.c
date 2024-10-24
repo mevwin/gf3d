@@ -1,35 +1,102 @@
+#include <math.h>
 #include "simple_logger.h"
-#include "SDL_scancode.h"
+#include "gf3d_vgraphics.h"
 #include "gf2d_font.h"
 #include "gf2d_draw.h"
 #include "gfc_vector.h"
 #include "gf2d_mouse.h"
 #include "ui.h"
 
-void shop_hud(PlayerData* data) {
-	gf2d_draw_rect_filled(gfc_rect(10, 20, 400.0, 30), GFC_COLOR_BLACK);
+static ShopData* shop_data;
+
+void shop_init() {
+    GFC_Vector2D res;
+
+    shop_data = gfc_allocate_array(sizeof(ShopData), 1);
+    if (!shop_data) return;
+
+    res = gf3d_vgraphics_get_resolution();
+
+    shop_data->shields_block = gfc_rect(res.x/4, res.y/4, 200.0, 100.0);
+
+    atexit(shop_free);
+}
+
+void shop_free() {
+    free(shop_data);
+    shop_data = NULL;
+}
+
+void shop_hud_draw(PlayerData* data) {
+    GFC_Vector2D res;
+    
+    res = gf3d_vgraphics_get_resolution();
+    gf2d_draw_rect_filled(gfc_rect(0, 0, res.x, res.y), data->shop_color);
+
+    if (data->shop_color_hue + 0.5 > 360.0)
+        data->shop_color_hue = 0.0;
+    else {
+        data->shop_color_hue += 0.5;
+        data->shop_color_hue = roundf(10 * data->shop_color_hue) / 10;
+    }
+
+    gfc_color_set_hue(data->shop_color_hue, &(data->shop_color));
+    gf2d_draw_rect(gfc_rect(0, 0, res.x, res.y), GFC_COLOR_BLACK);
+
+    gf2d_font_draw_line_tag("SHOP", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(605.0, 100.0));
+
+    //gf2d_font_draw_line_tag("SHOP", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(605.0, 100.0));
+    
+    gf2d_draw_rect_filled(shop_data->shields_block, GFC_COLOR_BLACK);
+    gf2d_font_draw_text_wrap_tag("SHIELDS", FT_H2, GFC_COLOR_WHITE, shop_data->shields_block);
+}
+
+void shop_think(PlayerData* data) {
+    if (!data) return;
+
+    // shield upgrade
+    if (gf2d_mouse_button_pressed(0) && gfc_point_in_rect(gf2d_mouse_get_position(), shop_data->shields_block)) {
+        if (data->shields_check >= 10) {
+            slog("max amount of upgrades for shields");
+            return;
+        }
+
+        
+        if (data->currScrap >= 5) {
+            data->maxShield += 50.0;
+            data->currScrap -= 5;
+            data->shields_check++;
+            slog("more shields");
+        }
+        else
+            slog("not enough scrap");
+    }
 }
 
 void player_hud(PlayerData* data) {
-    float health, maxhealth, start;
-    int scrap_line_count, new_x, i, scrap, maxscrap;
+    float start, scrap, maxscrap, maxshield, shield;
+    int scrap_line_count, new_x, i;
 
     if (!data) return;
     if (data->player_dead || data->in_shop) return;
 
-    health = data->currHealth;
-    maxhealth = data->maxHealth;
 
-    scrap = data->currScrap;
-    maxscrap = data->maxScrap;
+    shield = data->currShield;
+    maxshield = data->maxShield;
+
+    scrap = (float) data->currScrap;
+    maxscrap = (float) data->maxScrap;
 
     // health bar draws
-        // current health
     gf2d_draw_rect_filled(gfc_rect(10, 20, 400.0, 30), GFC_COLOR_BLACK);
-    gf2d_draw_rect_filled(gfc_rect(10, 20, 400.0 * (health / maxhealth), 30), GFC_COLOR_DARKBLUE);
 
-    // bar outline
+        // current health
+    gf2d_draw_rect_filled(gfc_rect(10, 20,(float) 400.0 * (data->currHealth / data->total_health_bar), 30), GFC_COLOR_RED);
 
+        // current shield
+    gf2d_draw_rect_filled(gfc_rect(10 + (400.0 * (data->currHealth / data->total_health_bar)), 20, (float)  400.0 * (data->currShield / data->total_health_bar), 30), GFC_COLOR_DARKBLUE);
+
+        // bar outline
     gf2d_draw_rect(gfc_rect(10, 20, 400, 30), GFC_COLOR_WHITE);
     gf2d_font_draw_line_tag("HEALTH", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 23));
 
@@ -38,7 +105,7 @@ void player_hud(PlayerData* data) {
     gf2d_draw_rect_filled(gfc_rect(10, 60, 400.0, 30), GFC_COLOR_BLACK);
     gf2d_draw_rect_filled(gfc_rect(10, 60, 400.0 * (scrap / maxscrap), 30), GFC_COLOR_GREY);
 
-    // bat outline
+        // bat outline
     scrap_line_count = (int)data->maxScrap / data->max_missile;
     start = 10.0;
     if (data->maxScrap % data->max_missile != 0) scrap_line_count++;
@@ -54,8 +121,7 @@ void player_hud(PlayerData* data) {
 void enemy_hud(EnemyData* data, GFC_Vector3D position) {
     float health, maxhealth;
     PlayerData* player_data;
-    GFC_Vector2D bar_position, res;
-    const Uint8* keys;
+    GFC_Vector2D bar_position;
 
     if (!data) return;
     
@@ -72,11 +138,6 @@ void enemy_hud(EnemyData* data, GFC_Vector3D position) {
     bar_position.y += 50.0;
     bar_position.x *= 0.8;
     bar_position.y *= 0.8;
-
-    // TODO: remove this debug tool later
-    keys = SDL_GetKeyboardState(NULL);
-    if (keys[SDL_SCANCODE_V])
-        slog("bar_pos.x: %f, bar_pos.y: %f", bar_position.x, bar_position.y);
 
     gf2d_draw_rect_filled(gfc_rect(bar_position.x, bar_position.y, 100.0, 20), GFC_COLOR_BLACK);
     gf2d_draw_rect_filled(gfc_rect(bar_position.x, bar_position.y, 100.0 * (health / maxhealth), 20), GFC_COLOR_DARKBLUE);
@@ -96,4 +157,17 @@ void enemy_hud_all() {
 
         enemy_hud(enemy->data, enemy->position);
     }
+}
+
+void pause_menu(PlayerData* data) {
+    GFC_Vector2D res;
+
+    res = gf3d_vgraphics_get_resolution();
+    gf2d_draw_rect_filled(gfc_rect(0, 0, res.x, res.y), gfc_color(65, 65, 65, 0.4));
+
+    gf2d_font_draw_line_tag("GAME PAUSED", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(res.x/2 - 90.0, res.y / 2 - 20.0));
+}
+
+void player_death_screen(PlayerData* data) {
+
 }

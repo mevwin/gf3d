@@ -43,31 +43,28 @@ Entity* player_spawn() {
 
     // default attack init
     data->curr_mode = SINGLE_SHOT;
-    data->base_damage = 1.0;
+    data->base_damage = 200.0;
     data->proj_speed = 8.0;
 
     reticle_pos = gfc_vector3d(position.x, -60, position.z);
     data->reticle = reticle_spawn(reticle_pos, data);
 
     // remaining default data init
-    data->change_flag = 1;
-    data->take_damage_timing = 0;
-    data->mid_roll = 0;
-    data->wave_flag = 0;
-    data->nuke_flag = 0;
     data->proj_count = 0;
+    data->change_flag = 1;
     data->missile_count = 0;
     data->missile_spawn = 0;
-    data->took_damage = 0;
-    data->player_no_attack = 0;
-    data->damage_taken = 0;
-    data->player_dead = 0;
-    data->in_shop = 0;
+    data->take_damage_timing = 0.0;
+    data->damage_taken = 0.0;
+    data->shop_color = gfc_color(0, 0, 1, 0.5);
+    data->shop_color_hue = 0.0;
 
-    data->currHealth = 5.0;
-    data->maxHealth = 10.0;
-    data->currScrap = 10;
+    data->currHealth = 500.0;
+    data->maxHealth = 1000.0;
+    data->currScrap = 50;
     data->maxScrap = 50;
+    data->currShield = 0.0;
+    data->maxShield = 0.0;
     data->single_shot_bonus = 0;
     data->charge_shot_mult = 3.0;
     data->max_missile = 5;
@@ -90,7 +87,7 @@ void player_think(Entity* self) {
     if (!data) return;
 
     // can't do anything if player is dead
-    if (data->player_dead || data->in_shop) return;
+    if (data->player_dead || data->in_shop || data->paused) return;
     
     // movement checks
     if (!data->mid_roll)
@@ -155,7 +152,7 @@ void player_update(Entity* self) {
     data = self->data;
     if (!data) return;
 
-    if (data->in_shop) return;
+    if (data->in_shop || data->paused) return;
 
     // player_quit
     if (data->player_dead && gf2d_mouse_button_held(2))
@@ -214,6 +211,24 @@ void player_update(Entity* self) {
         data->currHealth = data->maxHealth;
     if (data->currScrap > data->maxScrap)
         data->currScrap = data->maxScrap;
+    if (data->currShield > data->maxShield)
+        data->currShield = data->maxShield;
+
+    // rounding floats to nearest tenth
+    data->currHealth = roundf(10 * data->currHealth) / 10;
+    data->currShield = roundf(10 * data->currShield) / 10;
+
+    if (data->currShield < data->maxShield && data->maxShield > 0.0) {
+        if (data->currShield + 1.0 >= data->maxShield) {
+            data->currShield = data->maxShield;
+        }
+        else
+            data->currShield += 1.0;
+    }
+
+    //slog("currShield: %f, maxShield: %f", data->currShield, data->maxShield);
+
+    data->total_health_bar = data->maxHealth + data->maxShield;
 
     if (rec_data->locked_on && data->curr_mode == MISSILE)
         data->missile_spawn = 1;
@@ -274,7 +289,18 @@ void player_take_damage(Entity* self, PlayerData* data, float time) {
     data->change_flag = 1;
     data->take_damage_timing = time + 0.5;
 
-    data->currHealth -= data->damage_taken;
+    if (data->currShield > 0.0) {
+        if (data->currShield - data->damage_taken <= 0.0) { // not enough shields
+            data->currHealth += data->currShield;
+            data->currShield = 0.0;
+            data->currHealth -= data->damage_taken;
+        }
+        else // has enough shields
+            data->currShield -= data->damage_taken;
+    }
+    else // no shields
+        data->currHealth -= data->damage_taken;
+
     data->took_damage = 0;
     data->damage_taken = 0;
 }

@@ -52,6 +52,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
 
     data->type = player_data->curr_mode;
     data->player_in_shop = 0;
+    data->player_paused = 0;
     data->y_bound = -170;
 
     // rotating projectile to reticle
@@ -209,7 +210,7 @@ void proj_update(Entity* self) {
     data = self->data;
     entityList = get_entityList();
 
-    if (data->player_in_shop) return;
+    if (data->player_in_shop || data->player_paused) return;
 
     // updates hurtbox
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
@@ -328,7 +329,12 @@ void proj_think_basic(Entity* self) {
             data->player_in_shop = 1;
             return;
         }
-        self->position.y -= data->forspeed;
+        else if (player_data->paused) {
+            data->player_paused = 1;
+            return;
+        }
+        else
+            self->position.y -= data->forspeed;
     }
     else {
         enemy_data = (EnemyData*) data->owner->data;
@@ -337,7 +343,12 @@ void proj_think_basic(Entity* self) {
             data->player_in_shop = 1;
             return;
         }
-        self->position.y += data->forspeed;
+        else if (player_data->paused) {
+            data->player_paused = 1;
+            return;
+        }
+        else
+            self->position.y += data->forspeed;
     }
 
     self->position.x -= data->rigspeed;    
@@ -358,6 +369,11 @@ void proj_think_missile(Entity* self) {
 
     if (player_data->in_shop) {
         data->player_in_shop = 1;
+        return;
+    }
+    
+    if (player_data->paused) {
+        data->player_paused = 1;
         return;
     }
 

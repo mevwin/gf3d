@@ -4,18 +4,23 @@
 #include "player.h"
 #include "enemy.h"
 
-typedef enum {
-	HEALTH_UP,
-	SCRAP_HELD,
-	SINGLE_SHOT_UP,
-	CHARGE_SHOT_UP,
-	MORE_MISSILES,
-	NUKE_COST_DOWN
-}Upgrade_Type;
+typedef struct {
+    GFC_Rect shields_block;
+    GFC_Rect scrap_block;
+    GFC_Rect single_shot_block;
+    GFC_Rect charge_shot_block;
+    GFC_Rect missiles_block;
+    GFC_Rect nuke_block;
+}ShopData;
 
-void shop_hud(PlayerData* data);
+void shop_init();
+void shop_free();
+void shop_hud_draw(PlayerData* data);
+void shop_think(PlayerData* data);
 void player_hud(PlayerData* data);
 void enemy_hud(EnemyData* data, GFC_Vector3D position);
 void enemy_hud_all();
+void pause_menu(PlayerData* data);
+void player_death_screen(PlayerData* data);
 
 #endif

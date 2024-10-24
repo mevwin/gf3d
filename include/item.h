@@ -4,6 +4,7 @@
 #include "entity.h"
 
 typedef enum {
+	NONE,
 	SCRAP,
 	HAPPY_TRIGGER,
 	HEALTH_PICKUP,
