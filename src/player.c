@@ -68,6 +68,7 @@ Entity* player_spawn() {
     data->single_shot_bonus = 0;
     data->charge_shot_mult = 3.0;
     data->max_missile = 5;
+    data->shields_check = 0;
     data->nuke_cost = data->maxScrap;
 
     // charge_shot init
@@ -206,11 +207,13 @@ void player_update(Entity* self) {
                             self->model->bounds.h,
                             self->model->bounds.d);
 
-    // sanity check, making sure player stats are not over the max
+    // sanity check, making sure player stats are not over the max or under 0.0
     if (data->currHealth > data->maxHealth)
         data->currHealth = data->maxHealth;
     if (data->currScrap > data->maxScrap)
         data->currScrap = data->maxScrap;
+    if (data->currScrap < 0)
+        data->currScrap = 0;
     if (data->currShield > data->maxShield)
         data->currShield = data->maxShield;
 
@@ -337,10 +340,7 @@ void player_respawn(Entity* self) {
     slog("player respawn");
 
     data->change_flag = 1;
-    data->take_damage_timing = 0;
-    data->mid_roll = 0;
-    data->wave_flag = 0;
-    data->nuke_flag = 0;
+    data->take_damage_timing = 0.0;
     data->proj_count = 0;
     data->missile_count = 0;
     data->missile_spawn = 0;
@@ -349,8 +349,8 @@ void player_respawn(Entity* self) {
     data->damage_taken = 0;
     data->in_shop = 0;
     
-    data->currHealth = 5.0;
-    data->maxHealth = 10.0;
+    data->currHealth = 500.0;
+    data->maxHealth = 1000.0;
     data->currScrap = 10;
     data->maxScrap = 50;
     data->single_shot_bonus = 0;

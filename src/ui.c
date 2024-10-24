@@ -55,12 +55,11 @@ void shop_think(PlayerData* data) {
     if (!data) return;
 
     // shield upgrade
-    if (gf2d_mouse_button_pressed(0) && gfc_point_in_rect(gf2d_mouse_get_position(), shop_data->shields_block)) {
+    if (gf2d_mouse_button_pressed(0) && gf2d_mouse_in_rect(shop_data->shields_block)) {
         if (data->shields_check >= 10) {
             slog("max amount of upgrades for shields");
             return;
         }
-
         
         if (data->currScrap >= 5) {
             data->maxShield += 50.0;

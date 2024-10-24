@@ -212,6 +212,9 @@ void proj_update(Entity* self) {
 
     if (data->player_in_shop || data->player_paused) return;
 
+    data->player_in_shop = 0;
+    data->player_paused = 0;
+
     // updates hurtbox
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
                             self->position.y - (self->model->bounds.h / 2),
@@ -238,42 +241,45 @@ void proj_update(Entity* self) {
     
     
     // checks if projectile hits anything
-    for (i = 0; i < MAX_ENTITY; i++) {
-        target = &entityList[i];
-        
-        if ((target->entity_type != ENEMY && data->owner_type == PLAYER) ||
-            (target->entity_type != PLAYER && data->owner_type == ENEMY) ||
-            target->entity_type == PROJECTILE ||
-            target->entity_type == RETICLE ||
-            target->entity_type == ITEM
-            )
-            continue;
+    // only initate check if enemy projectile is close enough to player or if the projectile is from player
+    if ((self->position.y > -20.0 && data->owner_type == ENEMY) || data->owner_type == PLAYER) {
+        for (i = 0; i < MAX_ENTITY; i++) {
+            target = &entityList[i];
 
-        // collision detection check
-        if (gfc_box_overlap(self->hurtbox, target->hurtbox)) {
-            if (data->owner_type == PLAYER) {
-                enemy_data = target->data;
-                enemy_data->took_damage = 1;
-                enemy_data->damaged_type = data->type;
-                enemy_data->damage_taken = data->damage;
-                if (data->type = MISSILE) {
-                    player_data = data->owner->data;
-                    player_data->curr_mode = SINGLE_SHOT;
+            if ((target->entity_type != ENEMY && data->owner_type == PLAYER) ||
+                (target->entity_type != PLAYER && data->owner_type == ENEMY) ||
+                target->entity_type == PROJECTILE ||
+                target->entity_type == RETICLE ||
+                target->entity_type == ITEM
+                )
+                continue;
+
+            // collision detection check
+            if (gfc_box_overlap(self->hurtbox, target->hurtbox)) {
+                if (data->owner_type == PLAYER) {
+                    enemy_data = target->data;
+                    enemy_data->took_damage = 1;
+                    enemy_data->damaged_type = data->type;
+                    enemy_data->damage_taken = data->damage;
+                    if (data->type = MISSILE) {
+                        player_data = data->owner->data;
+                        player_data->curr_mode = SINGLE_SHOT;
+                    }
+                    if (enemy_data->currHealth > 0.0) {
+                        entity_free(self);
+                    }
                 }
-                if (enemy_data->currHealth > 0.0) {
-                    entity_free(self);
+                else if (data->owner_type == ENEMY) {
+                    player_data = target->data;
+                    player_data->took_damage = 1;
+                    player_data->damaged_type = data->type;
+                    player_data->damage_taken = data->damage;
+                    if (player_data->currHealth > 0.0) {
+                        entity_free(self);
+                    }
                 }
+                break;
             }
-            else if (data->owner_type == ENEMY) {
-                player_data = target->data;
-                player_data->took_damage = 1;
-                player_data->damaged_type = data->type;
-                player_data->damage_taken = data->damage;
-                if (player_data->currHealth > 0.0) {
-                    entity_free(self);
-                }
-            }
-            break;
         }
     }
 }

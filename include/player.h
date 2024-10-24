@@ -76,7 +76,7 @@ typedef struct {
     Uint8           missile_spawn;      // missile only spawn if reticle is on enemy
 
     // player upgrade checks
-    Uint8           shields_check;
+    int             shields_check;
 
     // debug camera
     Uint8           freelook;           // debug camera

@@ -87,8 +87,6 @@ void enemy_think(Entity* self) {
 		self->position.x += 1.0;	
 	if (keys[SDL_SCANCODE_L])
 		self->position.x -= 1.0;
-	
-	
 
 	player_pos.x = data->player_pos->x;
 	player_pos.y = data->player_pos->y;
@@ -190,6 +188,7 @@ void enemy_die(Entity* self, EnemyData* data) {
 	if (!data->scrap_made) {
 		item_spawn(SCRAP, self->position, data);
 		self->rotation.y = 0;
+		self->hurtbox.x = 200.0;	// move hurtbox outside player view
 	}	
 	self->rotation.y -= 0.02;
 	if (data->scrap_taken && data->proj_count == 0) {
