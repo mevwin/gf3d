@@ -64,7 +64,7 @@ int main(int argc,char *argv[])
     GFC_Matrix4 skyMat;
     Entity* player, * enemy;
     PlayerData* player_data;
-    Uint8 game_start;
+    Uint8 game_start, enemy_start;
 
     //initializtion    
     parse_arguments(argc,argv);
@@ -110,6 +110,9 @@ int main(int argc,char *argv[])
     //player initialization
     enemy_count = 0;
     game_start = 0;
+    enemy_start = 0;
+    enemy_killed = 0;
+
     player = NULL;
     player_data = NULL;
     enemy = NULL;
@@ -147,7 +150,6 @@ int main(int argc,char *argv[])
                 if (!game_start && gf2d_mouse_button_released(0)) {
                     game_start++;
                     player = player_spawn();
-                    enemy_spawn(&(player->position), player->data);
                     player_data = player->data;
                 }
 
@@ -191,7 +193,11 @@ int main(int argc,char *argv[])
                     else {
                         enemy_hud_all();
                         player_hud(player->data);
-                        if (enemy_count < 5)
+
+                        if (gf2d_mouse_button_released(2) && !enemy_start)
+                            enemy_start++;
+
+                        if (enemy_count < 5 && enemy_start && enemy_killed <= 50)
                             enemy_spawn(&(player->position), player->data);
                     }
                 }

@@ -72,6 +72,7 @@ typedef struct {
     // other
     GFC_Vector3D    og_pos;             // container for keeping model in place due to constant rotation
     Entity*         reticle;            // pointer to player reticle
+    GFC_Vector3D*   player_pos;
 
     // debug camera
     Uint8           freelook;           // debug camera

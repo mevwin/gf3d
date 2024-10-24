@@ -76,6 +76,7 @@ void reticle_update(Entity* self) {
                     data->locked_on = 1;
                     data->enemy_pos = &(target->position);
                     enemy_data->missile_targeted = 1;
+                    entityList = NULL;
                     break;
                 }
                 else 

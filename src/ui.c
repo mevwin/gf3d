@@ -6,6 +6,7 @@
 #include "gfc_vector.h"
 #include "gf2d_mouse.h"
 #include "ui.h"
+#include "projectile.h"
 
 static ShopData* shop_data;
 
@@ -59,13 +60,13 @@ void shop_think(PlayerData* data) {
 
     // shield upgrade
     if (gf2d_mouse_button_pressed(0) && gf2d_mouse_in_rect(shop_data->shields_block)) {
-        if (data->shields_check >= 10) {
+        if (data->shields_check >= 5) {
             slog("max amount of upgrades for shields");
             return;
         }
         
         if (data->currScrap >= 5) {
-            data->maxShield += 50.0;
+            data->maxShield += 100.0;
             data->currScrap -= 5;
             data->shields_check++;
             slog("more shields");
@@ -76,6 +77,9 @@ void shop_think(PlayerData* data) {
 }
 
 void player_hud(PlayerData* data) {
+    Entity* entityList, *target;
+    EnemyData* enemy_data;
+    GFC_Vector2D target_pos;
     float start, scrap, maxscrap, maxshield, shield;
     int scrap_line_count, new_x, i;
 
@@ -118,6 +122,26 @@ void player_hud(PlayerData* data) {
     }
     gf2d_draw_rect(gfc_rect(10, 60, 400, 30), GFC_COLOR_WHITE);
     gf2d_font_draw_line_tag("SCRAP", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 63));
+
+    /*
+    if (data->curr_mode == MISSILE) {
+        entityList = get_entityList();
+        for (i = 0; i < MAX_ENTITY; i++) {
+            target = &entityList[i];
+
+            if (target->entity_type != ENEMY)
+                continue;
+
+            enemy_data = target->data;
+            if (enemy_data->missile_targeted) {
+                target_pos = gfc_3DPos_to_2DPos(target->position, enemy_data->x_bound, enemy_data->z_bound);
+                target_pos.x *= 0.9;
+                target_pos.y *= 0.9;
+                gf2d_draw_circle(target_pos, 20, GFC_COLOR_WHITE);
+            }
+        }
+    }
+    */
 }
 
 void enemy_hud(EnemyData* data, GFC_Vector3D position) {

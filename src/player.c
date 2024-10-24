@@ -38,6 +38,7 @@ Entity* player_spawn() {
 
     self->position = position;
     data->og_pos = self->position;
+    data->player_pos = &(self->position);
 
     reticle_pos = gfc_vector3d(position.x, -60, position.z);
     data->reticle = reticle_spawn(reticle_pos, data);

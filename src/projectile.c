@@ -169,7 +169,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
         self->model = data->type == PEAS ? gf3d_model_load("models/projectiles/single_shot_enem.model") : gf3d_model_load("models/projectiles/charge_shot.model");
         data->forspeed = data->type == PEAS ? enemy_data->pea_speed : enemy_data->pea_speed * 1.25;
         data->damage = data->type == PEAS ? enemy_data->base_damage : enemy_data->base_damage * 3;
-        enemy_data->next_single_shot = data->type == PEAS ? curr_time + 1.0 : 3.0;
+        enemy_data->next_single_shot = data->type == PEAS ? curr_time + 1.0 : curr_time + 1.0;
 
         conver = enemy_data->dist_to_player / data->forspeed;
         data->rigspeed = (dist_x / conver);
@@ -203,6 +203,15 @@ void proj_update(Entity* self) {
 
     data->player_in_shop = 0;
     data->player_paused = 0;
+
+    if (data->owner_type == ENEMY) {
+        enemy_data = data->owner->data;
+        if (enemy_data->currHealth <= 0.0) {
+            entity_free(self);
+            return;
+        }
+        enemy_data = NULL;
+    }
 
     // updates hurtbox
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
@@ -254,19 +263,14 @@ void proj_update(Entity* self) {
                         player_data = data->owner->data;
                         player_data->curr_mode = SINGLE_SHOT;
                     }
-                    if (enemy_data->currHealth > 0.0) {
-                        entity_free(self);
-                    }
                 }
                 else if (data->owner_type == ENEMY) {
                     player_data = target->data;
                     player_data->took_damage = 1;
                     player_data->damaged_type = data->type;
                     player_data->damage_taken = data->damage;
-                    if (player_data->currHealth > 0.0) {
-                        entity_free(self);
-                    }
                 }
+                entity_free(self);
                 break;
             }
         }

@@ -121,7 +121,7 @@ void entity_free(Entity *self){
     // check if pointer is null
     if (!self) return;
     
-    self->_inuse = 0;
+    //self->_inuse = 0;
 
     if (self->free) self->free(self);
 

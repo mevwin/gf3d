@@ -11,11 +11,11 @@
 * two bounding boxes for player, one for enemy targets, one for item pickups
 */
 
-Entity* item_spawn(int type, GFC_Vector3D spawn_pos, void* enemy_data) {
+Entity* item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player, void* player_data) {
     Entity* self;
+    PlayerData* p_data;
     ItemData* data;
-    EnemyData* enemy;
-    float dist_x, dist_y, conver, dist_to_player;
+    float dist_x, dist_y, conver;
 
     // sanity check
     self = entity_new();
@@ -30,21 +30,26 @@ Entity* item_spawn(int type, GFC_Vector3D spawn_pos, void* enemy_data) {
     data = gfc_allocate_array(sizeof(ItemData), 1);
     if (data) self->data = data;
 
-    enemy = (EnemyData*) enemy_data;
-    data->enemy_data = enemy;
+    data->player_data = player_data;
+    p_data = (PlayerData*) player_data;
 
-    if (type == NONE) {
-        enemy->item_taken = 1;
+    if (type == SCRAP) {
+        self->model = gf3d_model_load("models/item/enemy_scrap.model");
+        data->forspeed = 1.0;
+    }
+    else if (type == HEALTH_PICKUP) {
+        self->position.z += 20.0;
+        self->model = gf3d_model_load("models/item/health_pickup.model");
+        data->forspeed = 2.0;
+    }
+    else{ //NONE
         entity_free(self);
         return;
     }
 
     data->type = type;
-    dist_to_player = (float) enemy->dist_to_player;
+    data->dist_to_player = dist_to_player;
 
-    self->model = gf3d_model_load("models/scrap/enemy_scrap.model");
-
-    data->forspeed = 1.0;
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
                             self->position.y - (self->model->bounds.h / 2),
                             self->position.z - (self->model->bounds.d / 2),
@@ -52,22 +57,18 @@ Entity* item_spawn(int type, GFC_Vector3D spawn_pos, void* enemy_data) {
                             self->model->bounds.h,
                             self->model->bounds.d);
 
-    dist_x = enemy->player_pos->x - self->position.x;
-    dist_y = enemy->player_pos->z - self->position.z;
+    dist_x = p_data->player_pos->x - self->position.x;
+    dist_y = p_data->player_pos->z - self->position.z;
 
     conver = dist_to_player / data->forspeed;
     data->rigspeed = (dist_x / conver);
     data->upspeed = (dist_y / conver);
 
-    enemy->item_made = 1;
-    enemy->item_taken = 0;
-
     return self;
 }
 
 void item_think(Entity* self) {
-    ItemData* data;
-    EnemyData* enemy_data;
+    ItemData* data; 
     PlayerData* player_data;
     Entity* player, *entityList;
     int i;
@@ -75,8 +76,7 @@ void item_think(Entity* self) {
     data = self->data;
     if (!data) return;
 
-    enemy_data = (EnemyData*)data->enemy_data;
-    player_data = (PlayerData*)enemy_data->player_data;
+    player_data = (PlayerData*) data->player_data;
 
     if (player_data->in_shop || player_data->paused) return;
 
@@ -95,7 +95,6 @@ void item_think(Entity* self) {
 
             // collision detection check
             if (gfc_box_overlap(self->hurtbox, player->hurtbox)) {
-                enemy_data->item_taken = 1;
                 item_activate(self, data->type, player->data);
                 break;
             }
@@ -104,21 +103,19 @@ void item_think(Entity* self) {
 }
 void item_update(Entity* self) {
     ItemData* data;
-    EnemyData* enemy_data;
     PlayerData* player_data;
     float dist_x, dist_y, conver;
 
     data = self->data;
     if (!data) return;
 
-    enemy_data = (EnemyData*) data->enemy_data;
-    player_data = (PlayerData*) enemy_data->player_data;
+    player_data = (PlayerData*) data->player_data;
 
     if (player_data->in_shop || player_data->paused) return;
 
     // updates movement
-    dist_x = enemy_data->player_pos->x - self->position.x;
-    dist_y = enemy_data->player_pos->z - self->position.z;
+    dist_x = player_data->player_pos->x - self->position.x;
+    dist_y = player_data->player_pos->z - self->position.z;
 
     conver = self->position.y / data->forspeed;
     data->rigspeed = (dist_x / conver);
@@ -133,10 +130,9 @@ void item_update(Entity* self) {
                             self->model->bounds.d);
 
 
-    if (self->position.y > 90.0 || player_data->player_dead ) {
-        enemy_data->item_taken = 1;
+    if (self->position.y > 90.0 || player_data->player_dead )
         entity_free(self);
-    }
+    
 }
 
 void item_activate(Entity* self, int type, void* player_data) {

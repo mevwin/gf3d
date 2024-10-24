@@ -28,7 +28,7 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 	self->free = enemy_free;
 	self->entity_type = ENEMY;
 
-	data->enemy_type = gfc_random_int(1);
+	data->enemy_type = 0;
 	data->maxHealth = 1500.0;
 	data->currHealth = 1500.0;
 
@@ -130,7 +130,6 @@ void enemy_update(Entity* self) {
 		self->rotation.x = 0;
 		return;
 	}
-
 	// rounding floats to nearest tenth
 	data->currHealth = roundf(10 * data->currHealth) / 10;
 
@@ -157,27 +156,31 @@ void enemy_update(Entity* self) {
 
 		// update hurtbox
 		self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-						self->position.y - (self->model->bounds.h / 2),
-						self->position.z - (self->model->bounds.d / 2),
-						self->model->bounds.w,
-						self->model->bounds.h,
-						self->model->bounds.d);
+								self->position.y - (self->model->bounds.h / 2),
+								self->position.z - (self->model->bounds.d / 2),
+								self->model->bounds.w,
+								self->model->bounds.h,
+								self->model->bounds.d);
 
 		if (data->took_damage)
 			enemy_take_damage(self, data);
 
 		return;
 	}
-	rand = gfc_random_int(3);
 	if (data->currHealth <= 0.0 && !data->enemy_dead) {
-		data->enemy_dead = 1;
-		slog("rand: %d", rand);
+		rand = 1 + gfc_random_int(2);
+
+		if (player_data->currHealth >= player_data->maxHealth && rand == HEALTH_PICKUP)
+			rand = 1.0;
+
 		enemy_die(self, data, rand);
+		data->enemy_dead = 1;
+
 	}
 
-	self->rotation.y -= 0.2;
+	self->rotation.y -= 0.1;
 
-	if (data->item_taken && data->enemy_dead && data->proj_count == 0)
+	if (data->enemy_dead && data->proj_count <= 0)
 		entity_free(self);
 }
 
@@ -190,6 +193,8 @@ void enemy_free(Entity* self) {
 	free(data);
 	self->data = NULL;
 	enemy_count--;
+	enemy_killed++;
+	slog("enemy_killed: %d", enemy_killed);
 }
 
 void enemy_take_damage(Entity* self, EnemyData* data) {
@@ -201,9 +206,13 @@ void enemy_take_damage(Entity* self, EnemyData* data) {
 }
 
 void enemy_die(Entity* self, EnemyData* data, int item_type) {
-	item_spawn(item_type, self->position, data);
+	if (!data) return;
+
+	item_spawn(SCRAP, self->position, data->dist_to_player, data->player_data);
+	item_spawn(item_type, self->position, data->dist_to_player, data->player_data);
 	self->rotation.y = 0;
-	self->hurtbox.x = 200.0;	// move hurtbox outside player view
+	self->hurtbox = gfc_box(200.0, -60.0, 200.0, 1.0, 1.0, 1.0);	// make dummy hitbox not accessible to player
+
 }
 
 /* 

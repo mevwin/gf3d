@@ -35,9 +35,7 @@ typedef struct {
 	float			damage_taken;		// amount of damage received
 	Uint8           damaged_type;		// type of damage received
 	float			next_single_shot;	// next shot time
-	Uint8			item_made;			// has the item been made
-	Uint8			item_taken;			// has the item been received by player
-	Uint8			enemy_dead;
+	Uint8			enemy_dead;			// is enemy health less than zero
 
 	// other
 	GFC_Vector3D*	player_pos;			// pointer to player's current position
@@ -46,7 +44,8 @@ typedef struct {
 	Uint8			missile_targeted;	// flag for player missile attack
 }EnemyData;
 
-Uint8 enemy_count;
+Uint32 enemy_count;
+Uint32 enemy_killed;
 
 Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data);
 void enemy_think(Entity* self);
