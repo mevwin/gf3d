@@ -1,0 +1,7 @@
+{
+    "model":
+    {
+        "obj":"models/trench/trench.obj",
+        "texture":"models/trench/color_BC.png"
+    }
+}
