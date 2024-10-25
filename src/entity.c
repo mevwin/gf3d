@@ -11,6 +11,7 @@ typedef struct{
 }EntityManager;
 
 static EntityManager entity_manager = {0}; //C needs 0, C++ doesn't
+static Entity_Models* models;
 
 void entity_system_init(Uint32 maxEnts){
     //sanity check
@@ -30,6 +31,28 @@ void entity_system_init(Uint32 maxEnts){
         return;
     }
     entity_manager.entityMax = maxEnts; // at this point, big ass entity list is made
+    
+    models = gfc_allocate_array(sizeof(Entity_Models), 1);
+    if (!models) {
+        slog("failed to allocate resources for models struct");
+        return;
+    }
+
+    models->player = gf3d_model_load("models/player_ship/player_ship_single.model");
+    models->single_shot = gf3d_texture_load("models/player_ship/color_77.png");
+    models->charge_shot = gf3d_texture_load("models/player_ship/color_44.png");
+    models->damaged = gf3d_texture_load("models/player_ship/color_EE.png");
+    models->dead = gf3d_texture_load("models/player_ship/color_AA.png");
+
+    models->enemy = gf3d_model_load("models/player_ship/test_ship.model");
+    models->peas = gf3d_model_load("models/projectiles/single_shot_enem.model");
+
+    models->single_proj = gf3d_model_load("models/projectiles/single_shot.model");
+    models->charge_proj = gf3d_model_load("models/projectiles/charge_shot.model");
+    models->reticle = gf3d_model_load("models/reticle/reticle.model");
+    models->scrap = gf3d_model_load("models/item/enemy_scrap.model");
+    models->health_pickup = gf3d_model_load("models/item/health_pickup.model");
+    
     atexit(entity_system_close);
 }
 
@@ -41,8 +64,24 @@ void entity_system_close(){
         entity_free(&entity_manager.entity_list[i]);
     }
     free(entity_manager.entity_list);
-}
 
+    gf3d_model_free(models->player);
+    gf3d_texture_free(models->single_shot);
+    gf3d_texture_free(models->charge_shot);
+    gf3d_texture_free(models->damaged);
+    gf3d_texture_free(models->dead);
+
+    gf3d_model_free(models->enemy);
+    gf3d_model_free(models->peas);
+
+    gf3d_model_free(models->reticle);
+    gf3d_model_free(models->single_proj);
+    gf3d_model_free(models->charge_proj);
+    gf3d_model_free(models->scrap);
+    gf3d_model_free(models->health_pickup);
+    
+    free(models);
+}
 
 void entity_draw(Entity *self){
     GFC_Matrix4 matrix; // not constructors in C
@@ -126,7 +165,8 @@ void entity_free(Entity *self){
     if (self->free) self->free(self);
 
     // free up anything that may have been allocated FOR this
-    gf3d_model_free(self->model);
+    //gf3d_model_free(self->model);
+    //self->model = NULL;
     memset(self, 0, sizeof(Entity));
 }
 
@@ -134,3 +174,6 @@ Entity* get_entityList() {
     return entity_manager.entity_list;
 }
 
+Entity_Models* get_models() {
+    return models;
+}

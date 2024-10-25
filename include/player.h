@@ -1,7 +1,6 @@
 #ifndef __PLAYER_H__
 #define __PLAYER_H__
 
-#include "gfc_shape.h"
 #include "entity.h"
 
 typedef enum {
@@ -91,5 +90,6 @@ void player_die(Entity* self);
 void player_death(Entity* self);
 void player_respawn(Entity* self);
 void player_quit(Entity* self);
+PlayerData* get_player_data();
 
 #endif

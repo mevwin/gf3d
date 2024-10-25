@@ -95,10 +95,10 @@ int main(int argc,char *argv[])
     //game setup
     gf2d_mouse_load("actors/mouse.actor");
     sky = gf3d_model_load("models/sky.model");
-    trench = gf3d_model_load("models/trench/trench.model");
+    //trench = gf3d_model_load("models/trench/trench.model");
 
     gfc_matrix4_identity(skyMat);
-    gfc_matrix4_identity(trenchMat);
+    //gfc_matrix4_identity(trenchMat);
     
 
     //camera, definitely needs change for player entity
@@ -193,6 +193,9 @@ int main(int argc,char *argv[])
                     else if (player_data->player_dead){
                         player_death_screen(player_data);
                         gf2d_mouse_draw();
+                        // player respawn
+                        if (gf2d_mouse_button_held(0))
+                            player_respawn(player);
                     }
                     else {
                         enemy_hud_all();
@@ -201,8 +204,8 @@ int main(int argc,char *argv[])
                         if (gf2d_mouse_button_released(2) && !enemy_start)
                             enemy_start++;
 
-                        if (enemy_count < 5 && enemy_start && enemy_killed <= 50)
-                            enemy_spawn(&(player->position), player->data);
+                        if (enemy_count < 5 && enemy_start)
+                            enemy_spawn(&(player->position));
                     }
                 }
 

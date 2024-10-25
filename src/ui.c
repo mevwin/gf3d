@@ -28,7 +28,6 @@ void shop_init() {
 
 void shop_free() {
     free(shop_data);
-    shop_data = NULL;
 }
 
 void shop_hud_draw(PlayerData* data) {
@@ -80,7 +79,7 @@ void player_hud(PlayerData* data) {
     Entity* entityList, *target;
     EnemyData* enemy_data;
     GFC_Vector2D target_pos;
-    float start, scrap, maxscrap, maxshield, shield;
+    float start, scrap, maxscrap, maxshield, shield, currHealth, currShield, shieldStart;
     int scrap_line_count, new_x, i;
 
     if (!data) return;
@@ -93,14 +92,22 @@ void player_hud(PlayerData* data) {
     scrap = (float) data->currScrap;
     maxscrap = (float) data->maxScrap;
 
+    currHealth = (float) (400.0 * (data->currHealth / data->total_health_bar));
+    currHealth = roundf(10 * currHealth) / 10;
+
+    currShield = (float) (400.0 * (data->currShield / data->total_health_bar));
+    currShield = roundf(10 * currShield) / 10;
+
+    shieldStart = 10.0 + currHealth;
+
     // health bar draws
     gf2d_draw_rect_filled(gfc_rect(10, 20, 400.0, 30), GFC_COLOR_BLACK);
 
         // current health
-    gf2d_draw_rect_filled(gfc_rect(10, 20,(float) 400.0 * (data->currHealth / data->total_health_bar), 30), GFC_COLOR_RED);
+    gf2d_draw_rect_filled(gfc_rect(10, 20, currHealth, 30), GFC_COLOR_RED);
 
         // current shield
-    gf2d_draw_rect_filled(gfc_rect(10 + (400.0 * (data->currHealth / data->total_health_bar)), 20, (float)  400.0 * (data->currShield / data->total_health_bar), 30), GFC_COLOR_DARKBLUE);
+    gf2d_draw_rect_filled(gfc_rect(shieldStart, 20, currShield, 30), GFC_COLOR_DARKBLUE);
 
         // bar outline
     gf2d_draw_rect(gfc_rect(10, 20, 400, 30), GFC_COLOR_WHITE);
@@ -112,7 +119,7 @@ void player_hud(PlayerData* data) {
     gf2d_draw_rect_filled(gfc_rect(10, 60, 400.0 * (scrap / maxscrap), 30), GFC_COLOR_GREY);
 
         // bat outline
-    scrap_line_count = (int)data->maxScrap / data->max_missile;
+    scrap_line_count = (int) (data->maxScrap / data->max_missile);
     start = 10.0;
     if (data->maxScrap % data->max_missile != 0) scrap_line_count++;
     for (i = scrap_line_count; i > 0; i--) {
@@ -145,17 +152,19 @@ void player_hud(PlayerData* data) {
 }
 
 void enemy_hud(EnemyData* data, GFC_Vector3D position) {
-    float health, maxhealth;
+    float health, maxhealth, currHealth;
     PlayerData* player_data;
     GFC_Vector2D bar_position;
 
     if (!data) return;
     
-    player_data = data->player_data;
+    player_data = get_player_data();
     if (player_data->player_dead || player_data->in_shop || data->currHealth <= 0.0) return;
 
     health = data->currHealth;
     maxhealth = data->maxHealth;
+    currHealth = (float)( 100.0 * (health / maxhealth));
+    currHealth = roundf(10 * currHealth) / 10;
 
     bar_position = gfc_3DPos_to_2DPos(position, data->x_bound, data->z_bound);
     
@@ -166,7 +175,7 @@ void enemy_hud(EnemyData* data, GFC_Vector3D position) {
     bar_position.y *= 0.8;
 
     gf2d_draw_rect_filled(gfc_rect(bar_position.x, bar_position.y, 100.0, 20), GFC_COLOR_BLACK);
-    gf2d_draw_rect_filled(gfc_rect(bar_position.x, bar_position.y, 100.0 * (health / maxhealth), 20), GFC_COLOR_DARKBLUE);
+    gf2d_draw_rect_filled(gfc_rect(bar_position.x, bar_position.y, currHealth, 20), GFC_COLOR_DARKBLUE);
     gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, 100.0, 20), GFC_COLOR_WHITE);
 }
 

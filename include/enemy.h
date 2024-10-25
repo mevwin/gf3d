@@ -39,7 +39,6 @@ typedef struct {
 
 	// other
 	GFC_Vector3D*	player_pos;			// pointer to player's current position
-	void			*player_data;		// pointer to player's data
 	GFC_Vector3D    spawn_pos;			// initial spawn position
 	Uint8			missile_targeted;	// flag for player missile attack
 }EnemyData;
@@ -47,7 +46,7 @@ typedef struct {
 Uint32 enemy_count;
 Uint32 enemy_killed;
 
-Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data);
+Entity* enemy_spawn(GFC_Vector3D* player_pos);
 void enemy_think(Entity* self);
 void enemy_update(Entity* self);
 void enemy_free(Entity* self);

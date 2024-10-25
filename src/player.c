@@ -7,6 +7,8 @@
 #include "projectile.h"
 #include "reticle.h"
 
+static PlayerData* p_data;
+
 Entity* player_spawn() {
     Entity* self;
     PlayerData* data;
@@ -16,15 +18,15 @@ Entity* player_spawn() {
     self = entity_new();
     if (!self) return NULL;
 
-    self->model = gf3d_model_load("models/player_ship/player_ship_single.model");
+    self->model = get_models()->player;
     self->think = player_think;
     self->update = player_update;
     self->free = player_free;
     self->entity_type = PLAYER;
 
-    data = gfc_allocate_array(sizeof(PlayerData), 1);
-    if (data) self->data = data;
-    
+    p_data = gfc_allocate_array(sizeof(PlayerData), 1);
+    if (p_data) self->data = p_data;
+    data = p_data;
 
     player_data_init(data);
 
@@ -41,7 +43,7 @@ Entity* player_spawn() {
     data->player_pos = &(self->position);
 
     reticle_pos = gfc_vector3d(position.x, -60, position.z);
-    data->reticle = reticle_spawn(reticle_pos, data);
+    data->reticle = reticle_spawn(reticle_pos);
 
     return self;
 }
@@ -179,7 +181,7 @@ void player_update(Entity* self) {
     data = self->data;
     if (!data) return;
 
-    if (data->in_shop || data->paused) return;
+    if (data->in_shop || data->paused || data->player_dead) return;
 
     // player_quit
     if (data->player_dead && gf2d_mouse_button_held(2))
@@ -199,8 +201,7 @@ void player_update(Entity* self) {
         !data->took_damage
         ){
         data->curr_mode = CHARGE_SHOT;
-        gf3d_texture_free(self->model->texture);
-        self->model->texture = gf3d_texture_load("models/player_ship/color_44.png");
+        self->model->texture = get_models()->charge_shot;
     }
         // SINGLE_SHOT texture
     else if (data->take_damage_timing < time &&
@@ -208,11 +209,9 @@ void player_update(Entity* self) {
              !data->took_damage
         ) {
         data->curr_mode = SINGLE_SHOT;
-        gf3d_texture_free(self->model->texture);
-        self->model->texture = gf3d_texture_load("models/player_ship/color_77.png");
+        self->model->texture = get_models()->single_shot;
         data->change_flag = 0;
     }
-
 
         // enter MISSILE mode
     if (rec_data->locked_on && data->curr_mode == MISSILE)
@@ -251,8 +250,8 @@ void player_update(Entity* self) {
     data->total_health_bar = data->maxHealth + data->maxShield;
 
     // rounding floats to nearest tenth
-    data->currHealth = roundf(10 * data->currHealth) / 10;
-    data->currShield = roundf(10 * data->currShield) / 10;
+    //data->currHealth = roundf(10 * data->currHealth) / 10;
+    //data->currShield = roundf(10 * data->currShield) / 10;
 
     if (data->currShield < data->maxShield && data->maxShield > 0.0) 
             data->currShield += 1.0;
@@ -264,13 +263,6 @@ void player_update(Entity* self) {
     // check if player is dead
     if (data->currHealth <= 0.0 && !data->player_dead)
         player_die(self);
-    
-    // player respawn
-    if (data->player_dead) {
-        if (gf2d_mouse_button_held(0))
-            player_respawn(self);
-        return;
-    }
 }
 
 void player_free(Entity* self){
@@ -306,8 +298,7 @@ void player_attack(Entity* self, PlayerData* data) {
 void player_take_damage(Entity* self, PlayerData* data, float time) {
     if (!data) return;
 
-    gf3d_texture_free(self->model->texture);
-    self->model->texture = gf3d_texture_load("models/player_ship/color_EE.png");
+    self->model->texture = get_models()->damaged;
     data->change_flag = 1;
     data->take_damage_timing = time + 0.5;
 
@@ -341,8 +332,7 @@ void player_death(Entity* self) {
 
     data = self->data;
     data->player_no_attack = 1;
-    gf3d_model_free(self->model);
-    //slog("player dead");
+    self->model->texture = get_models()->dead;
 }
 
 void player_respawn(Entity* self) {
@@ -350,12 +340,16 @@ void player_respawn(Entity* self) {
 
     data = self->data;
 
-    self->model = gf3d_model_load("models/player_ship/player_ship_single.model");
+    self->model->texture = get_models()->single_shot;
     player_data_init(data);
 }
 
 void player_quit(Entity* self) {
     entity_free(self);
+}
+
+PlayerData* get_player_data() {
+    return p_data;
 }
 
 

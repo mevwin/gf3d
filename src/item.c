@@ -11,9 +11,8 @@
 * two bounding boxes for player, one for enemy targets, one for item pickups
 */
 
-Entity* item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player, void* player_data) {
+Entity* item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
     Entity* self;
-    PlayerData* p_data;
     ItemData* data;
     float dist_x, dist_y, conver;
 
@@ -30,16 +29,13 @@ Entity* item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player, void*
     data = gfc_allocate_array(sizeof(ItemData), 1);
     if (data) self->data = data;
 
-    data->player_data = player_data;
-    p_data = (PlayerData*) player_data;
-
     if (type == SCRAP) {
-        self->model = gf3d_model_load("models/item/enemy_scrap.model");
+        self->model = get_models()->scrap;
         data->forspeed = 1.0;
     }
     else if (type == HEALTH_PICKUP) {
         self->position.z += 20.0;
-        self->model = gf3d_model_load("models/item/health_pickup.model");
+        self->model = get_models()->health_pickup;
         data->forspeed = 2.0;
     }
     else{ //NONE
@@ -57,8 +53,8 @@ Entity* item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player, void*
                             self->model->bounds.h,
                             self->model->bounds.d);
 
-    dist_x = p_data->player_pos->x - self->position.x;
-    dist_y = p_data->player_pos->z - self->position.z;
+    dist_x = get_player_data()->player_pos->x - self->position.x;
+    dist_y = get_player_data()->player_pos->z - self->position.z;
 
     conver = dist_to_player / data->forspeed;
     data->rigspeed = (dist_x / conver);
@@ -76,7 +72,7 @@ void item_think(Entity* self) {
     data = self->data;
     if (!data) return;
 
-    player_data = (PlayerData*) data->player_data;
+    player_data = get_player_data();
 
     if (player_data->in_shop || player_data->paused) return;
 
@@ -95,7 +91,7 @@ void item_think(Entity* self) {
 
             // collision detection check
             if (gfc_box_overlap(self->hurtbox, player->hurtbox)) {
-                item_activate(self, data->type, player->data);
+                item_activate(self, data->type);
                 break;
             }
         }
@@ -109,7 +105,7 @@ void item_update(Entity* self) {
     data = self->data;
     if (!data) return;
 
-    player_data = (PlayerData*) data->player_data;
+    player_data = get_player_data();
 
     if (player_data->in_shop || player_data->paused) return;
 
@@ -135,11 +131,11 @@ void item_update(Entity* self) {
     
 }
 
-void item_activate(Entity* self, int type, void* player_data) {
+void item_activate(Entity* self, int type) {
     PlayerData* player;
     int extra_amount;
 
-    player = (PlayerData*) player_data;
+    player = get_player_data();
 
     if (type == SCRAP) {
         extra_amount = 1 + gfc_random_int(3);
@@ -163,7 +159,6 @@ void item_free(Entity* self) {
 
     data = (ItemData*) self->data;
     free(data);
-    self->data = NULL;
 }
 
 

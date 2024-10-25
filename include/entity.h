@@ -7,7 +7,7 @@
 #include "gfc_primitives.h"
 #include "gf3d_model.h"
 
-#define MAX_ENTITY 2000
+#define MAX_ENTITY 500
 
 typedef enum {
     PLAYER,
@@ -16,6 +16,23 @@ typedef enum {
     RETICLE,
     ITEM
 }Entity_Type;
+
+typedef struct {
+    Model*      player;
+    Texture*    single_shot;
+    Texture*    charge_shot;
+    Texture*    damaged;
+    Texture*    dead;
+
+    Model*      enemy;
+    Model*      peas;
+
+    Model*      single_proj;
+    Model*      charge_proj;
+    Model*      reticle;
+    Model*      scrap;
+    Model*      health_pickup;
+}Entity_Models;
 
 typedef struct Entity_S{
     Uint8           _inuse;     // flag for memory management
@@ -85,5 +102,7 @@ void entity_free(Entity* self);
  * @brief returns the big ass list of entities
  */
 Entity* get_entityList();
+
+Entity_Models* get_models();
 
 #endif

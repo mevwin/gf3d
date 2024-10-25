@@ -50,8 +50,6 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     self->free = proj_free;
 
     data->type = player_data->curr_mode;
-    data->player_in_shop = 0;
-    data->player_paused = 0;
     data->y_bound = -170;
 
     // rotating projectile to reticle
@@ -69,7 +67,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
     // setup for a specific player attack type
     if (data->type == SINGLE_SHOT || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
-        self->model = data->type == SINGLE_SHOT ? gf3d_model_load("models/projectiles/single_shot.model") : gf3d_model_load("models/projectiles/charge_shot.model");
+        self->model = data->type == SINGLE_SHOT ? get_models()->single_proj : get_models()->charge_proj;
         data->forspeed = data->type == SINGLE_SHOT ? player_data->proj_speed : player_data->proj_speed * 1.25;
         data->damage = data->type == SINGLE_SHOT ? player_data->base_damage + player_data->single_shot_bonus : player_data->base_damage * player_data->charge_shot_mult;
         player_data->next_shot = data->type == SINGLE_SHOT ? curr_time + 0.15 : 0;
@@ -82,7 +80,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* 
         rec_data = player_data->reticle->data;
 
         self->think = proj_think_missile;
-        self->model = gf3d_model_load("models/projectiles/single_shot.model");
+        self->model = get_models()->single_proj;
         data->forspeed = player_data->proj_speed * 0.75;
         //data->forspeed = 1.0;
         data->damage = player_data->base_damage * 3;
@@ -149,7 +147,6 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     self->free = proj_free;
 
     data->type = enemy_data->enemy_type;
-    data->player_in_shop = 0;
     data->y_bound = 90;
 
     // rotating projectile to player
@@ -166,7 +163,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
 
     if (data->type == PEAS || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
-        self->model = data->type == PEAS ? gf3d_model_load("models/projectiles/single_shot_enem.model") : gf3d_model_load("models/projectiles/charge_shot.model");
+        self->model = data->type == PEAS ? get_models()->peas : get_models()->charge_proj;
         data->forspeed = data->type == PEAS ? enemy_data->pea_speed : enemy_data->pea_speed * 1.25;
         data->damage = data->type == PEAS ? enemy_data->base_damage : enemy_data->base_damage * 3;
         enemy_data->next_single_shot = data->type == PEAS ? curr_time + 1.0 : curr_time + 1.0;
@@ -199,10 +196,7 @@ void proj_update(Entity* self) {
 
     data = self->data;
 
-    if (data->player_in_shop || data->player_paused) return;
-
-    data->player_in_shop = 0;
-    data->player_paused = 0;
+    if (get_player_data()->in_shop || get_player_data()->paused) return;
 
     if (data->owner_type == ENEMY) {
         enemy_data = data->owner->data;
@@ -279,7 +273,6 @@ void proj_update(Entity* self) {
 
 void proj_free(Entity* self) {
     ProjData* data;
-    PlayerData* playdata;
     EnemyData* enemydata;
     Entity* owner;
 
@@ -289,10 +282,9 @@ void proj_free(Entity* self) {
     owner = data->owner;
     
     if (data->owner_type == PLAYER) {
-        playdata = owner->data;
-        playdata->proj_count--;
+        get_player_data()->proj_count--;
         if (data->type == MISSILE)
-            playdata->missile_count--;
+            get_player_data()->missile_count--;
     }
     else if (data->owner_type == ENEMY) {
         enemydata = owner->data;
@@ -300,8 +292,6 @@ void proj_free(Entity* self) {
     }
 
     free(data);
-    self->data = NULL;
-
 }
 
 Uint8 proj_exist(Entity* self, ProjData* data) {
@@ -316,39 +306,17 @@ Uint8 proj_exist(Entity* self, ProjData* data) {
 
 void proj_think_basic(Entity* self) {
     ProjData* data;
-    PlayerData* player_data;
     EnemyData* enemy_data;
 
     data = self->data;
     if (!data) return;
 
-    if (data->owner_type == PLAYER) {
-        player_data = (PlayerData*) data->owner->data;
-        if (player_data->in_shop) {
-            data->player_in_shop = 1;
-            return;
-        }
-        else if (player_data->paused) {
-            data->player_paused = 1;
-            return;
-        }
-        else
-            self->position.y -= data->forspeed;
-    }
-    else {
-        enemy_data = (EnemyData*) data->owner->data;
-        player_data = (PlayerData*) enemy_data->player_data;
-        if (player_data->in_shop) {
-            data->player_in_shop = 1;
-            return;
-        }
-        else if (player_data->paused) {
-            data->player_paused = 1;
-            return;
-        }
-        else
-            self->position.y += data->forspeed;
-    }
+    if (get_player_data()->in_shop || get_player_data()->paused) return;
+
+    if (data->owner_type == PLAYER)
+        self->position.y -= data->forspeed;
+    else
+        self->position.y += data->forspeed;
 
     self->position.x -= data->rigspeed;    
     self->position.z -= data->upspeed;
@@ -359,22 +327,12 @@ void proj_think_basic(Entity* self) {
 
 void proj_think_missile(Entity* self) {
     ProjData* data;
-    PlayerData* player_data;
 
     data = self->data;
     if (!data) return;
 
-    player_data = data->owner->data;
 
-    if (player_data->in_shop) {
-        data->player_in_shop = 1;
-        return;
-    }
-    
-    if (player_data->paused) {
-        data->player_paused = 1;
-        return;
-    }
+    if (get_player_data()->in_shop || get_player_data()->paused) return;
 
     if ((gf2d_mouse_button_held(2) || gf2d_mouse_button_pressed(2)) && 
         !data->missile_active) 

@@ -5,14 +5,14 @@
 #include "player.h"
 #include "projectile.h"
 
-Entity* reticle_spawn(GFC_Vector3D position, void* player_data){
+Entity* reticle_spawn(GFC_Vector3D position){
     Entity* self;
     ReticleData* data;
 
     self = entity_new();
     if (!self) return NULL;
 
-    self->model = gf3d_model_load("models/reticle/reticle.model");
+    self->model = get_models()->reticle;
     self->update = reticle_update;
 
     self->position = position;
@@ -25,9 +25,6 @@ Entity* reticle_spawn(GFC_Vector3D position, void* player_data){
     data->x_bound = 86; // left is positive, right is negative
     data->y_bound = -60;
     data->z_bound = 58; // 172 x 116
-
-    data->player_data = player_data;
-
 
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
                             self->position.y - (self->model->bounds.h / 2),
@@ -50,7 +47,7 @@ void reticle_update(Entity* self) {
     data = self->data;
     if (!data) return;
 
-    player_data = (PlayerData*) data->player_data;
+    player_data = get_player_data();
     if (player_data->in_shop || player_data->paused || player_data->player_dead) return;
 
     // updating reticle position
@@ -111,5 +108,4 @@ void reticle_free(Entity* self) {
 
     data = (ReticleData*) self->data;
     free(data);
-    self->data = NULL;
 }

@@ -20,10 +20,6 @@ typedef struct {
 	Entity_Type		owner_type;		// enemy or player
 	float			damage;			// damage it will deal
 
-	// player flags
-	Uint8			player_in_shop;	// is player in shop
-	Uint8			player_paused;	// is game paused
-
 	// missile data
 	Uint8			missile_active;	// is missile in motion
 	GFC_Vector3D*	missile_target;	// pointer to the missile target

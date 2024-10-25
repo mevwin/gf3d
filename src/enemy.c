@@ -7,7 +7,7 @@
 #include "projectile.h"
 #include "item.h"
 
-Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
+Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 	Entity* self;
 	EnemyData* data;
 	PlayerData* player_data;
@@ -22,7 +22,7 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 
 	type = gfc_random_int(4);
 
-	self->model = gf3d_model_load("models/player_ship/test_ship.model");
+	self->model = get_models()->enemy;
 	self->think = enemy_think;
 	self->update = enemy_update;
 	self->free = enemy_free;
@@ -43,7 +43,6 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, void* p_data) {
 	data->next_single_shot = 0.0;
 
 	data->player_pos = player_pos;
-	data->player_data = (PlayerData*) p_data;
 
 	data->x_bound = 74; // left is positive, right is negative
 	data->z_bound = 50;
@@ -70,7 +69,6 @@ void enemy_think(Entity* self) {
 	EnemyData* data;
 	PlayerData* player_data;
 	GFC_Vector3D player_pos;
-	const Uint8* keys;
 	float time;
 
 	if (!self) return;
@@ -78,7 +76,7 @@ void enemy_think(Entity* self) {
 	data = self->data;
 	if (!data) return;
 
-	player_data = data->player_data;
+	player_data = get_player_data();
 
 	// don't do anything if player is dead
 	if (player_data->player_dead || data->currHealth <= 0.0 || player_data->in_shop || player_data->paused) return;
@@ -119,7 +117,7 @@ void enemy_update(Entity* self) {
 	data = self->data;
 	if (!data) return;
 
-	player_data = data->player_data;
+	player_data = get_player_data();
 
 	if (player_data->in_shop || player_data->paused)
 		return;
@@ -191,7 +189,6 @@ void enemy_free(Entity* self) {
 
 	data = self->data;
 	free(data);
-	self->data = NULL;
 	enemy_count--;
 	enemy_killed++;
 	slog("enemy_killed: %d", enemy_killed);
@@ -208,8 +205,8 @@ void enemy_take_damage(Entity* self, EnemyData* data) {
 void enemy_die(Entity* self, EnemyData* data, int item_type) {
 	if (!data) return;
 
-	item_spawn(SCRAP, self->position, data->dist_to_player, data->player_data);
-	item_spawn(item_type, self->position, data->dist_to_player, data->player_data);
+	item_spawn(SCRAP, self->position, data->dist_to_player);
+	item_spawn(item_type, self->position, data->dist_to_player);
 	self->rotation.y = 0;
 	self->hurtbox = gfc_box(200.0, -60.0, 200.0, 1.0, 1.0, 1.0);	// make dummy hitbox not accessible to player
 
