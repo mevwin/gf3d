@@ -198,7 +198,6 @@
     <ClCompile Include="..\src\gf3d_vgraphics.c" />
     <ClCompile Include="..\src\gf3d_vqueues.c" />
     <ClCompile Include="..\src\item.c" />
-    <ClCompile Include="..\src\level.c" />
     <ClCompile Include="..\src\player.c" />
     <ClCompile Include="..\src\player_move.c" />
     <ClCompile Include="..\src\projectile.c" />
@@ -237,7 +236,6 @@
     <ClInclude Include="..\gfc\simple_logger\include\simple_logger.h" />
     <ClInclude Include="..\include\enemy.h" />
     <ClInclude Include="..\include\item.h" />
-    <ClInclude Include="..\include\level.h" />
     <ClInclude Include="..\include\lights.h" />
     <ClInclude Include="..\include\player.h" />
     <ClInclude Include="..\include\entity.h" />

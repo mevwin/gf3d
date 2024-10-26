@@ -32,7 +32,6 @@
 
 extern int __DEBUG;
 
-static int _done = 0;
 static Uint32 frame_delay = 33;
 static float fps = 0;
 
@@ -57,6 +56,67 @@ void draw_origin()
         gfc_vector3d(0,0,0),gfc_vector3d(0,0,0),gfc_vector3d(1,1,1),0.1,gfc_color(0,0,1,1));
 }
 
+void level_update(Entity* player, PlayerData* p_data) {
+    if (!player || !p_data) return;
+
+    if (gfc_input_command_pressed("shop")) {
+        if (!p_data->in_shop) {
+            if (p_data->paused)
+                p_data->paused = 0;
+
+            p_data->in_shop = 1;
+        }
+        else
+            p_data->in_shop = 0;
+    }
+
+    if (gfc_input_command_pressed("escape")) {
+        if (!p_data->paused) {
+            if (p_data->in_shop)
+                p_data->in_shop = 0;
+
+            p_data->paused = 1;
+        }
+        else
+            p_data->paused = 0;
+    }
+
+    if (p_data->in_shop) {
+        shop_hud_draw(p_data);
+        shop_think(p_data);
+        gf2d_mouse_draw();
+    }
+    else if (p_data->paused) {
+        pause_menu(p_data);
+        pause_menu_think(p_data);
+        gf2d_mouse_draw();
+    }
+    else if (p_data->player_dead) {
+        player_death_screen(p_data);
+        gf2d_mouse_draw();
+
+        // player respawn
+        if (gf2d_mouse_button_held(0))
+            shop_reset(); // reset upgrade checks if player has died
+        player_respawn(player);
+    }
+    else { // game in play
+        enemy_hud_all();
+        player_hud(player->data);
+
+        if (!enemy_start) 
+            wave_start(p_data);  
+
+        // game condition
+        if (enemy_count < 5 && enemy_killed <= 45 && enemy_start)
+            enemy_spawn(&(player->position));
+       
+        if (enemy_killed == 50) 
+            wave_completed(p_data);
+        
+    }
+}
+
 int main(int argc,char *argv[])
 {
     //local variables
@@ -64,7 +124,6 @@ int main(int argc,char *argv[])
     GFC_Matrix4 skyMat, trenchMat;
     Entity* player, * enemy;
     PlayerData* player_data;
-    Uint8 game_start, enemy_start;
 
     //initializtion    
     parse_arguments(argc,argv);
@@ -90,7 +149,7 @@ int main(int argc,char *argv[])
     //game init
     srand(SDL_GetTicks()); 
     slog_sync();
-    shop_init();
+    UI_init();
 
     //game setup
     gf2d_mouse_load("actors/mouse.actor");
@@ -110,20 +169,19 @@ int main(int argc,char *argv[])
     
     //gf3d_camera_enable_free_look(1);
 
-    //player initialization
+    // game init initialization
     enemy_count = 0;
     game_start = 0;
     enemy_start = 0;
     enemy_killed = 0;
+    _done = 0;
 
     player = NULL;
     player_data = NULL;
     enemy = NULL;
     
     //windows
-    //gf2d_draw_rect_filled(gfc_rect(player->position.x, player->position.y, 10, 20), gfc_color(1, 0, 0, 1));
-    
-   
+
     // main game loop, constant series of updates  
     while(!_done)
     {
@@ -151,62 +209,16 @@ int main(int argc,char *argv[])
                 //gf2d_font_draw_text_wrap_tag("ALT+F4 to exit", FT_Normal, gfc_color(0, 1, 0, 1), gfc_rect(player->position.x, player->position.y, 10, 20));
                 
                 // game start
-                if (!game_start && gf2d_mouse_button_released(0)) {
-                    game_start++;
-                    player = player_spawn();
-                    player_data = player->data;
+                if (!game_start){
+                    start_menu();
+                    player = start_menu_think(player_data);
+                    gf2d_mouse_draw();
                 }
 
                 // game updates
                 if (game_start) {
-                    if (gfc_input_command_pressed("shop")) {
-                        if (!player_data->in_shop) {
-                            if (player_data->paused)
-                                player_data->paused = 0;
-
-                            player_data->in_shop = 1;
-                        }
-                        else
-                            player_data->in_shop = 0;
-                    }
-
-                    if (gfc_input_command_pressed("escape")) {
-                        if (!player_data->paused) {
-                            if (player_data->in_shop)
-                                player_data->in_shop = 0;
-
-                            player_data->paused = 1;
-                        }
-                        else
-                            player_data->paused = 0;
-                    }
-
-                    if (player_data->in_shop) {
-                        shop_hud_draw(player_data);
-                        gf2d_mouse_draw();
-                        shop_think(player_data);
-                    }
-                    else if (player_data->paused) {
-                        pause_menu(player_data);
-                        gf2d_mouse_draw();
-                    }
-                    else if (player_data->player_dead){
-                        player_death_screen(player_data);
-                        gf2d_mouse_draw();
-                        // player respawn
-                        if (gf2d_mouse_button_held(0))
-                            player_respawn(player);
-                    }
-                    else {
-                        enemy_hud_all();
-                        player_hud(player->data);
-
-                        if (gf2d_mouse_button_released(2) && !enemy_start)
-                            enemy_start++;
-
-                        if (enemy_count < 5 && enemy_start)
-                            enemy_spawn(&(player->position));
-                    }
+                    player_data = player->data;
+                    level_update(player, player_data);
                 }
 
         gf3d_vgraphics_render_end();

@@ -5,8 +5,9 @@
 #include "player.h"
 #include "projectile.h"
 
+static Entity* self;
+
 Entity* reticle_spawn(GFC_Vector3D position){
-    Entity* self;
     ReticleData* data;
 
     self = entity_new();
@@ -56,7 +57,7 @@ void reticle_update(Entity* self) {
     self->position.z = cursor.y;
 
     // only check reticle targeting if in missile mode
-    if (player_data->curr_mode == MISSILE) {
+    if (player_data->currMode == MISSILE) {
         entityList = get_entityList();
         for (i = 0; i < MAX_ENTITY; i++) {
             target = &entityList[i];
@@ -108,4 +109,8 @@ void reticle_free(Entity* self) {
 
     data = (ReticleData*) self->data;
     free(data);
+}
+
+GFC_Vector3D get_reticle_pos() {
+    return self->position;
 }

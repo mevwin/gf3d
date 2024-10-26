@@ -177,3 +177,26 @@ Entity* get_entityList() {
 Entity_Models* get_models() {
     return models;
 }
+
+void entity_despawn_all() {
+    Entity* entityList, * target;
+    int i;
+
+    entityList = get_entityList();
+    
+    // despawn all projectiles first
+    for (i = 0; i < MAX_ENTITY; i++) {
+        target = &entityList[i];
+
+        if (target->entity_type != PROJECTILE)
+            continue;
+
+        entity_free(target);
+    }
+
+    for (i = 0; i < MAX_ENTITY; i++) {
+        target = &entityList[i];
+
+        entity_free(target);
+    }
+}

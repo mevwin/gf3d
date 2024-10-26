@@ -20,7 +20,8 @@ typedef struct {
 	Entity_Type		owner_type;		// enemy or player
 	float			damage;			// damage it will deal
 
-	// missile data
+	// projectile flags
+	Uint8			vortexed;		
 	Uint8			missile_active;	// is missile in motion
 	GFC_Vector3D*	missile_target;	// pointer to the missile target
 
@@ -30,7 +31,7 @@ typedef struct {
 	float			rigspeed;		// x-movement
 }ProjData;
 
-void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, Entity* owner, float curr_time);
+void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float curr_time, Uint8 vortexed);
 void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* owner, float curr_time);
 void proj_update(Entity* self);
 void proj_free(Entity* self);
@@ -49,6 +50,10 @@ void proj_think_basic(Entity* self);
 * @brief missiles only spawn when reticle meets enemy
 */
 void proj_think_missile(Entity* self);
+
+/**
+* @brief vortex weapon sucks in enemy projectiles and sends them to reticle position
+*/
 void proj_think_vortex(Entity* self);
 void proj_think_super_nuke(Entity* self);
 

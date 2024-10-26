@@ -198,9 +198,6 @@
     <ClCompile Include="..\src\item.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\level.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ui.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -393,9 +390,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\item.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\level.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\ui.h">

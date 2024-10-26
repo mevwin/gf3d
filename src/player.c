@@ -31,6 +31,10 @@ Entity* player_spawn() {
     player_data_init(data);
 
     position = gfc_vector3d_random_pos(data->x_bound, 0, data->z_bound);
+    self->position = position;
+    data->og_pos = self->position;
+    data->player_pos = &(self->position);
+
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
                             self->position.y - (self->model->bounds.h / 2),
                             self->position.z - (self->model->bounds.d / 2),
@@ -38,9 +42,14 @@ Entity* player_spawn() {
                             self->model->bounds.h,
                             self->model->bounds.d);
 
-    self->position = position;
-    data->og_pos = self->position;
-    data->player_pos = &(self->position);
+    /*
+    data->vortex_box = gfc_box(self->position.x - (self->model->bounds.w / 2),
+                                self->position.y - (self->model->bounds.h / 2),
+                                self->position.z - (self->model->bounds.d / 2),
+                                2.0 * self->model->bounds.w,
+                                2.0 * self->model->bounds.h,
+                                2.0 * self->model->bounds.d);
+    */
 
     reticle_pos = gfc_vector3d(position.x, -60, position.z);
     data->reticle = reticle_spawn(reticle_pos);
@@ -62,25 +71,24 @@ void player_data_init(PlayerData* data) {
     data->currShield = 0.0;
     data->maxScrap = 50;
     data->currScrap = 0;
+    data->vortex_dur = 0.0;
+    data->vortex_max = 40.0;
 
     // default player attack
-    data->curr_mode = SINGLE_SHOT;
+    data->currMode = SINGLE_SHOT;
     data->base_damage = 200.0;
     data->proj_speed = 8.0;
+    data->vortex_damage = 0.0;
 
     data->single_shot_bonus = 0;
     data->charge_shot_mult = 3.0;
+    data->missile_mult = 3.0;
     data->max_missile = 5;
     data->nuke_cost = data->maxScrap;
    
     // default player bounds
     data->x_bound = 49; // left is positive, right is negative
     data->z_bound = 35; // 98 x 70
-
-    // default shot timing
-    data->next_shot = 0.0;
-    data->next_charged_shot = (SDL_GetTicks() / 1000.0) + 0.9;
-    data->charge_shot_delay = 0.0;
 
     // player personal flags/checks
     data->change_flag = 1;
@@ -91,16 +99,20 @@ void player_data_init(PlayerData* data) {
     
     data->in_shop = 0;
     data->paused = 0;
-    
+    data->wave_end = 0;
+
     // player attack flags/checks
     data->proj_count = 0;
+    data->nuke_flag = 0;
     data->missile_count = 0;
     data->missile_spawn = 0;
     
+    // default shot timing
+    data->next_shot = 0.0;
+    data->next_charged_shot = (SDL_GetTicks() / 1000.0) + 0.9;
+    data->charge_shot_delay = 0.0;
+
     data->player_no_attack = 0;
-    
-    // default/reset upgrades
-    data->shields_check = 0;
     
     // debug init
     data->player_no_attack = 0;
@@ -108,6 +120,7 @@ void player_data_init(PlayerData* data) {
 
 void player_think(Entity* self) {
     PlayerData* data;
+    ReticleData* rec_data;
     float time;
 
     if (!self) return;
@@ -116,7 +129,7 @@ void player_think(Entity* self) {
     if (!data) return;
 
     // don't do anything if player is dead or in_shop or game is pause
-    if (data->player_dead || data->in_shop || data->paused) return;
+    if (data->player_dead || data->in_shop || data->paused || data->wave_end) return;
     
     // movement checks
     if (!data->mid_roll)
@@ -126,27 +139,45 @@ void player_think(Entity* self) {
 
     /* player attack checks */
     time = SDL_GetTicks() / 1000.0;
-    
+    rec_data = data->reticle->data;
+
         // CHARGE_SHOT attack
-    if (gf2d_mouse_button_pressed(0) && data->curr_mode == CHARGE_SHOT) {
+    if (gf2d_mouse_button_pressed(0) && data->currMode == CHARGE_SHOT && !data->vortex_flag) {
         player_attack(self, data);
-        data->next_charged_shot = time + 2.0;
-        data->charge_shot_delay = time + 0.75;
+        data->next_charged_shot = time + 0.9;
+        data->charge_shot_delay = time + 0.5;
         data->change_flag = 1;
     }
-        // SINGLE_SHOT, SUPER_NUKE
+        // SINGLE_SHOT
     else if ((gf2d_mouse_button_pressed(0) || gf2d_mouse_button_held(0)) &&
         data->charge_shot_delay <= time &&
         !data->mid_roll &&
-        data->curr_mode != CHARGE_SHOT
-        ) {
-        data->next_charged_shot = time + 2.5;
+        data->currMode != CHARGE_SHOT && 
+        !data->vortex_flag)
+    {
+        data->next_charged_shot = time + 0.9;
         player_attack(self, data);
     }
         // MISSILE
-    else if ((gf2d_mouse_button_held(2) && data->currScrap > 0 && data->missile_count <= data->max_missile)) {
-        data->curr_mode = MISSILE;
-        data->next_charged_shot = time + 2.5;
+    else if ((gf2d_mouse_button_held(2) && data->currScrap > 0 && 
+        data->missile_count <= data->max_missile && !data->vortex_flag))
+    {
+        data->currMode = MISSILE;
+        
+        if (rec_data->locked_on)
+            data->missile_spawn = 1;
+        else
+            data->missile_spawn = 0;
+        
+        player_attack(self, data);
+        data->next_charged_shot = time + 0.9;
+    }
+        // VORTEX
+    else if (gfc_input_command_released("vortex") && data->currMode != VORTEX && data->vortex_dur >= (data->vortex_max / 3.0)) {
+        data->currMode = VORTEX;
+        data->next_charged_shot = time + 0.9;
+        data->vortex_flag = 1;
+
         player_attack(self, data);
     }
 
@@ -157,17 +188,18 @@ void player_think(Entity* self) {
     }
 
     if (gfc_input_command_pressed("change_attack")) {
-        //data->curr_mode++;
+        //data->currMode++;
         
-        //if (data->curr_mode > SUPER_NUKE) data->curr_mode = SINGLE_SHOT;
+        //if (data->currMode > SUPER_NUKE) data->currMode = SINGLE_SHOT;
         if (!data->player_no_attack)
             data->player_no_attack = 1;
         else
             data->player_no_attack = 0;
-        
+
+        data->currScrap = data->maxScrap;
     }
 
-    //slog("weapon: %d", data->curr_mode);
+    //slog("weapon: %d", data->currMode);
     //slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
     //slog("currScrap: %d", data->currScrap);
     //slog("missile_count: %d", data->missile_count);
@@ -175,22 +207,16 @@ void player_think(Entity* self) {
 
 void player_update(Entity* self) {
     PlayerData* data;
-    ReticleData* rec_data;
     float time;
 
     data = self->data;
     if (!data) return;
 
-    if (data->in_shop || data->paused || data->player_dead) return;
-
-    // player_quit
-    if (data->player_dead && gf2d_mouse_button_held(2))
-        player_quit(self);
+    if (data->in_shop || data->paused || data->player_dead || data->wave_end) return;
 
     // update camera
     player_cam(self, data);
 
-    rec_data = data->reticle->data;
 
     /* updates model based on current attack type */
     time = SDL_GetTicks() / 1000.0;
@@ -198,9 +224,10 @@ void player_update(Entity* self) {
         // CHARGE_SHOT texture
     if (time >= data->next_charged_shot && 
         time < data->next_charged_shot + 0.03 && 
-        !data->took_damage
+        !data->took_damage &&
+        !data->vortex_flag
         ){
-        data->curr_mode = CHARGE_SHOT;
+        data->currMode = CHARGE_SHOT;
         self->model->texture = get_models()->charge_shot;
     }
         // SINGLE_SHOT texture
@@ -208,27 +235,10 @@ void player_update(Entity* self) {
              data->change_flag && 
              !data->took_damage
         ) {
-        data->curr_mode = SINGLE_SHOT;
+        data->currMode = SINGLE_SHOT;
         self->model->texture = get_models()->single_shot;
         data->change_flag = 0;
     }
-
-        // enter MISSILE mode
-    if (rec_data->locked_on && data->curr_mode == MISSILE)
-        data->missile_spawn = 1;
-    else
-        data->missile_spawn = 0;
-
-        // WAVE_SHOT texture
-    /*
-    else if (data->curr_mode == WAVE_SHOT && 
-            data->change_flag &&
-            !data->took_damage
-        ) {
-        self->model->texture = gf3d_texture_load("models/player_ship/color_66.png");
-        data->change_flag = 0;
-    }
-    */
 
     // updates hurtbox
     self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
@@ -246,6 +256,8 @@ void player_update(Entity* self) {
         data->currScrap = data->maxScrap;
     if (data->currShield > data->maxShield)
         data->currShield = data->maxShield;
+    if (data->vortex_dur > data->vortex_max)
+        data->vortex_dur = data->vortex_max;
 
     data->total_health_bar = data->maxHealth + data->maxShield;
 
@@ -253,8 +265,13 @@ void player_update(Entity* self) {
     //data->currHealth = roundf(10 * data->currHealth) / 10;
     //data->currShield = roundf(10 * data->currShield) / 10;
 
+    // shield restoration
     if (data->currShield < data->maxShield && data->maxShield > 0.0) 
-            data->currShield += 1.0;
+        data->currShield += 1.0;
+
+    // vortex duration restoration
+    if (data->currMode != VORTEX && data->vortex_dur < data->vortex_max && !gfc_input_command_held("vortex"))
+        data->vortex_dur += 0.1;
 
     // check if player was hurt
     if (data->took_damage)
@@ -272,9 +289,10 @@ void player_free(Entity* self){
 
     data = (PlayerData*)self->data;
     
-    entity_free(data->reticle);
+    if (data->reticle)
+        entity_free(data->reticle);
+
     free(data);
-    self->data = NULL;
 }
 
 void player_attack(Entity* self, PlayerData* data) {
@@ -292,7 +310,7 @@ void player_attack(Entity* self, PlayerData* data) {
     // creates projectile under the ship
     attack_start.z -= 3;
     curr_time = SDL_GetTicks() / 1000.0;
-    player_proj_spawn(attack_start, cursor_pos, self, curr_time);
+    player_proj_spawn(attack_start, cursor_pos, curr_time, 0);
 }
 
 void player_take_damage(Entity* self, PlayerData* data, float time) {
@@ -333,19 +351,34 @@ void player_death(Entity* self) {
     data = self->data;
     data->player_no_attack = 1;
     self->model->texture = get_models()->dead;
+    entity_free(data->reticle);
 }
 
 void player_respawn(Entity* self) {
     PlayerData* data;
+    GFC_Vector3D reticle_pos;
 
     data = self->data;
 
     self->model->texture = get_models()->single_shot;
     player_data_init(data);
+    reticle_pos = gfc_vector3d(self->position.x, -60, self->position.z);
+    data->reticle = reticle_spawn(reticle_pos);
 }
 
 void player_quit(Entity* self) {
     entity_free(self);
+}
+
+void player_upgrade( PlayerData* data) {
+    if (!data) return;
+
+    data->currHealth += data->maxShield;
+    data->currShield = 0;
+    data->maxShield = 0;
+
+    data->base_damage += data->single_shot_bonus;
+    data->single_shot_bonus = 0.0;
 }
 
 PlayerData* get_player_data() {

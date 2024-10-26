@@ -149,7 +149,7 @@ void enemy_update(Entity* self) {
 		}
 
 		// undo missile_targeted if player is no longer in that mode
-		if (player_data->curr_mode != MISSILE)
+		if (player_data->currMode != MISSILE)
 			data->missile_targeted = 0;
 
 		// update hurtbox
@@ -208,8 +208,7 @@ void enemy_die(Entity* self, EnemyData* data, int item_type) {
 	item_spawn(SCRAP, self->position, data->dist_to_player);
 	item_spawn(item_type, self->position, data->dist_to_player);
 	self->rotation.y = 0;
-	self->hurtbox = gfc_box(200.0, -60.0, 200.0, 1.0, 1.0, 1.0);	// make dummy hitbox not accessible to player
-
+	self->hurtbox = gfc_box(400.0, -150.0, 200.0, 1.0, 1.0, 1.0);	// make dummy hitbox not accessible to player
 }
 
 /* 
