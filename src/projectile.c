@@ -30,7 +30,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
     *   player has reached allowed amount of projectiles
     *   player can't shoot yet due to shot delay (for single_shot)
     */
-    if ((player_data->currMode == MISSILE && player_data->missile_count >= player_data->max_missile) ||
+    if ((player_data->currMode == MISSILE && player_data->missile_count > player_data->max_missile) ||
         (player_data->currMode == MISSILE && !player_data->missile_spawn) ||
         player_data->proj_count >= MAX_PROJ ||
         time < player_data->next_shot
@@ -86,6 +86,11 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
     }
     else if (data->type == MISSILE) {
         player_data->missile_count++;
+        if (player_data->missile_count > player_data->max_missile) {
+            entity_free(self);
+            return;
+        }
+
         rec_data = player_data->reticle->data;
 
         self->think = proj_think_missile;
@@ -133,6 +138,8 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
 
     self = entity_new();
     if (!self) return;
+
+    if (!owner) return;
 
     data = gfc_allocate_array(sizeof(ProjData), 1);
     if (data) self->data = data;
@@ -208,6 +215,7 @@ void proj_update(Entity* self) {
     if (!self) return;
 
     data = self->data;
+    if (!data) return;
 
     if (get_player_data()->in_shop || get_player_data()->paused) return;
 
@@ -292,7 +300,8 @@ void proj_free(Entity* self) {
 
     if (!self) return;
 
-    data = (ProjData*) self->data;
+    data = self->data;
+    if (!data) return;
     
     if (data->owner_type == PLAYER) {
         get_player_data()->proj_count--;
@@ -308,6 +317,8 @@ void proj_free(Entity* self) {
 }
 
 Uint8 proj_exist(Entity* self, ProjData* data) {
+    if (!self || !data) return 0;
+
     if (data->owner_type == PLAYER && self->position.y < data->y_bound) 
        return 0;
 
@@ -320,6 +331,8 @@ Uint8 proj_exist(Entity* self, ProjData* data) {
 void proj_think_basic(Entity* self) {
     ProjData* data;
     EnemyData* enemy_data;
+
+    if (!self) return;
 
     data = self->data;
     if (!data) return;
@@ -341,9 +354,10 @@ void proj_think_basic(Entity* self) {
 void proj_think_missile(Entity* self) {
     ProjData* data;
 
+    if (!self) return;
+
     data = self->data;
     if (!data) return;
-
 
     if (get_player_data()->in_shop || get_player_data()->paused) return;
 
@@ -373,6 +387,8 @@ void proj_think_vortex(Entity* self) {
     if (!self) return;
 
     p_data = get_player_data();
+    if (!p_data) return;
+
     if (p_data->in_shop || p_data->paused) return;
 
     if (gf2d_mouse_button_pressed(0))

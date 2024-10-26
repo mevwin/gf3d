@@ -96,9 +96,14 @@ void level_update(Entity* player, PlayerData* p_data) {
         gf2d_mouse_draw();
 
         // player respawn
-        if (gf2d_mouse_button_held(0))
+        if (gf2d_mouse_button_released(2)) {
             shop_reset(); // reset upgrade checks if player has died
-        player_respawn(player);
+            enemy_despawn_all();
+            player_respawn(player);
+            enemy_count = 0;
+            enemy_killed = 0;
+            enemy_start = 0;
+        }
     }
     else { // game in play
         enemy_hud_all();

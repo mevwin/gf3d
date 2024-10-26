@@ -106,5 +106,6 @@ Entity* get_entityList();
 Entity_Models* get_models();
 
 void entity_despawn_all();
+void enemy_despawn_all();
 
 #endif

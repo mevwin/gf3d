@@ -320,13 +320,17 @@ ShopData* get_UI_data() {
 */
 
 void player_hud(PlayerData* data) {
+    GFC_Vector2D res;
     float start, scrap, maxscrap, upgrade_length;
     float currHealth, currShield, currScrap, shieldStart, currVortex;
+    float enemy_kill, enemy_goal, currEnem;
     int scrap_line_count, new_x, i;
 
     if (!data) return;
     if (data->player_dead || data->in_shop) return;
     
+    res = gf3d_vgraphics_get_resolution();
+
     currHealth = (float) (400.0 * (data->currHealth / data->total_health_bar));
     currHealth = roundf(10 * currHealth) / 10;
 
@@ -344,6 +348,12 @@ void player_hud(PlayerData* data) {
 
     shieldStart = 10.0 + currHealth;
 
+    enemy_kill = (float) enemy_killed;
+    enemy_goal = 50.0;
+
+    currEnem = (float)(500.0 * (enemy_kill / enemy_goal));
+    currEnem = roundf(10 * currEnem) / 10;
+
     // health bar draws
     gf2d_draw_rect_filled(gfc_rect(10, 20, 400.0, 30), GFC_COLOR_BLACK);
 
@@ -356,6 +366,7 @@ void player_hud(PlayerData* data) {
         // bar outline
     gf2d_draw_rect(gfc_rect(10, 20, 400, 30), GFC_COLOR_WHITE);
     gf2d_font_draw_line_tag("HEALTH", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 23));
+
 
     // scrap bar draws
         // current scrap
@@ -376,10 +387,19 @@ void player_hud(PlayerData* data) {
     gf2d_draw_rect(gfc_rect(10, 60, 400, 30), GFC_COLOR_WHITE);
     gf2d_font_draw_line_tag("SCRAP", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 63));
 
+
     // vortex bar draws
     gf2d_draw_rect_filled(gfc_rect(10, 100, 200.0, 30), GFC_COLOR_BLACK);
     gf2d_draw_rect_filled(gfc_rect(10, 100, currVortex, 30), GFC_COLOR_GREEN);
     gf2d_draw_rect(gfc_rect(10, 100, 200, 30), GFC_COLOR_WHITE);
+    gf2d_font_draw_line_tag("VORTEX", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 103));
+
+    // wave progress bar draws
+    start = res.x - 600.0;
+    gf2d_draw_rect_filled(gfc_rect(start, 20, 500.0, 30), GFC_COLOR_BLACK);
+    gf2d_draw_rect_filled(gfc_rect(start, 20, currEnem, 30), GFC_COLOR_BLUE);
+    gf2d_draw_rect(gfc_rect(start, 20, 500, 30), GFC_COLOR_WHITE);
+    gf2d_font_draw_line_tag("WAVE PROGRESS", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(start + 5, 23));
 
     /*
     if (data->currMode == MISSILE) {
@@ -467,12 +487,12 @@ void wave_start(PlayerData* data) {
     res = gf3d_vgraphics_get_resolution();
 
     if (gf2d_mouse_button_released(2)) {
-        enemy_start++;
+        enemy_start = 1;
         data->wave_end = 0;
     }
     else {
         gf2d_font_draw_line_tag("WAVE START", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(res.x / 2 - 90.0, res.y / 2));
-        gf2d_font_draw_line_tag("(Right Click to Continue)", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(res.x / 2 - 120.0, res.y / 2 - 60.0));
+        gf2d_font_draw_line_tag("Right Click to Start", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(res.x / 2 - 120.0, res.y / 2 - 60.0));
     }
 }
 
@@ -482,7 +502,7 @@ void wave_completed(PlayerData* data) {
     res = gf3d_vgraphics_get_resolution();
     gf2d_draw_rect_filled(gfc_rect(0, 0, res.x, res.y), gfc_color(65, 65, 65, 0.4));
     gf2d_font_draw_line_tag("WAVE COMPLETE", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(res.x / 2 - 90.0, res.y / 2 - 100.0));
-    gf2d_font_draw_line_tag("Press Left Click to Continue", 
+    gf2d_font_draw_line_tag("Press Right Click to Continue", 
         FT_H3, GFC_COLOR_WHITE, gfc_vector2d(res.x / 2 - 90.0, res.y / 2 - 60.0));
 
     data->wave_end = 1;
@@ -502,12 +522,11 @@ void player_death_screen(PlayerData* data) {
 
     res = gf3d_vgraphics_get_resolution();
     gf2d_draw_rect_filled(gfc_rect(0, 0, res.x, res.y), gfc_color(65, 65, 65, 0.4));
+    
     gf2d_font_draw_line_tag("YOU DIED", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(res.x / 2 - 90.0, res.y / 2 - 100.0));
-    gf2d_font_draw_line_tag("Press Left Click to Restart",
+    
+    gf2d_font_draw_line_tag("Press Right Click to Restart",
         FT_H3, GFC_COLOR_WHITE, gfc_vector2d(res.x / 2 - 90.0, res.y / 2 - 60.0));
-
-    enemy_count = 0;
-    enemy_killed = 0;
 }
 
 void enemy_hud(EnemyData* data, GFC_Vector3D position) {

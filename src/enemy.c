@@ -20,6 +20,8 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 	data = gfc_allocate_array(sizeof(EnemyData), 1);
 	if (data) self->data = data;
 
+	if (!data) return;
+
 	type = gfc_random_int(4);
 
 	self->model = get_models()->enemy;

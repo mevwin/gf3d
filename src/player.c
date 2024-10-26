@@ -26,6 +26,9 @@ Entity* player_spawn() {
 
     p_data = gfc_allocate_array(sizeof(PlayerData), 1);
     if (p_data) self->data = p_data;
+
+    if (!p_data) return NULL;
+
     data = p_data;
 
     player_data_init(data);
@@ -71,8 +74,8 @@ void player_data_init(PlayerData* data) {
     data->currShield = 0.0;
     data->maxScrap = 50;
     data->currScrap = 0;
-    data->vortex_dur = 0.0;
     data->vortex_max = 40.0;
+    data->vortex_dur = data->vortex_max; 
 
     // default player attack
     data->currMode = SINGLE_SHOT;
@@ -209,6 +212,8 @@ void player_update(Entity* self) {
     PlayerData* data;
     float time;
 
+    if (!self) return;
+
     data = self->data;
     if (!data) return;
 
@@ -216,7 +221,6 @@ void player_update(Entity* self) {
 
     // update camera
     player_cam(self, data);
-
 
     /* updates model based on current attack type */
     time = SDL_GetTicks() / 1000.0;
@@ -264,6 +268,22 @@ void player_update(Entity* self) {
     // rounding floats to nearest tenth
     //data->currHealth = roundf(10 * data->currHealth) / 10;
     //data->currShield = roundf(10 * data->currShield) / 10;
+
+    // stay is missile mode until all missiles are gone
+    if (data->missile_count > 0) 
+        data->currMode = MISSILE;
+    
+    // reduce player movement when shooting
+    if (!data->mid_roll) {
+        if (gf2d_mouse_button_pressed(0) || gf2d_mouse_button_held(0)) {
+            data->upspeed = 1.0;
+            data->rigspeed = 1.0;
+        }
+        else {
+            data->upspeed = 1.3;
+            data->rigspeed = 1.3;
+        }
+    }
 
     // shield restoration
     if (data->currShield < data->maxShield && data->maxShield > 0.0) 
@@ -339,7 +359,10 @@ void player_take_damage(Entity* self, PlayerData* data, float time) {
 void player_die(Entity* self) {
     PlayerData* data;
 
+    if (!self) return;
+
     data = self->data;
+    if (!data) return;
 
     data->player_dead = 1;
     player_death(self);
@@ -358,7 +381,10 @@ void player_respawn(Entity* self) {
     PlayerData* data;
     GFC_Vector3D reticle_pos;
 
+    if (!self) return;
+
     data = self->data;
+    if (!data) return;
 
     self->model->texture = get_models()->single_shot;
     player_data_init(data);
@@ -367,6 +393,8 @@ void player_respawn(Entity* self) {
 }
 
 void player_quit(Entity* self) {
+    if (!self) return;
+
     entity_free(self);
 }
 

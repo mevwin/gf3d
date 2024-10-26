@@ -200,3 +200,29 @@ void entity_despawn_all() {
         entity_free(target);
     }
 }
+
+
+void enemy_despawn_all() {
+    Entity* entityList, * target;
+    int i;
+
+    entityList = get_entityList();
+
+    // despawn all projectiles, items, and reticles first
+    for (i = 0; i < MAX_ENTITY; i++) {
+        target = &entityList[i];
+
+        if (target->entity_type == PLAYER || target->entity_type == ENEMY)
+            continue;
+
+        entity_free(target);
+    }
+
+    for (i = 0; i < MAX_ENTITY; i++) {
+        target = &entityList[i];
+
+        if (target->entity_type != ENEMY) continue;
+
+        entity_free(target);
+    }
+}
