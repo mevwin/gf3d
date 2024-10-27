@@ -58,6 +58,19 @@ void UI_init() {
     y_start += 120.0;
     UI_data->nuke_block = gfc_rect(x_start, y_start, 200.0, 100.0);
 
+    /*player UI*/
+    UI_data->player_health = gf2d_sprite_load_image("images/UI/health.png");
+    UI_data->player_shield = gf2d_sprite_load_image("images/UI/shield.png");
+    UI_data->player_scrap = gf2d_sprite_load_image("images/UI/scrap.png");
+    UI_data->player_vortex = gf2d_sprite_load_image("images/UI/vortex.png");
+    UI_data->progress_bar = gf2d_sprite_load_image("images/UI/progress.png");
+    UI_data->enemy_health = gf2d_sprite_load_image("images/UI/enemy_health.png");
+
+    UI_data->player_health_back = gf2d_sprite_load_image("images/UI/health_back.png");
+    UI_data->vortex_back = gf2d_sprite_load_image("images/UI/vortex_back.png");
+    UI_data->progress_back = gf2d_sprite_load_image("images/UI/progress_back.png");
+    UI_data->enemy_health_back = gf2d_sprite_load_image("images/UI/enemy_health_back.png");
+
     /*start menu*/
     x_start = (res.x / 2) - 100.0;
     y_start = (res.y / 2) - 60.0;
@@ -66,14 +79,7 @@ void UI_init() {
     y_start += 130.0;
     UI_data->s_quit_block = gfc_rect(x_start, y_start, 200.0, 100.0);
 
-    /*pause menu*/
-
-    /*wave start*/
-    
-    /*wave completed*/
-
-    /*player death screen*/
-    // gfc_vector2d(res.x / 2 - 90.0, res.y / 2 - 20.0)
+    /*player death screen / pause menu*/
     x_start = (res.x / 2) - 100.0;
     y_start = (res.y / 2) - 60.0;
     UI_data->resume_block = gfc_rect(x_start, y_start, 200.0, 100.0);
@@ -85,12 +91,24 @@ void UI_init() {
 }
 
 void UI_free() {
+    gf2d_sprite_free(UI_data->player_health);
+    gf2d_sprite_free(UI_data->player_shield);
+    gf2d_sprite_free(UI_data->player_scrap);
+    gf2d_sprite_free(UI_data->player_vortex);
+    gf2d_sprite_free(UI_data->progress_bar);
+    gf2d_sprite_free(UI_data->enemy_health);
+
+    gf2d_sprite_free(UI_data->player_health_back);
+    gf2d_sprite_free(UI_data->vortex_back);
+    gf2d_sprite_free(UI_data->progress_back);
+    gf2d_sprite_free(UI_data->enemy_health_back);
+
     free(UI_data);
 }
 
 void shop_hud_draw(PlayerData* data) {
     GFC_Rect upgrade_bar;
-    GFC_Vector2D res;
+    GFC_Vector2D res, bar_position, scale;
     float x_start, y_start, upgrade_bar_length, x1, x2;
     float scrap, maxscrap, currScrap;
     int i, scrap_line_count, upgrade_length;
@@ -109,29 +127,35 @@ void shop_hud_draw(PlayerData* data) {
     gf2d_font_draw_line_tag("SHOP", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(605.0, 100.0));
 
     // scrap bar draw
-    x_start = (res.x / 2) - 200.0;
-    y_start = 150.0;
-    scrap_line_count = (int) (data->maxScrap / UI_data->upgrade_cost);
-    if (data->maxScrap % UI_data->upgrade_cost != 0) scrap_line_count++;
-    upgrade_length = (float) (400.0 / (float) scrap_line_count);
-
     scrap = (float)data->currScrap;
     maxscrap = (float)data->maxScrap;
 
-    currScrap = (float)(400.0 * (scrap / maxscrap));
-    currScrap = roundf(10 * currScrap) / 10;
+    currScrap = (float)(scrap / maxscrap);
+    //currScrap = roundf(10 * currScrap) / 10;
 
-    gf2d_draw_rect_filled(gfc_rect(x_start, y_start, 400.0, 30), GFC_COLOR_BLACK);
-    gf2d_draw_rect_filled(gfc_rect(x_start, y_start, currScrap, 30), GFC_COLOR_GREY);
+    x_start = (res.x / 2) - 200.0;
+    y_start = 150.0;
+    bar_position = gfc_vector2d(x_start, y_start);
+    scale = gfc_vector2d(currScrap, 1.0);
 
+    gf2d_sprite_draw_image(UI_data->player_health_back, bar_position);
+    gf2d_sprite_draw(UI_data->player_scrap, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
+
+    scrap_line_count = (int)(data->maxScrap / UI_data->upgrade_cost);
+    if (data->maxScrap % UI_data->upgrade_cost != 0) scrap_line_count++;
+    upgrade_length = (float)(UI_data->player_health_back->frameWidth / (float)scrap_line_count);
+    
     for (i = scrap_line_count; i > 0; i--) {
-        x1 = (int) 400.0 / scrap_line_count;
-        gf2d_draw_rect(gfc_rect(x_start, y_start, upgrade_length, 30), GFC_COLOR_WHITE);
+        x1 = (int)UI_data->player_health_back->frameWidth / scrap_line_count;
+        gf2d_draw_rect(gfc_rect(x_start, y_start, upgrade_length, UI_data->player_health_back->frameHeight), GFC_COLOR_WHITE);
         x_start += x1;
     }
+        // bar outline
     x_start = (res.x / 2) - 200.0;
-    gf2d_draw_rect(gfc_rect(x_start, y_start, 400, 30), GFC_COLOR_WHITE);
-    //gf2d_font_draw_line_tag("SCRAP", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(x_start, y_start));
+    bar_position = gfc_vector2d(x_start, y_start);
+    gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, UI_data->player_scrap->frameWidth, UI_data->player_scrap->frameHeight), GFC_COLOR_WHITE);
+    gf2d_font_draw_line_tag("SCRAP", FT_H5, GFC_COLOR_WHITE, bar_position);
+
     
     // upgrade button draws
         // shields
@@ -249,7 +273,7 @@ void shop_think(PlayerData* data) {
                 return;
             }
             else if (data->currScrap >= UI_data->upgrade_cost) {
-                data->missile_mult += 1.0;
+                data->missile_bonus += 100.0;
                 data->currScrap -= UI_data->upgrade_cost;
                 UI_data->missiles_check++;
                 //slog("missile up");
@@ -320,7 +344,7 @@ ShopData* get_UI_data() {
 */
 
 void player_hud(PlayerData* data) {
-    GFC_Vector2D res;
+    GFC_Vector2D res, bar_position, scale;
     float start, scrap, maxscrap, upgrade_length;
     float currHealth, currShield, currScrap, shieldStart, currVortex;
     float enemy_kill, enemy_goal, currEnem;
@@ -331,74 +355,86 @@ void player_hud(PlayerData* data) {
     
     res = gf3d_vgraphics_get_resolution();
 
-    currHealth = (float) (400.0 * (data->currHealth / data->total_health_bar));
-    currHealth = roundf(10 * currHealth) / 10;
+    currHealth = (float) (data->currHealth / data->total_health_bar);
+    //currHealth = roundf(10 * currHealth) / 10;
 
-    currShield = (float) (400.0 * (data->currShield / data->total_health_bar));
-    currShield = roundf(10 * currShield) / 10;
+    currShield = (float) (data->currShield / data->total_health_bar);
+    //currShield = roundf(10 * currShield) / 10;
 
     scrap = (float)data->currScrap;
     maxscrap = (float)data->maxScrap;
 
-    currScrap = (float) (400.0 * (scrap / maxscrap));
-    currScrap = roundf(10 * currScrap) / 10;
+    currScrap = (float) (scrap / maxscrap);
+    //currScrap = roundf(10 * currScrap) / 10;
 
-    currVortex = (float) (200.0 * (data->vortex_dur / data->vortex_max));
-    currVortex = roundf(10 * currVortex) / 10;
+    currVortex = (float) (data->vortex_dur / data->vortex_max);
+    //currVortex = roundf(10 * currVortex) / 10;
 
-    shieldStart = 10.0 + currHealth;
+    //shieldStart = 10.0 + currHealth;
 
     enemy_kill = (float) enemy_killed;
     enemy_goal = 50.0;
 
-    currEnem = (float)(500.0 * (enemy_kill / enemy_goal));
-    currEnem = roundf(10 * currEnem) / 10;
+    currEnem = (float) (enemy_kill / enemy_goal);
+    //currEnem = roundf(10 * currEnem) / 10;
 
     // health bar draws
-    gf2d_draw_rect_filled(gfc_rect(10, 20, 400.0, 30), GFC_COLOR_BLACK);
+    bar_position = gfc_vector2d(10, 20);
+    gf2d_sprite_draw_image(UI_data->player_health_back, bar_position);
 
         // current health
-    gf2d_draw_rect_filled(gfc_rect(10, 20, currHealth, 30), GFC_COLOR_RED);
+    scale = gfc_vector2d(currHealth, 1.0);
+    gf2d_sprite_draw(UI_data->player_health, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
 
         // current shield
-    gf2d_draw_rect_filled(gfc_rect(shieldStart, 20, currShield, 30), GFC_COLOR_DARKBLUE);
-
+    if (currShield > 0.0) {
+        bar_position.x += (UI_data->player_health->frameWidth * currHealth);
+        scale = gfc_vector2d(currShield, 1.0);
+        gf2d_sprite_draw(UI_data->player_shield, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
+    }
         // bar outline
-    gf2d_draw_rect(gfc_rect(10, 20, 400, 30), GFC_COLOR_WHITE);
+    gf2d_draw_rect(gfc_rect(10.0, bar_position.y, UI_data->player_health_back->frameWidth, UI_data->player_health_back->frameHeight), GFC_COLOR_WHITE);
     gf2d_font_draw_line_tag("HEALTH", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 23));
 
 
     // scrap bar draws
         // current scrap
-    gf2d_draw_rect_filled(gfc_rect(10, 60, 400.0, 30), GFC_COLOR_BLACK);
-    gf2d_draw_rect_filled(gfc_rect(10, 60, currScrap, 30), GFC_COLOR_GREY);
+    bar_position = gfc_vector2d(10, 60);
+    scale = gfc_vector2d(currScrap, 1.0);
+    gf2d_sprite_draw_image(UI_data->player_health_back, bar_position);
+    gf2d_sprite_draw(UI_data->player_scrap, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
 
         // bar outline
     start = 10.0;
     scrap_line_count = (int) (data->maxScrap / UI_data->upgrade_cost);
     if (data->maxScrap % UI_data->upgrade_cost != 0) scrap_line_count++;
-    upgrade_length = (float) (400.0 / (float) scrap_line_count);
+    upgrade_length = (float) (UI_data->player_scrap->frameWidth / (float) scrap_line_count);
 
     for (i = scrap_line_count; i > 0; i--) {
-        new_x = (int) 400.0 / scrap_line_count;
-        gf2d_draw_rect(gfc_rect(start, 60, upgrade_length, 30), GFC_COLOR_WHITE);
+        new_x = (int) UI_data->player_scrap->frameWidth / scrap_line_count;
+        gf2d_draw_rect(gfc_rect(start, bar_position.y, upgrade_length, UI_data->player_health_back->frameHeight), GFC_COLOR_WHITE);
         start += new_x;
     }
-    gf2d_draw_rect(gfc_rect(10, 60, 400, 30), GFC_COLOR_WHITE);
+    gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, UI_data->player_scrap->frameWidth, UI_data->player_scrap->frameHeight), GFC_COLOR_WHITE);
     gf2d_font_draw_line_tag("SCRAP", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 63));
 
-
     // vortex bar draws
-    gf2d_draw_rect_filled(gfc_rect(10, 100, 200.0, 30), GFC_COLOR_BLACK);
-    gf2d_draw_rect_filled(gfc_rect(10, 100, currVortex, 30), GFC_COLOR_GREEN);
-    gf2d_draw_rect(gfc_rect(10, 100, 200, 30), GFC_COLOR_WHITE);
+    bar_position = gfc_vector2d(10, 100);
+    scale = gfc_vector2d(currVortex, 1.0);
+    gf2d_sprite_draw_image(UI_data->vortex_back, bar_position);
+
+    gf2d_sprite_draw(UI_data->player_vortex, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
+    gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, 200, 30), GFC_COLOR_WHITE);
     gf2d_font_draw_line_tag("VORTEX", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 103));
 
     // wave progress bar draws
     start = res.x - 600.0;
-    gf2d_draw_rect_filled(gfc_rect(start, 20, 500.0, 30), GFC_COLOR_BLACK);
-    gf2d_draw_rect_filled(gfc_rect(start, 20, currEnem, 30), GFC_COLOR_BLUE);
-    gf2d_draw_rect(gfc_rect(start, 20, 500, 30), GFC_COLOR_WHITE);
+    bar_position = gfc_vector2d(start, 20);
+    scale = gfc_vector2d(currEnem, 1.0);
+    gf2d_sprite_draw_image(UI_data->progress_back, bar_position);
+    
+    gf2d_sprite_draw(UI_data->progress_bar, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
+    gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, UI_data->progress_bar->frameWidth, UI_data->progress_bar->frameHeight), GFC_COLOR_WHITE);
     gf2d_font_draw_line_tag("WAVE PROGRESS", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(start + 5, 23));
 
     /*
@@ -533,7 +569,7 @@ void player_death_screen(PlayerData* data) {
 void enemy_hud(EnemyData* data, GFC_Vector3D position) {
     float health, maxhealth, currHealth;
     PlayerData* player_data;
-    GFC_Vector2D bar_position;
+    GFC_Vector2D bar_position, scale;
 
     if (!data) return;
     
@@ -542,19 +578,21 @@ void enemy_hud(EnemyData* data, GFC_Vector3D position) {
 
     health = data->currHealth;
     maxhealth = data->maxHealth;
-    currHealth = (float)( 100.0 * (health / maxhealth));
-    currHealth = roundf(10 * currHealth) / 10;
+    currHealth = (float)(health / maxhealth);
+    //currHealth = roundf(10 * currHealth) / 10;
 
     bar_position = gfc_3DPos_to_2DPos(position, data->x_bound, data->z_bound);
-    
+    scale = gfc_vector2d(currHealth, 1.0);
+
     // bar offset (maybe testing the scaling for other res???)
     bar_position.x += 100.0;
     bar_position.y += 50.0;
     bar_position.x *= 0.8;
     bar_position.y *= 0.8;
 
-    gf2d_draw_rect_filled(gfc_rect(bar_position.x, bar_position.y, 100.0, 20), GFC_COLOR_BLACK);
-    gf2d_draw_rect_filled(gfc_rect(bar_position.x, bar_position.y, currHealth, 20), GFC_COLOR_DARKBLUE);
+    gf2d_sprite_draw_image(UI_data->enemy_health_back, bar_position);
+    gf2d_sprite_draw(UI_data->enemy_health, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
+    
     gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, 100.0, 20), GFC_COLOR_WHITE);
 }
 

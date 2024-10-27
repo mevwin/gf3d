@@ -26,7 +26,7 @@ typedef struct {
     float           single_shot_bonus;  // bonus damage for single_shot from upgrades
     float           charge_shot_mult;   // charge shot multipler
     int             max_missile;        // maximum number of missiles a player can spawn per missile attack attempt
-    float           missile_mult;       // missile multiplier
+    float           missile_bonus;      // missile bonus damage
     int             nuke_cost;          // scrap cost of using SUPER_NUKE
 
     Uint8           active_item;        // current item in use

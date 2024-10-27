@@ -97,7 +97,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
         self->model = get_models()->single_proj;
         data->forspeed = player_data->proj_speed * 0.75;
         //data->forspeed = 1.0;
-        data->damage = player_data->base_damage * player_data->missile_mult;
+        data->damage = player_data->base_damage + player_data->missile_bonus;
         data->missile_target = rec_data->enemy_pos;
         //data->missile_target = &(player_data->reticle->position);
 

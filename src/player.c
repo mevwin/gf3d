@@ -82,7 +82,7 @@ void player_data_init(PlayerData* data) {
 
     data->single_shot_bonus = 0;
     data->charge_shot_mult = 3.0;
-    data->missile_mult = 3.0;
+    data->missile_bonus = data->base_damage * 2.0;
     data->max_missile = 5;
     data->nuke_cost = data->maxScrap;
    

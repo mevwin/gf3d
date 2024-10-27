@@ -2,6 +2,7 @@
 #define __UI_H__
 
 #include "gfc_shape.h"
+#include "gf2d_sprite.h"
 #include "player.h"
 #include "enemy.h"
 
@@ -47,17 +48,26 @@ typedef struct {
     Uint8           charge_shot_max;
     Uint8           nuke_max; 
 
+    /* player UI */
+    Sprite*         player_health;
+    Sprite*         player_shield;
+    Sprite*         player_scrap;
+    Sprite*         player_vortex;
+    Sprite*         progress_bar;
+    Sprite*         enemy_health;
+
+    Sprite*         player_health_back;
+    Sprite*         vortex_back;
+    Sprite*         progress_back;
+    Sprite*         enemy_health_back;
+
     /*start menu*/
     GFC_Rect        start_block;
     GFC_Rect        s_quit_block;
 
-    /*pause menu*/
+    /*player death screen / pause menu*/
     GFC_Rect        resume_block;
     GFC_Rect        quit_block;
-
-    /*wave completed*/
-
-    /*player death screen*/
 }UIData;
 
 Uint8 game_start, enemy_start;
