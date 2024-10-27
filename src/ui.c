@@ -510,6 +510,7 @@ void wave_completed(PlayerData* data) {
     if (gf2d_mouse_button_released(2)) {
         player_upgrade(data);
         shop_reset();
+        wave_count++;
         data->in_shop = 1;
         enemy_start = 0;
         enemy_count = 0;

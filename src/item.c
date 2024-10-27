@@ -11,14 +11,16 @@
 * two bounding boxes for player, one for enemy targets, one for item pickups
 */
 
-Entity* item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
+void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
     Entity* self;
     ItemData* data;
     float dist_x, dist_y, conver;
 
+    if (type == NONE) return;
+
     // sanity check
     self = entity_new();
-    if (!self) return NULL;
+    if (!self) return;
 
     self->position = spawn_pos;
     self->think = item_think;
@@ -38,10 +40,6 @@ Entity* item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
         self->model = get_models()->health_pickup;
         data->forspeed = 2.0;
     }
-    else{ //NONE
-        entity_free(self);
-        return;
-    }
 
     data->type = type;
     data->dist_to_player = dist_to_player;
@@ -59,42 +57,31 @@ Entity* item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
     conver = dist_to_player / data->forspeed;
     data->rigspeed = (dist_x / conver);
     data->upspeed = (dist_y / conver);
-
-    return self;
+    data->active = 1;
 }
 
 void item_think(Entity* self) {
     ItemData* data; 
     PlayerData* player_data;
-    Entity* player, *entityList;
-    int i;
+    GFC_Box player_hurtbox;
 
     data = self->data;
     if (!data) return;
 
     player_data = get_player_data();
 
-    if (player_data->in_shop || player_data->paused) return;
+    if (player_data->in_shop || player_data->paused || !data->active) return;
 
     self->position.x -= data->rigspeed;
     self->position.y += data->forspeed;
     self->position.z -= data->upspeed;
 
+    player_hurtbox = get_player_hurtbox();
+
     // checks if item hit player
-    if (self->position.y > -40){
-        entityList = get_entityList();
-        for (i = 0; i < MAX_ENTITY; i++) {
-            player = &entityList[i];
-
-            if (player->entity_type != PLAYER)
-                continue;
-
-            // collision detection check
-            if (gfc_box_overlap(self->hurtbox, player->hurtbox)) {
-                item_activate(self, data->type);
-                break;
-            }
-        }
+    if (self->position.y > -30 && gfc_box_overlap(self->hurtbox, player_hurtbox) && data->active) {
+        item_activate(self, data->type);
+        data->active = 0;
     }
 }
 void item_update(Entity* self) {
@@ -107,7 +94,10 @@ void item_update(Entity* self) {
 
     player_data = get_player_data();
 
-    if (player_data->in_shop || player_data->paused) return;
+    if (player_data->in_shop || player_data->paused || !data->active) return;
+
+    if (self->position.y > 90.0 || player_data->player_dead)
+        entity_free(self);
 
     // updates movement
     dist_x = player_data->player_pos->x - self->position.x;
@@ -125,10 +115,7 @@ void item_update(Entity* self) {
                             self->model->bounds.h,
                             self->model->bounds.d);
 
-
-    if (self->position.y > 90.0 || player_data->player_dead )
-        entity_free(self);
-    
+  
 }
 
 void item_activate(Entity* self, int type) {

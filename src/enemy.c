@@ -7,30 +7,15 @@
 #include "projectile.h"
 #include "item.h"
 
-Entity* enemy_spawn(GFC_Vector3D* player_pos) {
-	Entity* self;
+EnemyData* enemy_data_init() {
 	EnemyData* data;
-	PlayerData* player_data;
-	GFC_Vector3D position;
 	Enemy_Type type;
 
-	self = entity_new();
-	if (!self) return NULL;
-
 	data = gfc_allocate_array(sizeof(EnemyData), 1);
-	if (data) self->data = data;
+	if (!data) return NULL;
 
-	if (!data) return;
-
-	type = gfc_random_int(4);
-
-	self->model = get_models()->enemy;
-	self->think = enemy_think;
-	self->update = enemy_update;
-	self->free = enemy_free;
-	self->entity_type = ENEMY;
-
-	data->enemy_type = 0;
+	type = PEAS;
+	data->enemy_type = type;
 	data->maxHealth = 1500.0;
 	data->currHealth = 1500.0;
 
@@ -44,16 +29,40 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 	data->damage_taken = 0.0;
 	data->next_single_shot = 0.0;
 
-	data->player_pos = player_pos;
-
 	data->x_bound = 74; // left is positive, right is negative
 	data->z_bound = 50;
 	data->dist_to_player = -65;
 
+	return data;
+}
+
+Entity* enemy_spawn(GFC_Vector3D* player_pos) {
+	Entity* self;
+	EnemyData* data;
+	GFC_Vector3D position;
+	
+
+	self = entity_new();
+	if (!self) return NULL;
+
+	data = enemy_data_init();
+	if (data) self->data = data;
+
+	if (!data) return;
+
+	if (wave_count > 0) enemy_update_stats(data);
+
+	self->model = get_models()->enemy;
+	self->think = enemy_think;
+	self->update = enemy_update;
+	self->free = enemy_free;
+	self->entity_type = ENEMY;
+
+	data->player_pos = player_pos;
+
 	position = gfc_vector3d_random_pos(data->x_bound, data->dist_to_player, data->z_bound);
 	self->position = position;
 	data->spawn_pos = position;
-
 
 	self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
 							self->position.y - (self->model->bounds.h / 2),
@@ -121,7 +130,7 @@ void enemy_update(Entity* self) {
 
 	player_data = get_player_data();
 
-	if (player_data->in_shop || player_data->paused)
+	if (player_data->in_shop || player_data->paused || !player_data)
 		return;
 
 	// dont do anything or find new player
@@ -175,7 +184,6 @@ void enemy_update(Entity* self) {
 
 		enemy_die(self, data, rand);
 		data->enemy_dead = 1;
-
 	}
 
 	self->rotation.y -= 0.1;
@@ -193,7 +201,7 @@ void enemy_free(Entity* self) {
 	free(data);
 	enemy_count--;
 	enemy_killed++;
-	slog("enemy_killed: %d", enemy_killed);
+	//slog("enemy_killed: %d", enemy_killed);
 }
 
 void enemy_take_damage(Entity* self, EnemyData* data) {
@@ -211,6 +219,19 @@ void enemy_die(Entity* self, EnemyData* data, int item_type) {
 	item_spawn(item_type, self->position, data->dist_to_player);
 	self->rotation.y = 0;
 	self->hurtbox = gfc_box(400.0, -150.0, 200.0, 1.0, 1.0, 1.0);	// make dummy hitbox not accessible to player
+}
+
+void enemy_update_stats(EnemyData* data) {
+	int i;
+	
+	if (!data) return;
+
+	for (i = wave_count; i > 0; i--) {
+		data->maxHealth *= 1.1;
+		data->currHealth = data->maxHealth;
+		data->base_damage *= 1.1;
+	}
+	slog("enemy stats updated %d times", wave_count);
 }
 
 /* 

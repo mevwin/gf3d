@@ -7,10 +7,9 @@
 #include "projectile.h"
 #include "reticle.h"
 
-static PlayerData* p_data;
+static Entity* self;
 
 Entity* player_spawn() {
-    Entity* self;
     PlayerData* data;
     GFC_Vector3D position, reticle_pos;
 
@@ -24,12 +23,10 @@ Entity* player_spawn() {
     self->free = player_free;
     self->entity_type = PLAYER;
 
-    p_data = gfc_allocate_array(sizeof(PlayerData), 1);
-    if (p_data) self->data = p_data;
+    data = gfc_allocate_array(sizeof(PlayerData), 1);
+    if (data) self->data = data;
 
-    if (!p_data) return NULL;
-
-    data = p_data;
+    if (!data) return NULL;
 
     player_data_init(data);
 
@@ -163,8 +160,9 @@ void player_think(Entity* self) {
     }
         // MISSILE
     else if ((gf2d_mouse_button_held(2) && data->currScrap > 0 && 
-        data->missile_count <= data->max_missile && !data->vortex_flag))
-    {
+        data->missile_count < data->max_missile && !data->vortex_flag
+        ))
+{
         data->currMode = MISSILE;
         
         if (rec_data->locked_on)
@@ -172,8 +170,8 @@ void player_think(Entity* self) {
         else
             data->missile_spawn = 0;
         
-        player_attack(self, data);
         data->next_charged_shot = time + 0.9;
+        player_attack(self, data);
     }
         // VORTEX
     else if (gfc_input_command_released("vortex") && data->currMode != VORTEX && data->vortex_dur >= (data->vortex_max / 3.0)) {
@@ -229,7 +227,8 @@ void player_update(Entity* self) {
     if (time >= data->next_charged_shot && 
         time < data->next_charged_shot + 0.03 && 
         !data->took_damage &&
-        !data->vortex_flag
+        !data->vortex_flag &&
+        !data->currMode != MISSILE
         ){
         data->currMode = CHARGE_SHOT;
         self->model->texture = get_models()->charge_shot;
@@ -237,7 +236,8 @@ void player_update(Entity* self) {
         // SINGLE_SHOT texture
     else if (data->take_damage_timing < time &&
              data->change_flag && 
-             !data->took_damage
+             !data->took_damage &&
+             !data->currMode != MISSILE
         ) {
         data->currMode = SINGLE_SHOT;
         self->model->texture = get_models()->single_shot;
@@ -268,10 +268,6 @@ void player_update(Entity* self) {
     // rounding floats to nearest tenth
     //data->currHealth = roundf(10 * data->currHealth) / 10;
     //data->currShield = roundf(10 * data->currShield) / 10;
-
-    // stay is missile mode until all missiles are gone
-    if (data->missile_count > 0) 
-        data->currMode = MISSILE;
     
     // reduce player movement when shooting
     if (!data->mid_roll) {
@@ -410,7 +406,13 @@ void player_upgrade( PlayerData* data) {
 }
 
 PlayerData* get_player_data() {
-    return p_data;
+    if (!self->data) return;
+    return self->data;
+}
+
+GFC_Box get_player_hurtbox(){
+    if (!self) return;
+    return self->hurtbox;
 }
 
 

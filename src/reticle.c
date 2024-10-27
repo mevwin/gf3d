@@ -49,7 +49,7 @@ void reticle_update(Entity* self) {
     if (!data) return;
 
     player_data = get_player_data();
-    if (player_data->in_shop || player_data->paused || player_data->player_dead) return;
+    if (player_data->in_shop || player_data->paused || player_data->player_dead || !player_data) return;
 
     // updating reticle position
     cursor = gfc_2DPos_to_3DPos(gf2d_mouse_get_position(), data->x_bound, data->z_bound);

@@ -13,6 +13,7 @@ typedef enum {
 
 typedef struct {
 	int				type;			// type of item
+	Uint8			active;			
 
 	// movement details
 	float			forspeed;		// y-movement
@@ -22,7 +23,7 @@ typedef struct {
 
 }ItemData;
 
-Entity* item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player);
+void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player);
 void item_think(Entity* self);
 void item_update(Entity* self);
 void item_activate(Entity* self, int type);

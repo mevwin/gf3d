@@ -208,7 +208,8 @@ void proj_update(Entity* self) {
     ProjData* data;
     PlayerData* player_data;
     EnemyData* enemy_data;
-    Entity* target, * entityList;
+    Entity* target, *entityList;
+    GFC_Box player_hurtbox;
     int i;
     float dist_x, dist_y, conver, z_angle, y_angle;
 
@@ -253,39 +254,33 @@ void proj_update(Entity* self) {
     }
     
     // checks if projectile hits anything
-    // only initate check if enemy projectile is close enough to player or if the projectile is from player
-    if ((self->position.y > -20.0 && data->owner_type == ENEMY) || 
-        (data->owner_type == PLAYER && self->position.y < -40.0 && data->type != VORTEX)) 
-    {
+    // enemy attacking player
+    player_hurtbox = get_player_hurtbox();
+    if (data->owner_type == ENEMY && self->position.y > -20.0 && gfc_box_overlap(self->hurtbox, player_hurtbox)){
+        player_data = get_player_data();
+        player_data->took_damage = 1;
+        player_data->damaged_type = data->type;
+        player_data->damage_taken = data->damage;
+        entity_free(self);
+    }
+    // player attacking enemy
+    else if (data->owner_type == PLAYER && self->position.y < -40.0 && data->type != VORTEX) {
         entityList = get_entityList();
+
+        // check which enemy got hit
         for (i = 0; i < MAX_ENTITY; i++) {
             target = &entityList[i];
 
-            if ((target->entity_type != ENEMY && data->owner_type == PLAYER) ||
-                (target->entity_type != PLAYER && data->owner_type == ENEMY) ||
-                target->entity_type == PROJECTILE ||
-                target->entity_type == RETICLE ||
-                target->entity_type == ITEM
-                )
+            if (target->entity_type != ENEMY)
                 continue;
 
             // collision detection check
             if (gfc_box_overlap(self->hurtbox, target->hurtbox)) {
-                if (data->owner_type == PLAYER) {
-                    enemy_data = target->data;
-                    enemy_data->took_damage = 1;
-                    enemy_data->damaged_type = data->type;
-                    enemy_data->damage_taken = data->damage;
-                    if (data->type = MISSILE)
-                        get_player_data()->currMode = SINGLE_SHOT;
-                    
-                }
-                else if (data->owner_type == ENEMY) {
-                    player_data = target->data;
-                    player_data->took_damage = 1;
-                    player_data->damaged_type = data->type;
-                    player_data->damage_taken = data->damage;
-                }
+                enemy_data = target->data;
+                enemy_data->took_damage = 1;
+                enemy_data->damaged_type = data->type;
+                enemy_data->damage_taken = data->damage;
+              
                 entity_free(self);
                 break;
             }
@@ -295,6 +290,7 @@ void proj_update(Entity* self) {
 
 void proj_free(Entity* self) {
     ProjData* data;
+    PlayerData* player_data;
     EnemyData* enemydata;
     Entity* owner;
 
@@ -304,9 +300,16 @@ void proj_free(Entity* self) {
     if (!data) return;
     
     if (data->owner_type == PLAYER) {
-        get_player_data()->proj_count--;
+        player_data = get_player_data();
+        player_data->proj_count--;
         if (data->type == MISSILE)
-            get_player_data()->missile_count--;
+            player_data->missile_count--;
+
+        // stay is missile mode until all missiles are gone
+        if (player_data->missile_count > 0)
+            player_data->currMode = MISSILE;
+        else
+            player_data->currMode = SINGLE_SHOT;
     }
     else if (data->owner_type == ENEMY) {
         enemydata = data->owner->data;

@@ -45,13 +45,16 @@ typedef struct {
 
 Uint32 enemy_count;
 Uint32 enemy_killed;
+Uint32 wave_count;
 
+EnemyData* enemy_data_init();
 Entity* enemy_spawn(GFC_Vector3D* player_pos);
 void enemy_think(Entity* self);
 void enemy_update(Entity* self);
 void enemy_free(Entity* self);
 void enemy_take_damage(Entity* self, EnemyData* data);
 void enemy_die(Entity* self, EnemyData* data, int item_type);
+void enemy_update_stats(EnemyData* data);
 //void check_rand_position(Entity* self);
 
 

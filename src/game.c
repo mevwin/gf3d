@@ -103,6 +103,7 @@ void level_update(Entity* player, PlayerData* p_data) {
             enemy_count = 0;
             enemy_killed = 0;
             enemy_start = 0;
+            wave_count = 0;
         }
     }
     else { // game in play
@@ -179,6 +180,7 @@ int main(int argc,char *argv[])
     game_start = 0;
     enemy_start = 0;
     enemy_killed = 0;
+    wave_count = 0;
     _done = 0;
 
     player = NULL;
