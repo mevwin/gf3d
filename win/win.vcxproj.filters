@@ -201,6 +201,9 @@
     <ClCompile Include="..\src\ui.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\lights.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\gf2d_actor.h">

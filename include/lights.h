@@ -17,4 +17,11 @@ typedef struct{
         
 }Light;
 
+void lights_init();
+void lights_close();
+void light_free(Light* light);
+Light* light_new();
+
+
+
 #endif

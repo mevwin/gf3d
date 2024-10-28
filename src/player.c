@@ -36,12 +36,12 @@ Entity* player_spawn() {
     data->og_pos = self->position;
     data->player_pos = &(self->position);
 
-    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-                            self->position.y - (self->model->bounds.h / 2),
-                            self->position.z - (self->model->bounds.d / 2),
-                            self->model->bounds.w,
-                            self->model->bounds.h,
-                            self->model->bounds.d);
+    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 4.0),
+                            self->position.y - (self->model->bounds.h / 4.0),
+                            self->position.z - (self->model->bounds.d / 4.0),
+                            self->model->bounds.w / 2.0,
+                            self->model->bounds.h / 2.0,
+                            self->model->bounds.d / 2.0);
 
     /*
     data->vortex_box = gfc_box(self->position.x - (self->model->bounds.w / 2),
@@ -183,6 +183,12 @@ void player_think(Entity* self) {
         data->currMode = VORTEX;
         data->next_charged_shot = time + 0.9;
         data->vortex_flag = 1;
+
+        player_attack(self, data);
+    }
+    else if (gfc_input_command_released("nuke") && data->currMode != VORTEX && data->currScrap >= data->nuke_cost) {
+        data->currMode = SUPER_NUKE;
+        data->next_charged_shot = time + 0.9;
 
         player_attack(self, data);
     }

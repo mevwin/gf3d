@@ -45,6 +45,7 @@ void entity_system_init(Uint32 maxEnts){
     models->dead = gf3d_texture_load("models/player_ship/color_AA.png");
     models->single_proj = gf3d_model_load("models/projectiles/single_shot.model");
     models->charge_proj = gf3d_model_load("models/projectiles/charge_shot.model");
+    models->super_nuke = gf3d_model_load("models/projectiles/super_nuke.model");
     models->reticle = gf3d_model_load("models/reticle/reticle.model");
 
     models->peas = gf3d_model_load("models/enemy/peas.model");
@@ -69,7 +70,6 @@ void entity_system_close(){
         if (!entity_manager.entity_list[i]._inuse) continue;
         entity_free(&entity_manager.entity_list[i]);
     }
-    free(entity_manager.entity_list);
 
     gf3d_model_free(models->player);
     gf3d_texture_free(models->single_shot);
@@ -78,6 +78,7 @@ void entity_system_close(){
     gf3d_texture_free(models->dead);
     gf3d_model_free(models->single_proj);
     gf3d_model_free(models->charge_proj);
+    gf3d_model_free(models->super_nuke);
     gf3d_model_free(models->reticle);
 
     gf3d_model_free(models->peas);
@@ -92,6 +93,7 @@ void entity_system_close(){
     gf3d_model_free(models->happy_trigger);
     gf3d_model_free(models->invincibility);
 
+    free(entity_manager.entity_list);
     free(models);
 }
 

@@ -61,6 +61,8 @@ typedef struct {
     Sprite*         progress_back;
     Sprite*         enemy_health_back;
 
+    float           nuke_alpha;
+
     /*start menu*/
     GFC_Rect        start_block;
     GFC_Rect        s_quit_block;

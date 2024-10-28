@@ -198,6 +198,7 @@
     <ClCompile Include="..\src\gf3d_vgraphics.c" />
     <ClCompile Include="..\src\gf3d_vqueues.c" />
     <ClCompile Include="..\src\item.c" />
+    <ClCompile Include="..\src\lights.c" />
     <ClCompile Include="..\src\player.c" />
     <ClCompile Include="..\src\player_move.c" />
     <ClCompile Include="..\src\projectile.c" />

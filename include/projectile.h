@@ -24,6 +24,9 @@ typedef struct {
 	Uint8			vortexed;		
 	Uint8			missile_active;	// is missile in motion
 	GFC_Vector3D*	missile_target;	// pointer to the missile target
+	Uint8			nuke_active;
+	GFC_Vector3D    nuke_deton_pos;
+	float			nuke_dur;
 
 	// projectile movement details
 	float           forspeed;		// y-movement

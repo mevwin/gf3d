@@ -100,7 +100,10 @@ void enemy_think(Entity* self) {
 	player_data = get_player_data();
 
 	// don't do anything if player is dead
-	if (player_data->player_dead || data->currHealth <= 0.0 || player_data->in_shop || player_data->paused) return;
+	if (player_data->player_dead || data->currHealth <= 0.0 || 
+		player_data->in_shop || player_data->paused ||
+		player_data->nuke_flag
+		) return;
 	
 	// TODO: remove this debug tool later
 	/*

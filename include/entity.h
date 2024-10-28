@@ -26,6 +26,7 @@ typedef struct {
 
     Model*      single_proj;
     Model*      charge_proj;
+    Model*      super_nuke;
     Model*      reticle;
 
     Model*      peas;

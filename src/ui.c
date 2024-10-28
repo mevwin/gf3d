@@ -89,6 +89,7 @@ void UI_init() {
     UI_data->quit_block = gfc_rect(x_start, y_start, 200.0, 100.0);
 
     last_powerup = 0.0;
+    UI_data->nuke_alpha = 0.0;
 
     atexit(UI_free);
 }
@@ -348,8 +349,8 @@ ShopData* get_UI_data() {
 
 void player_hud(PlayerData* data) {
     GFC_Vector2D res, bar_position, scale;
-    float start, scrap, maxscrap;
-    float currHealth, currShield, currScrap, currVortex;
+    float start, scrap, maxscrap, nuke_cost;
+    float currHealth, currShield, currScrap, currVortex, currNuke;
     float enemy_kill, currEnem;
 
     if (!data) return;
@@ -405,6 +406,14 @@ void player_hud(PlayerData* data) {
     gf2d_sprite_draw_image(UI_data->player_health_back, bar_position);
     gf2d_sprite_draw(UI_data->player_scrap, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
 
+        // super nuke cost draw
+    if (data->currScrap >= data->maxScrap) {
+        nuke_cost = (float) data->nuke_cost;
+        currNuke = (float) (UI_data->player_scrap->frameWidth * (data->nuke_cost / maxscrap));
+        gf2d_draw_rect_filled(
+            gfc_rect(bar_position.x, bar_position.y, currNuke, UI_data->player_scrap->frameHeight),
+            gfc_color(255, 0, 0, 0.3));
+    }
         // bar outline
     gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, UI_data->player_scrap->frameWidth, UI_data->player_scrap->frameHeight), GFC_COLOR_WHITE);
     gf2d_font_draw_line_tag("SCRAP", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 63));
@@ -430,9 +439,27 @@ void player_hud(PlayerData* data) {
 
     // power up notifs
     if (data->active_item == HAPPY_TRIGGER) 
-        gf2d_font_draw_line_tag("HAPPY TRIGGER", FT_H4, GFC_COLOR_WHITE, gfc_vector2d(560, 300));
+        gf2d_font_draw_line_tag("HAPPY TRIGGER", FT_H4, GFC_COLOR_WHITE, gfc_vector2d(530, 300));
     else if (data->active_item == INVINCIBILITY)
-        gf2d_font_draw_line_tag("INVICIBILITY", FT_H4, GFC_COLOR_WHITE, gfc_vector2d(540, 300));
+        gf2d_font_draw_line_tag("INVICIBILITY", FT_H4, GFC_COLOR_WHITE, gfc_vector2d(520, 300));
+    
+    // visual for super nuke
+    
+    if (data->nuke_flag) {
+        UI_data->nuke_alpha += 0.005;
+        if (UI_data->nuke_alpha > 1.0)
+            UI_data->nuke_alpha = 1.0;
+
+        gf2d_draw_rect_filled(gfc_rect(0, 0, res.x, res.y), gfc_color(255, 0, 0, UI_data->nuke_alpha));
+    }
+    else {
+        UI_data->nuke_alpha -= 0.05;
+        if (UI_data->nuke_alpha > 0.0)
+            gf2d_draw_rect_filled(gfc_rect(0, 0, res.x, res.y), gfc_color(255, 0, 0, UI_data->nuke_alpha));
+        else
+            UI_data->nuke_alpha = 0;
+    }
+
     /*
     if (data->currMode == MISSILE) {
         entityList = get_entityList();

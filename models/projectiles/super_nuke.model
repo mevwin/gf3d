@@ -1,0 +1,7 @@
+{
+    "model":
+    {
+        "obj":"models/projectiles/super_nuke.obj",
+        "texture": "models/projectiles/charge_red.png"
+    }
+}
