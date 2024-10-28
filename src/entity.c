@@ -56,7 +56,9 @@ void entity_system_init(Uint32 maxEnts){
 
     models->scrap = gf3d_model_load("models/item/enemy_scrap.model");
     models->health_pickup = gf3d_model_load("models/item/health_pickup.model");
-    
+    models->happy_trigger = gf3d_model_load("models/item/happy_trigger.model");
+    models->invincibility = gf3d_model_load("models/item/invincibility.model");
+
     atexit(entity_system_close);
 }
 
@@ -87,7 +89,9 @@ void entity_system_close(){
 
     gf3d_model_free(models->scrap);
     gf3d_model_free(models->health_pickup);
-    
+    gf3d_model_free(models->happy_trigger);
+    gf3d_model_free(models->invincibility);
+
     free(models);
 }
 
@@ -209,7 +213,6 @@ void entity_despawn_all() {
     }
 }
 
-
 void entity_reset() {
     Entity* entityList, * target;
     int i;
@@ -226,6 +229,7 @@ void entity_reset() {
         entity_free(target);
     }
 
+    // despawn everything except player
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 

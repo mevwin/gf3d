@@ -5,6 +5,7 @@
 #include "player.h"
 #include "enemy.h"
 #include "reticle.h"
+#include "item.h"
 
 void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float curr_time, Uint8 vortexed) {
     Entity* self;
@@ -80,6 +81,9 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
             data->damage = player_data->vortex_damage;
 
         player_data->next_shot = data->type == SINGLE_SHOT ? curr_time + 0.15 : 0;
+
+        if (player_data->active_item == HAPPY_TRIGGER)
+            player_data->next_shot = curr_time + 0.25;
 
         conver = reticle_pos.y / data->forspeed;
         data->rigspeed = (dist_x / conver);
@@ -170,13 +174,12 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
         self->free = proj_free;
         self->model = get_models()->fencer_attack;
         self->hurtbox = gfc_box(
-            self->position.x - 17.0,
+            self->position.x - 20.0,
             self->position.y - 15.0,
-            self->position.z - 14.0,
-            34.0,
+            self->position.z - 16.0,
+            40.0,
             30.0,
-            28.0);
-        fencer_region = self->hurtbox;
+            32.0);
 
         data->damage = enemy_data->base_damage / 10.0;
 
@@ -451,7 +454,7 @@ void proj_think_vortex(Entity* self) {
 
     if (!p_data->vortex_flag) {
         time = SDL_GetTicks() / 1000.0;
-        p_data->vortex_damage *= 1.2;
+        p_data->vortex_damage *= 1.7;
         if (p_data->vortex_damage > 0.0) {
             player_pos.x = p_data->player_pos->x;
             player_pos.y = p_data->player_pos->y;
@@ -498,6 +501,8 @@ void fencer_attack(Entity* self) {
     p_data = get_player_data();
     enemy_data = data->owner->data;
     time = SDL_GetTicks() / 1000.0;
+
+    if (p_data->player_dead) return;
     
     if (!gfc_box_overlap(self->hurtbox, get_player_hurtbox())) {
         p_data->damage_taken = data->damage;

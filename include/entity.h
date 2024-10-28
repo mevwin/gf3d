@@ -37,6 +37,8 @@ typedef struct {
 
     Model*      scrap;
     Model*      health_pickup;
+    Model*      happy_trigger;
+    Model*      invincibility;
 }Entity_Models;
 
 typedef struct Entity_S{

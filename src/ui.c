@@ -7,6 +7,7 @@
 #include "gf2d_mouse.h"
 #include "ui.h"
 #include "projectile.h"
+#include "item.h"
 
 static UIData* UI_data;
 
@@ -86,6 +87,8 @@ void UI_init() {
 
     y_start += 130.0;
     UI_data->quit_block = gfc_rect(x_start, y_start, 200.0, 100.0);
+
+    last_powerup = 0.0;
 
     atexit(UI_free);
 }
@@ -244,6 +247,7 @@ void shop_think(PlayerData* data) {
 
             if (data->currScrap >= UI_data->upgrade_cost) {
                 data->maxShield += 100.0;
+                data->currShield = data->maxShield;
                 data->currScrap -= UI_data->upgrade_cost;
                 UI_data->shields_check++;
                 //slog("more shields");
@@ -316,7 +320,7 @@ void shop_think(PlayerData* data) {
             else if (data->currScrap >= (UI_data->upgrade_cost * 5)) {
                 data->nuke_cost -= 25;
                 data->currScrap -= UI_data->upgrade_cost;
-                UI_data->charge_shot_check++;
+                UI_data->nuke_check++;
                 //slog("nuke down");
             }
             //else
@@ -424,6 +428,11 @@ void player_hud(PlayerData* data) {
     gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, UI_data->progress_bar->frameWidth, UI_data->progress_bar->frameHeight), GFC_COLOR_WHITE);
     gf2d_font_draw_line_tag("WAVE PROGRESS", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(start + 5, 23));
 
+    // power up notifs
+    if (data->active_item == HAPPY_TRIGGER) 
+        gf2d_font_draw_line_tag("HAPPY TRIGGER", FT_H4, GFC_COLOR_WHITE, gfc_vector2d(560, 300));
+    else if (data->active_item == INVINCIBILITY)
+        gf2d_font_draw_line_tag("INVICIBILITY", FT_H4, GFC_COLOR_WHITE, gfc_vector2d(540, 300));
     /*
     if (data->currMode == MISSILE) {
         entityList = get_entityList();
@@ -586,12 +595,12 @@ void enemy_hud(EnemyData* data, GFC_Vector3D position) {
     gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, 100.0, 20), GFC_COLOR_WHITE);
 
     // draw fencer attack region
-    if (data->enemy_type == FENCERS) {
+    if (fencer_count >= FENCER_MAX) {
         fencer_start = gfc_3DPos_to_2DPos(fencer_spawn, player_data->x_bound, player_data->z_bound);
-        fencer_start.x -= 350.0;
-        fencer_start.y -= 230.0;
-        fencer_attack = gfc_rect(fencer_start.x, fencer_start.y, 700.0, 460.0);
-        gf2d_draw_rect_filled(fencer_attack, gfc_color(65, 65, 65, 0.4));
+        fencer_start.x -= 400.0;
+        fencer_start.y -= 260.0;
+        fencer_attack = gfc_rect(fencer_start.x, fencer_start.y, 800.0, 520.0);
+        gf2d_draw_rect_filled(fencer_attack, gfc_color(65, 65, 65, 0.1));
     }
 }
 

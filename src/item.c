@@ -14,9 +14,17 @@
 void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
     Entity* self;
     ItemData* data;
-    float dist_x, dist_y, conver;
+    float dist_x, dist_y, conver, time;
+    Item_Type item_t;
 
-    if (type == NONE) return;
+    item_t = (Item_Type) type;
+
+    // only allow powerups within the past 20 seconds
+    time = SDL_GetTicks() / 1000.0;
+    if (time < last_powerup && (item_t == HAPPY_TRIGGER || item_t == INVINCIBILITY))
+        item_t = NONE;
+    
+    if (item_t == NONE) return;
 
     // sanity check
     self = entity_new();
@@ -39,6 +47,18 @@ void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
         self->position.z += 20.0;
         self->model = get_models()->health_pickup;
         data->forspeed = 2.0;
+    }
+    else if (type == HAPPY_TRIGGER) {
+        self->position.z += 20.0;
+        self->model = get_models()->happy_trigger;
+        data->forspeed = 2.0;
+        last_powerup = time + 25.0;
+    }
+    else if (type == INVINCIBILITY) {
+        self->position.z += 20.0;
+        self->model = get_models()->invincibility;
+        data->forspeed = 2.0;
+        last_powerup = time + 25.0;
     }
 
     data->type = type;
@@ -70,7 +90,9 @@ void item_think(Entity* self) {
 
     player_data = get_player_data();
 
-    if (player_data->in_shop || player_data->paused || !data->active) return;
+    if (player_data->wave_end) item_activate(self, data->type);
+
+    if (player_data->in_shop || player_data->paused || !data->active || player_data->player_dead) return;
 
     self->position.x -= data->rigspeed;
     self->position.y += data->forspeed;
@@ -94,7 +116,7 @@ void item_update(Entity* self) {
 
     player_data = get_player_data();
 
-    if (player_data->in_shop || player_data->paused || !data->active) return;
+    if (player_data->in_shop || player_data->paused || !data->active || player_data->player_dead) return;
 
     if (self->position.y > 90.0 || player_data->player_dead)
         entity_free(self);
@@ -121,8 +143,10 @@ void item_update(Entity* self) {
 void item_activate(Entity* self, int type) {
     PlayerData* player;
     int extra_amount;
+    float time;
 
     player = get_player_data();
+    time = SDL_GetTicks() / 1000.0;
 
     if (type == SCRAP) {
         extra_amount = 1 + gfc_random_int(3);
@@ -137,6 +161,14 @@ void item_activate(Entity* self, int type) {
             player->currHealth += extra_amount;
         else
             player->currHealth = player->maxHealth;
+    }
+    else if (type == HAPPY_TRIGGER) {
+        player->active_item = HAPPY_TRIGGER;
+        player->item_duration = time + 5.0;
+    }
+    else if (type == INVINCIBILITY) {
+        player->active_item = INVINCIBILITY;
+        player->item_duration = time + 10.0;
     }
     entity_free(self);
 }

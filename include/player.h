@@ -30,6 +30,7 @@ typedef struct {
     int             nuke_cost;          // scrap cost of using SUPER_NUKE
 
     Uint8           active_item;        // current item in use
+    float           item_duration;
 
     // movement bounds (keeps player within camera view)
     int             x_bound;            // from origin to leftmost side

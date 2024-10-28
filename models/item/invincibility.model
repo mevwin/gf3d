@@ -1,0 +1,6 @@
+{
+  "model": {
+    "obj": "models/item/enemy_scrap.obj",
+    "texture": "models/item/color_EE.png"
+  }
+}

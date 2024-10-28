@@ -7,6 +7,8 @@ typedef enum {
 	SCRAP,
 	NONE,
 	HEALTH_PICKUP,
+
+	// powerups
 	HAPPY_TRIGGER,
 	INVINCIBILITY
 }Item_Type;
@@ -22,6 +24,8 @@ typedef struct {
 	float			dist_to_player;
 
 }ItemData;
+
+float last_powerup;
 
 void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player);
 void item_think(Entity* self);

@@ -32,7 +32,6 @@ typedef struct {
 }ProjData;
 
 GFC_Vector3D fencer_spawn;
-GFC_Box fencer_region;
 
 void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float curr_time, Uint8 vortexed);
 void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* owner, float curr_time);

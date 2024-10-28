@@ -55,6 +55,7 @@ EnemyData* enemy_data_init();
 Entity* enemy_spawn(GFC_Vector3D* player_pos);
 void enemy_think(Entity* self);
 void enemy_update(Entity* self);
+void enemy_move(Entity* self);
 
 void enemy_free(Entity* self);
 void enemy_take_damage(Entity* self, EnemyData* data);

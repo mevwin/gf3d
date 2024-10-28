@@ -6,6 +6,7 @@
 #include "player_move.h"
 #include "projectile.h"
 #include "reticle.h"
+#include "item.h"
 
 static Entity* self;
 
@@ -30,7 +31,7 @@ Entity* player_spawn() {
 
     player_data_init(data);
 
-    position = gfc_vector3d_random_pos(data->x_bound, 0, data->z_bound);
+    position = gfc_vector3d(0, 0, 0);
     self->position = position;
     data->og_pos = self->position;
     data->player_pos = &(self->position);
@@ -65,8 +66,8 @@ void player_data_init(PlayerData* data) {
     data->rigspeed = 1.2;
 
     // default player health/resources
-    data->maxHealth = 1000.0;
-    data->currHealth = 1000.0;
+    data->maxHealth = 1200.0;
+    data->currHealth = 1200.0;
     data->maxShield = 0.0;
     data->currShield = 0.0;
     data->maxScrap = 50;
@@ -86,6 +87,9 @@ void player_data_init(PlayerData* data) {
     data->max_missile = 5;
     data->nuke_cost = data->maxScrap;
    
+    data->active_item = NONE;
+    data->item_duration = 0.0;
+
     // default player bounds
     data->x_bound = 49; // left is positive, right is negative
     data->z_bound = 35; // 98 x 70
@@ -290,6 +294,18 @@ void player_update(Entity* self) {
     if (data->currMode != VORTEX && data->vortex_dur < data->vortex_max && !gfc_input_command_held("vortex"))
         data->vortex_dur += 0.1;
 
+    // active powerup checks
+    time = SDL_GetTicks() / 1000.0;
+    if (data->active_item == HAPPY_TRIGGER && time < data->item_duration) {
+        data->currMode = CHARGE_SHOT;
+        data->next_charged_shot = 0.0;
+    }
+    else if (data->active_item == INVINCIBILITY && time < data->item_duration) {
+        // do nothing here
+    }
+    else
+        data->active_item = NONE;
+
     // check if player was hurt
     if (data->took_damage)
         player_take_damage(self, data, time);
@@ -332,6 +348,9 @@ void player_attack(Entity* self, PlayerData* data) {
 
 void player_take_damage(Entity* self, PlayerData* data, float time) {
     if (!data) return;
+
+    if (data->active_item == INVINCIBILITY)
+        return;
 
     self->model->texture = get_models()->damaged;
     data->change_flag = 1;
@@ -383,6 +402,7 @@ void player_respawn(Entity* self) {
     data = self->data;
     if (!data) return;
 
+    self->position = gfc_vector3d(0, 0, 0);
     self->model->texture = get_models()->single_shot;
     player_data_init(data);
     reticle_pos = gfc_vector3d(self->position.x, -60, self->position.z);
