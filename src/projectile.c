@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "gf2d_mouse.h"
+#include "gf2d_draw.h"
 #include "projectile.h"
 #include "player.h"
 #include "enemy.h"
@@ -150,14 +151,38 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     time = SDL_GetTicks() / 1000.0;
 
     // enforcing maximum projectile count per entity
-    if (enemy_data->proj_count == MAX_PROJ || 
-        time < enemy_data->next_single_shot
-    ) {
+    if (enemy_data->proj_count == MAX_PROJ ||
+        time < enemy_data->next_single_shot ||
+        (enemy_data->enemy_type == FENCERS && fencer_count >= FENCER_MAX)
+        ) {
         entity_free(self);
         return;
     }
 
     enemy_data->proj_count++;
+
+    if (enemy_data->enemy_type == FENCERS) {
+        self->think = fencer_attack;
+        self->entity_type = PROJECTILE;
+        data->owner_type = ENEMY;
+        self->position = player_pos;
+        fencer_spawn = player_pos;
+        self->free = proj_free;
+        self->model = get_models()->fencer_attack;
+        self->hurtbox = gfc_box(
+            self->position.x - 17.0,
+            self->position.y - 15.0,
+            self->position.z - 14.0,
+            34.0,
+            30.0,
+            28.0);
+        fencer_region = self->hurtbox;
+
+        data->damage = enemy_data->base_damage / 10.0;
+
+        fencer_count++;
+        return;
+    }
 
     self->update = proj_update;
     self->entity_type = PROJECTILE;
@@ -183,10 +208,10 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
 
     if (data->type == PEAS || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
-        self->model = data->type == PEAS ? get_models()->peas : get_models()->charge_proj;
+        self->model = data->type == PEAS ? get_models()->peas_shot : get_models()->chargers_shot;
         data->forspeed = data->type == PEAS ? enemy_data->pea_speed : enemy_data->pea_speed * 1.25;
-        data->damage = data->type == PEAS ? enemy_data->base_damage : enemy_data->base_damage * 3;
-        enemy_data->next_single_shot = data->type == PEAS ? curr_time + 1.0 : curr_time + 1.0;
+        data->damage = data->type == PEAS ? enemy_data->base_damage : enemy_data->base_damage * 2.0;
+        enemy_data->next_single_shot = data->type == PEAS ? curr_time + 0.9 : curr_time + 1.8;
 
         conver = enemy_data->dist_to_player / data->forspeed;
         data->rigspeed = (dist_x / conver);
@@ -426,6 +451,7 @@ void proj_think_vortex(Entity* self) {
 
     if (!p_data->vortex_flag) {
         time = SDL_GetTicks() / 1000.0;
+        p_data->vortex_damage *= 1.2;
         if (p_data->vortex_damage > 0.0) {
             player_pos.x = p_data->player_pos->x;
             player_pos.y = p_data->player_pos->y;
@@ -456,4 +482,29 @@ void proj_think_vortex(Entity* self) {
 
 void proj_think_super_nuke(Entity* self) {
 
+}
+
+void fencer_attack(Entity* self) {
+    PlayerData* p_data;
+    EnemyData* enemy_data;
+    ProjData* data;
+    float time;
+
+    if (!self) return;
+
+    data = self->data;
+    if (!data) return;
+
+    p_data = get_player_data();
+    enemy_data = data->owner->data;
+    time = SDL_GetTicks() / 1000.0;
+    
+    if (!gfc_box_overlap(self->hurtbox, get_player_hurtbox())) {
+        p_data->damage_taken = data->damage;
+        player_take_damage(self, p_data, time);
+    }
+
+    if (enemy_data->currHealth <= 0.0) {
+        entity_free(self);
+    }
 }

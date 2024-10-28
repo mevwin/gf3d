@@ -95,8 +95,9 @@ void player_data_init(PlayerData* data) {
     data->took_damage = 0;
     data->take_damage_timing = 0.0;
     data->damage_taken = 0;
+    data->emp_time = 0.0;
+
     data->player_dead = 0;
-    
     data->in_shop = 0;
     data->paused = 0;
     data->wave_end = 0;

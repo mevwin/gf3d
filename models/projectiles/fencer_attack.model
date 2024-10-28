@@ -1,0 +1,7 @@
+{
+    "model":
+    {
+        "obj":"models/projectiles/fencer_attack.obj",
+        "texture": "models/projectiles/color_44.png"
+    }
+}

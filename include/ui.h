@@ -71,6 +71,7 @@ typedef struct {
 }UIData;
 
 Uint8 game_start, enemy_start;
+float enemy_goal;
 int _done;
 
 void UI_init();

@@ -98,11 +98,12 @@ void level_update(Entity* player, PlayerData* p_data) {
         // player respawn
         if (gf2d_mouse_button_released(2)) {
             shop_reset(); // reset upgrade checks if player has died
-            enemy_despawn_all();
+            entity_reset();
             player_respawn(player);
             enemy_count = 0;
             enemy_killed = 0;
             enemy_start = 0;
+            fencer_count = 0;
             wave_count = 0;
         }
     }
@@ -114,12 +115,14 @@ void level_update(Entity* player, PlayerData* p_data) {
             wave_start(p_data);  
 
         // game condition
-        if (enemy_count < 5 && enemy_killed <= 45 && enemy_start)
+        if (enemy_count < 4 && enemy_killed < enemy_goal && enemy_start)
             enemy_spawn(&(player->position));
        
-        if (enemy_killed == 50) 
+        if (enemy_killed >= enemy_goal) {
+            enemy_killed = enemy_goal;
+            enemy_reset();
             wave_completed(p_data);
-        
+        }   
     }
 }
 
@@ -180,6 +183,7 @@ int main(int argc,char *argv[])
     game_start = 0;
     enemy_start = 0;
     enemy_killed = 0;
+    enemy_goal = 20.0;
     wave_count = 0;
     _done = 0;
 
@@ -209,7 +213,7 @@ int main(int argc,char *argv[])
                 //gf3d_model_draw(trench, trenchMat, GFC_COLOR_WHITE, NULL, 0);
                 entity_draw_all();
                 draw_origin();
-             
+                
                 //2D draws
                 //gf2d_mouse_draw();
                 //gf2d_font_draw_line_tag("ALT+F4 to exit",FT_H1,GFC_COLOR_WHITE, gfc_vector2d(10,10));

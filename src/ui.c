@@ -109,9 +109,8 @@ void UI_free() {
 void shop_hud_draw(PlayerData* data) {
     GFC_Rect upgrade_bar;
     GFC_Vector2D res, bar_position, scale;
-    float x_start, y_start, upgrade_bar_length, x1, x2;
+    float x_start, y_start, upgrade_bar_length, x1, x2, upgrade_cost, upgrade_length;
     float scrap, maxscrap, currScrap;
-    int i, scrap_line_count, upgrade_length;
 
     res = gf3d_vgraphics_get_resolution();
     gf2d_draw_rect_filled(gfc_rect(0, 0, res.x, res.y), UI_data->shop_color);
@@ -130,6 +129,7 @@ void shop_hud_draw(PlayerData* data) {
     scrap = (float)data->currScrap;
     maxscrap = (float)data->maxScrap;
 
+
     currScrap = (float)(scrap / maxscrap);
     //currScrap = roundf(10 * currScrap) / 10;
 
@@ -140,16 +140,15 @@ void shop_hud_draw(PlayerData* data) {
 
     gf2d_sprite_draw_image(UI_data->player_health_back, bar_position);
     gf2d_sprite_draw(UI_data->player_scrap, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
-
-    scrap_line_count = (int)(data->maxScrap / UI_data->upgrade_cost);
-    if (data->maxScrap % UI_data->upgrade_cost != 0) scrap_line_count++;
-    upgrade_length = (float)(UI_data->player_health_back->frameWidth / (float)scrap_line_count);
     
-    for (i = scrap_line_count; i > 0; i--) {
-        x1 = (int)UI_data->player_health_back->frameWidth / scrap_line_count;
-        gf2d_draw_rect(gfc_rect(x_start, y_start, upgrade_length, UI_data->player_health_back->frameHeight), GFC_COLOR_WHITE);
-        x_start += x1;
-    }
+    // next upgrade cost indicator
+    x1 = x_start + (UI_data->player_scrap->frameWidth * currScrap);
+    upgrade_cost = (float) (maxscrap / (float) UI_data->upgrade_cost);
+    upgrade_length = (float)(UI_data->player_health_back->frameWidth / upgrade_cost);
+    x1 -= upgrade_length;
+    if (x1 >= x_start)
+        gf2d_draw_rect_filled(gfc_rect(x1, y_start, upgrade_length, UI_data->player_health_back->frameHeight), GFC_COLOR_RED);
+
         // bar outline
     x_start = (res.x / 2) - 200.0;
     bar_position = gfc_vector2d(x_start, y_start);
@@ -345,10 +344,9 @@ ShopData* get_UI_data() {
 
 void player_hud(PlayerData* data) {
     GFC_Vector2D res, bar_position, scale;
-    float start, scrap, maxscrap, upgrade_length;
-    float currHealth, currShield, currScrap, shieldStart, currVortex;
-    float enemy_kill, enemy_goal, currEnem;
-    int scrap_line_count, new_x, i;
+    float start, scrap, maxscrap;
+    float currHealth, currShield, currScrap, currVortex;
+    float enemy_kill, currEnem;
 
     if (!data) return;
     if (data->player_dead || data->in_shop) return;
@@ -373,7 +371,6 @@ void player_hud(PlayerData* data) {
     //shieldStart = 10.0 + currHealth;
 
     enemy_kill = (float) enemy_killed;
-    enemy_goal = 50.0;
 
     currEnem = (float) (enemy_kill / enemy_goal);
     //currEnem = roundf(10 * currEnem) / 10;
@@ -405,16 +402,6 @@ void player_hud(PlayerData* data) {
     gf2d_sprite_draw(UI_data->player_scrap, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
 
         // bar outline
-    start = 10.0;
-    scrap_line_count = (int) (data->maxScrap / UI_data->upgrade_cost);
-    if (data->maxScrap % UI_data->upgrade_cost != 0) scrap_line_count++;
-    upgrade_length = (float) (UI_data->player_scrap->frameWidth / (float) scrap_line_count);
-
-    for (i = scrap_line_count; i > 0; i--) {
-        new_x = (int) UI_data->player_scrap->frameWidth / scrap_line_count;
-        gf2d_draw_rect(gfc_rect(start, bar_position.y, upgrade_length, UI_data->player_health_back->frameHeight), GFC_COLOR_WHITE);
-        start += new_x;
-    }
     gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, UI_data->player_scrap->frameWidth, UI_data->player_scrap->frameHeight), GFC_COLOR_WHITE);
     gf2d_font_draw_line_tag("SCRAP", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(15, 63));
 
@@ -524,6 +511,7 @@ void wave_start(PlayerData* data) {
 
     if (gf2d_mouse_button_released(2)) {
         enemy_start = 1;
+        fencer_count = 0;
         data->wave_end = 0;
     }
     else {
@@ -550,6 +538,7 @@ void wave_completed(PlayerData* data) {
         data->in_shop = 1;
         enemy_start = 0;
         enemy_count = 0;
+        fencer_count = 0;
         enemy_killed = 0;
     }
 }
@@ -569,7 +558,8 @@ void player_death_screen(PlayerData* data) {
 void enemy_hud(EnemyData* data, GFC_Vector3D position) {
     float health, maxhealth, currHealth;
     PlayerData* player_data;
-    GFC_Vector2D bar_position, scale;
+    GFC_Vector2D bar_position, scale, fencer_start;
+    GFC_Rect fencer_attack;
 
     if (!data) return;
     
@@ -594,6 +584,15 @@ void enemy_hud(EnemyData* data, GFC_Vector3D position) {
     gf2d_sprite_draw(UI_data->enemy_health, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
     
     gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, 100.0, 20), GFC_COLOR_WHITE);
+
+    // draw fencer attack region
+    if (data->enemy_type == FENCERS) {
+        fencer_start = gfc_3DPos_to_2DPos(fencer_spawn, player_data->x_bound, player_data->z_bound);
+        fencer_start.x -= 350.0;
+        fencer_start.y -= 230.0;
+        fencer_attack = gfc_rect(fencer_start.x, fencer_start.y, 700.0, 460.0);
+        gf2d_draw_rect_filled(fencer_attack, gfc_color(65, 65, 65, 0.4));
+    }
 }
 
 void enemy_hud_all() {

@@ -24,12 +24,17 @@ typedef struct {
     Texture*    damaged;
     Texture*    dead;
 
-    Model*      enemy;
-    Model*      peas;
-
     Model*      single_proj;
     Model*      charge_proj;
     Model*      reticle;
+
+    Model*      peas;
+    Model*      peas_shot;
+    Model*      chargers;
+    Model*      chargers_shot;
+    Model*      fencer;
+    Model*      fencer_attack;
+
     Model*      scrap;
     Model*      health_pickup;
 }Entity_Models;
@@ -106,6 +111,7 @@ Entity* get_entityList();
 Entity_Models* get_models();
 
 void entity_despawn_all();
-void enemy_despawn_all();
+void entity_reset();
+void enemy_reset();
 
 #endif

@@ -31,6 +31,9 @@ typedef struct {
 	float			rigspeed;		// x-movement
 }ProjData;
 
+GFC_Vector3D fencer_spawn;
+GFC_Box fencer_region;
+
 void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float curr_time, Uint8 vortexed);
 void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* owner, float curr_time);
 void proj_update(Entity* self);
@@ -56,6 +59,9 @@ void proj_think_missile(Entity* self);
 */
 void proj_think_vortex(Entity* self);
 void proj_think_super_nuke(Entity* self);
+
+void fencer_attack(Entity* self);
+
 
 
 #endif

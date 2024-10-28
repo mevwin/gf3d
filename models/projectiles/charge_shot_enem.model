@@ -1,0 +1,7 @@
+{
+    "model":
+    {
+        "obj":"models/projectiles/charge_shot_enem.obj",
+        "texture": "models/projectiles/charge_red.png"
+    }
+}

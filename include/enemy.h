@@ -3,7 +3,9 @@
 
 #include "entity.h"
 
-typedef enum {
+#define FENCER_MAX 1
+
+typedef enum EnemyType{
 	PEAS,		// SINGLE_SHOT
 	CHARGERS,	// CHARGE_SHOT
 	FENCERS,	// restrict player space
@@ -41,16 +43,19 @@ typedef struct {
 	GFC_Vector3D*	player_pos;			// pointer to player's current position
 	GFC_Vector3D    spawn_pos;			// initial spawn position
 	Uint8			missile_targeted;	// flag for player missile attack
+
 }EnemyData;
 
 Uint32 enemy_count;
 Uint32 enemy_killed;
+Uint8  fencer_count;
 Uint32 wave_count;
 
 EnemyData* enemy_data_init();
 Entity* enemy_spawn(GFC_Vector3D* player_pos);
 void enemy_think(Entity* self);
 void enemy_update(Entity* self);
+
 void enemy_free(Entity* self);
 void enemy_take_damage(Entity* self, EnemyData* data);
 void enemy_die(Entity* self, EnemyData* data, int item_type);

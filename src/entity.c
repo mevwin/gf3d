@@ -43,13 +43,17 @@ void entity_system_init(Uint32 maxEnts){
     models->charge_shot = gf3d_texture_load("models/player_ship/color_44.png");
     models->damaged = gf3d_texture_load("models/player_ship/color_EE.png");
     models->dead = gf3d_texture_load("models/player_ship/color_AA.png");
-
-    models->enemy = gf3d_model_load("models/player_ship/test_ship.model");
-    models->peas = gf3d_model_load("models/projectiles/single_shot_enem.model");
-
     models->single_proj = gf3d_model_load("models/projectiles/single_shot.model");
     models->charge_proj = gf3d_model_load("models/projectiles/charge_shot.model");
     models->reticle = gf3d_model_load("models/reticle/reticle.model");
+
+    models->peas = gf3d_model_load("models/enemy/peas.model");
+    models->peas_shot = gf3d_model_load("models/projectiles/single_shot_enem.model");
+    models->chargers = gf3d_model_load("models/enemy/chargers.model");
+    models->chargers_shot = gf3d_model_load("models/projectiles/charge_shot_enem.model");
+    models->fencer = gf3d_model_load("models/enemy/fencer.model");
+    models->fencer_attack = gf3d_model_load("models/projectiles/fencer_attack.model");
+
     models->scrap = gf3d_model_load("models/item/enemy_scrap.model");
     models->health_pickup = gf3d_model_load("models/item/health_pickup.model");
     
@@ -70,13 +74,17 @@ void entity_system_close(){
     gf3d_texture_free(models->charge_shot);
     gf3d_texture_free(models->damaged);
     gf3d_texture_free(models->dead);
-
-    gf3d_model_free(models->enemy);
-    gf3d_model_free(models->peas);
-
-    gf3d_model_free(models->reticle);
     gf3d_model_free(models->single_proj);
     gf3d_model_free(models->charge_proj);
+    gf3d_model_free(models->reticle);
+
+    gf3d_model_free(models->peas);
+    gf3d_model_free(models->peas_shot);
+    gf3d_model_free(models->chargers);
+    gf3d_model_free(models->chargers_shot);
+    gf3d_model_free(models->fencer);
+    gf3d_model_free(models->fencer_attack);
+
     gf3d_model_free(models->scrap);
     gf3d_model_free(models->health_pickup);
     
@@ -202,7 +210,7 @@ void entity_despawn_all() {
 }
 
 
-void enemy_despawn_all() {
+void entity_reset() {
     Entity* entityList, * target;
     int i;
 
@@ -222,6 +230,32 @@ void enemy_despawn_all() {
         target = &entityList[i];
 
         if (target->entity_type != ENEMY) continue;
+
+        entity_free(target);
+    }
+}
+
+void enemy_reset() {
+    Entity* entityList, * target;
+    int i;
+
+    entityList = get_entityList();
+
+    // despawn all projectiles first
+    for (i = 0; i < MAX_ENTITY; i++) {
+        target = &entityList[i];
+
+        if (target->entity_type != PROJECTILE)
+            continue;
+
+        entity_free(target);
+    }
+
+    for (i = 0; i < MAX_ENTITY; i++) {
+        target = &entityList[i];
+
+        if (target->entity_type != ENEMY)
+            continue;
 
         entity_free(target);
     }

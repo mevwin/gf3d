@@ -14,8 +14,13 @@ EnemyData* enemy_data_init() {
 	data = gfc_allocate_array(sizeof(EnemyData), 1);
 	if (!data) return NULL;
 
-	type = PEAS;
+	type = (Enemy_Type) gfc_random_int(3);
+
+	if (type == FENCERS && fencer_count >= FENCER_MAX)
+		type = (Enemy_Type) gfc_random_int(2);
+
 	data->enemy_type = type;
+
 	data->maxHealth = 1500.0;
 	data->currHealth = 1500.0;
 
@@ -40,7 +45,6 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 	Entity* self;
 	EnemyData* data;
 	GFC_Vector3D position;
-	
 
 	self = entity_new();
 	if (!self) return NULL;
@@ -52,7 +56,14 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 
 	if (wave_count > 0) enemy_update_stats(data);
 
-	self->model = get_models()->enemy;
+	if (data->enemy_type == PEAS) 
+		self->model = get_models()->peas;
+	else if (data->enemy_type == CHARGERS)
+		self->model = get_models()->chargers;
+	else if (data->enemy_type == FENCERS) {
+		self->model = get_models()->fencer;
+	}
+	
 	self->think = enemy_think;
 	self->update = enemy_update;
 	self->free = enemy_free;
@@ -198,6 +209,10 @@ void enemy_free(Entity* self) {
 	if (!self) return;
 
 	data = self->data;
+
+	if (data->enemy_type == FENCERS)
+		fencer_count--;
+
 	free(data);
 	enemy_count--;
 	enemy_killed++;
@@ -231,7 +246,7 @@ void enemy_update_stats(EnemyData* data) {
 		data->currHealth = data->maxHealth;
 		data->base_damage *= 1.1;
 	}
-	slog("enemy stats updated %d times", wave_count);
+	//slog("enemy stats updated %d times", wave_count);
 }
 
 /* 
