@@ -1,6 +1,7 @@
 #include "simple_logger.h"
 #include "gfc_input.h"
 #include "gfc_vector.h"
+#include "gfc_audio.h"
 #include "gf2d_mouse.h"
 #include "player.h"
 #include "player_move.h"
@@ -106,11 +107,12 @@ void player_data_init(PlayerData* data) {
     // player attack flags/checks
     data->proj_count = 0;
     data->nuke_flag = 0;
+    data->vortex_flag = 0;
     data->missile_count = 0;
     data->missile_spawn = 0;
     
     // default shot timing
-    data->next_shot = 0.0;
+    data->next_shot = SDL_GetTicks() / 1000.0;
     data->next_charged_shot = (SDL_GetTicks() / 1000.0) + 0.9;
     data->charge_shot_delay = 0.0;
 
@@ -303,9 +305,10 @@ void player_update(Entity* self) {
         data->active_item = NONE;
 
     // check if player was hurt
-    if (data->took_damage)
+    if (data->took_damage && data->active_item != INVINCIBILITY) {
         player_take_damage(self, data, time);
-
+        gfc_sound_play(get_sound_data()->player_damaged, 0, 0.3, -1, -1);
+    }
     // check if player is dead
     if (data->currHealth <= 0.0 && !data->player_dead)
         player_die(self);
@@ -386,6 +389,9 @@ void player_death(Entity* self) {
     data = self->data;
     data->player_no_attack = 1;
     self->model->texture = get_models()->dead;
+    
+    gfc_sound_play(get_sound_data()->death_sound, 0, 0.3, -1, -1);
+
     entity_free(data->reticle);
 }
 

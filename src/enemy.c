@@ -119,9 +119,9 @@ void enemy_think(Entity* self) {
 
 	time = SDL_GetTicks() / 1000.0;
 
-	if (!player_data->player_no_attack)
+	if (!player_data->player_no_attack) {
 		enemy_proj_spawn(self->position, player_pos, self, time);
-	
+	}
 	enemy_move(self);
 	//slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
 }

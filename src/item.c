@@ -1,4 +1,5 @@
 #include "simple_logger.h"
+#include "gfc_audio.h"
 #include "player.h"
 #include "enemy.h"
 #include "item.h"
@@ -156,6 +157,11 @@ void item_activate(Entity* self, int type) {
         player->active_item = INVINCIBILITY;
         player->item_duration = time + 10.0;
     }
+
+    if (type != SCRAP){
+        gfc_sound_play(get_sound_data()->item_pickup, 0, 0.5, -1, -1);
+    }
+
     entity_free(self);
 }
 

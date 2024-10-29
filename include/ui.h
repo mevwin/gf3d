@@ -62,6 +62,7 @@ typedef struct {
     Sprite*         enemy_health_back;
 
     float           nuke_alpha;
+    Uint8           audio_flag;
 
     /*start menu*/
     GFC_Rect        start_block;

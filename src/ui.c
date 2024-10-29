@@ -1,6 +1,7 @@
 #include <math.h>
 #include "simple_logger.h"
 #include "gf3d_vgraphics.h"
+#include "gfc_audio.h"
 #include "gf2d_font.h"
 #include "gf2d_draw.h"
 #include "gfc_vector.h"
@@ -91,6 +92,8 @@ void UI_init() {
     last_powerup = 0.0;
     UI_data->nuke_alpha = 0.0;
 
+    UI_data->audio_flag = 1;
+
     atexit(UI_free);
 }
 
@@ -147,12 +150,18 @@ void shop_hud_draw(PlayerData* data) {
     
     // next upgrade cost indicator
     x1 = x_start + (UI_data->player_scrap->frameWidth * currScrap);
-    upgrade_cost = (float) (maxscrap / (float) UI_data->upgrade_cost);
-    upgrade_length = (float)(UI_data->player_health_back->frameWidth / upgrade_cost);
+    if (gf2d_mouse_in_rect(UI_data->nuke_block)) { // super_nuke cost
+        upgrade_cost = (float)(maxscrap / (float)(UI_data->upgrade_cost * 5));
+        upgrade_length = (float)(UI_data->player_health_back->frameWidth / upgrade_cost);
+    }
+    else { // regular nuke cost
+        upgrade_cost = (float)(maxscrap / (float)UI_data->upgrade_cost);
+        upgrade_length = (float)(UI_data->player_health_back->frameWidth / upgrade_cost);
+    }
     x1 -= upgrade_length;
-    if (x1 >= x_start)
+    if (x1 >= x_start) 
         gf2d_draw_rect_filled(gfc_rect(x1, y_start, upgrade_length, UI_data->player_health_back->frameHeight), GFC_COLOR_RED);
-
+    
         // bar outline
     x_start = (res.x / 2) - 200.0;
     bar_position = gfc_vector2d(x_start, y_start);
@@ -220,6 +229,7 @@ void shop_hud_draw(PlayerData* data) {
     upgrade_bar = gfc_rect(x_start, y_start, upgrade_bar_length, 30.0);
     gf2d_draw_rect_filled(upgrade_bar, GFC_COLOR_LIGHTCYAN);
 
+        // super nuke up
     gf2d_draw_rect_filled(UI_data->nuke_block, GFC_COLOR_GREY);
     gf2d_font_draw_text_wrap_tag("NUKE COST DOWN", FT_H3, GFC_COLOR_WHITE, UI_data->nuke_block);
     x_start = UI_data->nuke_block.x;
@@ -320,13 +330,19 @@ void shop_think(PlayerData* data) {
             }
             else if (data->currScrap >= (UI_data->upgrade_cost * 5)) {
                 data->nuke_cost -= 25;
-                data->currScrap -= UI_data->upgrade_cost;
+                data->currScrap -= (UI_data->upgrade_cost * 5);
                 UI_data->nuke_check++;
                 //slog("nuke down");
             }
             //else
                 //slog("not enough scrap");
         }
+        gfc_sound_play(
+            get_sound_data()->confirm,
+            0,
+            0.5,
+            -1,
+            -1);
     }
 }
 
@@ -445,7 +461,7 @@ void player_hud(PlayerData* data) {
     
     // visual for super nuke
     if (data->nuke_flag) {
-        UI_data->nuke_alpha += 0.006;
+        UI_data->nuke_alpha += 0.004;
         if (UI_data->nuke_alpha > 1.0)
             UI_data->nuke_alpha = 1.0;
 
@@ -497,7 +513,9 @@ void start_menu() {
 Entity* start_menu_think() {
     if (gf2d_mouse_button_released(0)) {
         if (gf2d_mouse_in_rect(UI_data->start_block)) {
+            gfc_sound_play( get_sound_data()->confirm, 0, 1.0, -1, -1);
             game_start = 1;
+            enemy_start = 0;
             return player_spawn();
         }
         if (gf2d_mouse_in_rect(UI_data->s_quit_block)) {
@@ -526,13 +544,16 @@ void pause_menu_think(PlayerData* data) {
     if (!data) return;
 
     if (gf2d_mouse_button_released(0)) {
-        if (gf2d_mouse_in_rect(UI_data->resume_block))
+        if (gf2d_mouse_in_rect(UI_data->resume_block)) {
             data->paused = 0;
+            gfc_sound_play(get_sound_data()->confirm, 0, 1.0, -1, -1);
+        }
         if (gf2d_mouse_in_rect(UI_data->quit_block)) {
             entity_despawn_all();
             enemy_count = 0;
             enemy_killed = 0;
             game_start = 0;
+            gfc_sound_play(get_sound_data()->cancel, 0, 1.0, -1, -1);
         }
     }
 }
@@ -548,6 +569,7 @@ void wave_start(PlayerData* data) {
         enemy_start = 1;
         fencer_count = 0;
         data->wave_end = 0;
+        gfc_sound_play(get_sound_data()->confirm, 0, 1.0, -1, -1);
     }
     else {
         gf2d_font_draw_line_tag("WAVE START", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(res.x / 2 - 90.0, res.y / 2));
@@ -564,6 +586,9 @@ void wave_completed(PlayerData* data) {
     gf2d_font_draw_line_tag("Press Right Click to Continue", 
         FT_H3, GFC_COLOR_WHITE, gfc_vector2d(res.x / 2 - 90.0, res.y / 2 - 60.0));
 
+    if (!data->wave_end) {
+        gfc_sound_play(get_sound_data()->victory, 0, 0.4, -1, -1);
+    }
     data->wave_end = 1;
 
     if (gf2d_mouse_button_released(2)) {

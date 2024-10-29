@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "gf2d_mouse.h"
+#include "gfc_audio.h"
 #include "gf2d_draw.h"
 #include "projectile.h"
 #include "player.h"
@@ -148,6 +149,9 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
         update_hurtbox(self);
     }
 
+    if (data->type != VORTEX)
+        gfc_sound_play(get_sound_data()->projectile_fire, 0, 0.3, -1, -1);
+
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
 
 }
@@ -240,6 +244,8 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
 
     update_hurtbox(self);
 
+    gfc_sound_play(get_sound_data()->projectile_fire, 0, 0.1, -1, -1);
+
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
 }
 
@@ -268,7 +274,6 @@ void proj_update(Entity* self) {
     if (data->type != VORTEX && data->type != SUPER_NUKE) {
         update_hurtbox(self);
     }
-
 
     // update missile trajectory if missile is active
     if (data->type == MISSILE && data->missile_active){
@@ -330,7 +335,7 @@ void proj_free(Entity* self) {
 
     data = self->data;
     if (!data) return;
-    
+
     if (data->owner_type == PLAYER) {
         player_data = get_player_data();
         player_data->proj_count--;
@@ -447,11 +452,9 @@ void proj_think_vortex(Entity* self) {
             // collision detection check
             data = proj->data;
             
-            if (data->type == FENCERS) {
-                slog("true");
+            if (data->type == FENCERS)
                 continue;
-            }
-
+         
             player_pos.x = p_data->player_pos->x;
             player_pos.y = p_data->player_pos->y;
             player_pos.z = p_data->player_pos->z;
@@ -474,6 +477,8 @@ void proj_think_vortex(Entity* self) {
 
             player_proj_spawn(player_pos, get_reticle_pos(), time, 1);
         }
+        else
+            entity_free(self);
 
         p_data->currMode = SINGLE_SHOT;
         p_data->vortex_damage = 0.0;

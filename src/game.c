@@ -143,6 +143,7 @@ int main(int argc,char *argv[])
     //gfc init
     gfc_input_init("config/input.cfg");
     gfc_action_init(1024); //setups/inits vulkan graphics subsystems
+    gfc_audio_init(256, 16, 4, 1, 1, 1);
 
     //gf3d init
     gf3d_vgraphics_init("config/setup.cfg"); 
@@ -179,6 +180,7 @@ int main(int argc,char *argv[])
     //gf3d_camera_enable_free_look(1);
 
     // game init initialization
+    game_sound_data_init();
     enemy_count = 0;
     game_start = 0;
     enemy_start = 0;
