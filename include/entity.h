@@ -59,7 +59,7 @@ typedef struct Entity_S{
     void            *data;                      // entity data
 
     Entity_Type     entity_type;                // type of entity
-    GFC_Box         hurtbox;                    // entity's hurtbox
+    GFC_Primitive   hurtbox;                    // entity's hurtbox
     
 }Entity;
 /**
@@ -112,6 +112,8 @@ void entity_free(Entity* self);
 Entity* get_entityList();
 
 Entity_Models* get_models();
+
+void update_hurtbox(Entity* self);
 
 void entity_despawn_all();
 void entity_reset();

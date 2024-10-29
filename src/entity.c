@@ -192,6 +192,71 @@ Entity_Models* get_models() {
     return models;
 }
 
+void update_hurtbox(Entity* self) {
+    if (!self) return;
+
+    self->hurtbox.s.p = self->position;
+
+    if (self->entity_type == PLAYER) {
+        self->hurtbox.s.b = gfc_box(
+            self->position.x - (self->model->bounds.w / 4.0),
+            self->position.y - (self->model->bounds.h / 4.0),
+            self->position.z - (self->model->bounds.d / 4.0),
+            self->model->bounds.w / 2.0,
+            self->model->bounds.h / 2.0,
+            self->model->bounds.d / 2.0);
+
+        self->hurtbox.s.s = gfc_sphere(
+            self->position.x,
+            self->position.y,
+            self->position.z,
+            self->model->bounds.w / 2.0
+        );
+    }
+    else if (self->entity_type == ITEM) {
+        self->hurtbox.s.s = gfc_sphere(
+            self->position.x,
+            self->position.y,
+            self->position.z,
+            self->model->bounds.w / 2.0
+        );
+    }
+    else if (self->entity_type == RETICLE) {
+        self->hurtbox.s.b = gfc_box(
+            self->position.x - (self->model->bounds.w / 2.0),
+            self->position.y - (self->model->bounds.h / 2.0),
+            self->position.z - (self->model->bounds.d / 2.0),
+            self->model->bounds.w,
+            self->model->bounds.h,
+            self->model->bounds.d);
+    }
+    else if (self->entity_type == PROJECTILE) {
+        self->hurtbox.s.b = gfc_box(
+            self->position.x - (self->model->bounds.w / 2),
+            self->position.y - (self->model->bounds.h / 2),
+            self->position.z - (self->model->bounds.d / 2),
+            self->model->bounds.w,
+            self->model->bounds.h,
+            self->model->bounds.d);
+
+        self->hurtbox.s.s = gfc_sphere(
+            self->position.x,
+            self->position.y,
+            self->position.z,
+            self->model->bounds.w / 2.0
+        );
+    }
+    else if (self->entity_type == ENEMY) {
+        self->hurtbox.s.b = 
+            gfc_box(self->position.x - (self->model->bounds.w / 2),
+            self->position.y - (self->model->bounds.h / 2),
+            self->position.z - (self->model->bounds.d / 2),
+            self->model->bounds.w,
+            self->model->bounds.h,
+            self->model->bounds.d);
+    }
+}
+
 void entity_despawn_all() {
     Entity* entityList, * target;
     int i;

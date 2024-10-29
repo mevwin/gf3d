@@ -64,12 +64,7 @@ void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
     data->type = type;
     data->dist_to_player = dist_to_player;
 
-    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-                            self->position.y - (self->model->bounds.h / 2),
-                            self->position.z - (self->model->bounds.d / 2),
-                            self->model->bounds.w,
-                            self->model->bounds.h,
-                            self->model->bounds.d);
+    update_hurtbox(self);
 
     dist_x = get_player_data()->player_pos->x - self->position.x;
     dist_y = get_player_data()->player_pos->z - self->position.z;
@@ -83,7 +78,6 @@ void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
 void item_think(Entity* self) {
     ItemData* data; 
     PlayerData* player_data;
-    GFC_Box player_hurtbox;
 
     data = self->data;
     if (!data) return;
@@ -98,10 +92,9 @@ void item_think(Entity* self) {
     self->position.y += data->forspeed;
     self->position.z -= data->upspeed;
 
-    player_hurtbox = get_player_hurtbox();
 
-    // checks if item hit player
-    if (self->position.y > -30 && gfc_box_overlap(self->hurtbox, player_hurtbox) && data->active) {
+    // checks if item hit player (use spheres)
+    if (self->position.y > -30 && gfc_sphere_overlap(self->hurtbox.s.s, self->hurtbox.s.s) && data->active) {
         item_activate(self, data->type);
         data->active = 0;
     }
@@ -130,14 +123,7 @@ void item_update(Entity* self) {
     data->upspeed = (dist_y / conver);
 
     // updates hurtbox
-    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-                            self->position.y - (self->model->bounds.h / 2),
-                            self->position.z - (self->model->bounds.d / 2),
-                            self->model->bounds.w,
-                            self->model->bounds.h,
-                            self->model->bounds.d);
-
-  
+    update_hurtbox(self);
 }
 
 void item_activate(Entity* self, int type) {

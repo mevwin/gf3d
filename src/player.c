@@ -36,12 +36,9 @@ Entity* player_spawn() {
     data->og_pos = self->position;
     data->player_pos = &(self->position);
 
-    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 4.0),
-                            self->position.y - (self->model->bounds.h / 4.0),
-                            self->position.z - (self->model->bounds.d / 4.0),
-                            self->model->bounds.w / 2.0,
-                            self->model->bounds.h / 2.0,
-                            self->model->bounds.d / 2.0);
+    self->hurtbox.s.p = self->position;
+    
+    update_hurtbox(self);
 
     /*
     data->vortex_box = gfc_box(self->position.x - (self->model->bounds.w / 2),
@@ -255,14 +252,7 @@ void player_update(Entity* self) {
         data->change_flag = 0;
     }
 
-    // updates hurtbox
-    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-                            self->position.y - (self->model->bounds.h / 2),
-                            self->position.z - (self->model->bounds.d / 2),
-                            self->model->bounds.w,
-                            self->model->bounds.h,
-                            self->model->bounds.d);
-
+    update_hurtbox(self);
 
     // sanity check, making sure player stats are not over the max or under 0.0
     if (data->currHealth > data->maxHealth)
@@ -437,7 +427,7 @@ PlayerData* get_player_data() {
     return self->data;
 }
 
-GFC_Box get_player_hurtbox(){
+GFC_Primitive get_player_hurtbox(){
     if (!self) return;
     return self->hurtbox;
 }

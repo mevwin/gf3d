@@ -127,7 +127,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
         self->think = proj_think_super_nuke;
         self->model = get_models()->super_nuke;
         data->damage = 20.0;
-        data->nuke_deton_pos =  gfc_vector3d(0, reticle_pos.y, 0);
+        data->nuke_deton_pos = gfc_vector3d(0, reticle_pos.y, 0);
 
         data->forspeed = 1.5;
 
@@ -145,12 +145,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
     }
     
     if (data->type != VORTEX && data->type != SUPER_NUKE) {
-        self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-                                self->position.y - (self->model->bounds.h / 2),
-                                self->position.z - (self->model->bounds.d / 2),
-                                self->model->bounds.w,
-                                self->model->bounds.h,
-                                self->model->bounds.d);
+        update_hurtbox(self);
     }
 
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
@@ -195,7 +190,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
         fencer_spawn = player_pos;
         self->free = proj_free;
         self->model = get_models()->fencer_attack;
-        self->hurtbox = gfc_box(
+        self->hurtbox.s.b = gfc_box(
             self->position.x - 24.0,
             self->position.y - 13.0,
             self->position.z - 17.0,
@@ -243,13 +238,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
         data->upspeed = (dist_y / conver);
     }
 
-    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-                            self->position.y - (self->model->bounds.h / 2),
-                            self->position.z - (self->model->bounds.d / 2),
-                            self->model->bounds.w,
-                            self->model->bounds.h,
-                            self->model->bounds.d
-    );
+    update_hurtbox(self);
 
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
 }
@@ -259,7 +248,6 @@ void proj_update(Entity* self) {
     PlayerData* player_data;
     EnemyData* enemy_data;
     Entity* target, *entityList;
-    GFC_Box player_hurtbox;
     int i;
     float dist_x, dist_y, conver, z_angle, y_angle;
 
@@ -278,12 +266,7 @@ void proj_update(Entity* self) {
 
     // updates hurtbox if not vortex or super_nuke
     if (data->type != VORTEX && data->type != SUPER_NUKE) {
-        self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-                                self->position.y - (self->model->bounds.h / 2),
-                                self->position.z - (self->model->bounds.d / 2),
-                                self->model->bounds.w,
-                                self->model->bounds.h,
-                                self->model->bounds.d);
+        update_hurtbox(self);
     }
 
 
@@ -305,15 +288,14 @@ void proj_update(Entity* self) {
     
     // checks if projectile hits anything
     // enemy attacking player
-    player_hurtbox = get_player_hurtbox();
-    if (data->owner_type == ENEMY && self->position.y > -20.0 && gfc_box_overlap(self->hurtbox, player_hurtbox)){
+    if (data->owner_type == ENEMY && self->position.y > -20.0 && gfc_box_overlap(self->hurtbox.s.b, get_player_hurtbox().s.b)) {
         player_data = get_player_data();
         player_data->took_damage = 1;
         player_data->damaged_type = data->type;
         player_data->damage_taken = data->damage;
         entity_free(self);
     }
-    // player attacking enemy
+    // player attacking enemy 
     else if (data->owner_type == PLAYER && self->position.y < -40.0 && data->type != VORTEX && data->type != SUPER_NUKE) {
         entityList = get_entityList();
 
@@ -325,7 +307,7 @@ void proj_update(Entity* self) {
                 continue;
 
             // collision detection check
-            if (gfc_box_overlap(self->hurtbox, target->hurtbox)) {
+            if (gfc_box_overlap(self->hurtbox.s.b, target->hurtbox.s.b)) {
                 enemy_data = target->data;
                 enemy_data->took_damage = 1;
                 enemy_data->damaged_type = data->type;
@@ -354,8 +336,6 @@ void proj_free(Entity* self) {
         player_data->proj_count--;
         if (data->type == MISSILE)
             player_data->missile_count--;
-        else if (data->type == SUPER_NUKE)
-            player_data->nuke_flag = 0;
 
         // stay is missile mode until all missiles are gone
         if (player_data->missile_count > 0)
@@ -588,7 +568,7 @@ void fencer_attack(Entity* self) {
 
     if (p_data->player_dead || p_data->paused || p_data->in_shop) return;
     
-    if (!gfc_box_overlap(self->hurtbox, get_player_hurtbox())) {
+    if (!gfc_box_overlap(self->hurtbox.s.b, get_player_hurtbox().s.b)){
         p_data->damage_taken = data->damage;
         player_take_damage(self, p_data, time);
     }

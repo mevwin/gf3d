@@ -439,14 +439,13 @@ void player_hud(PlayerData* data) {
 
     // power up notifs
     if (data->active_item == HAPPY_TRIGGER) 
-        gf2d_font_draw_line_tag("HAPPY TRIGGER", FT_H4, GFC_COLOR_WHITE, gfc_vector2d(530, 300));
+        gf2d_font_draw_line_tag("HAPPY TRIGGER", FT_H4, GFC_COLOR_WHITE, gfc_vector2d(520, 300));
     else if (data->active_item == INVINCIBILITY)
         gf2d_font_draw_line_tag("INVICIBILITY", FT_H4, GFC_COLOR_WHITE, gfc_vector2d(520, 300));
     
     // visual for super nuke
-    
     if (data->nuke_flag) {
-        UI_data->nuke_alpha += 0.005;
+        UI_data->nuke_alpha += 0.006;
         if (UI_data->nuke_alpha > 1.0)
             UI_data->nuke_alpha = 1.0;
 

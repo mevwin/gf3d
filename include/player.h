@@ -88,6 +88,6 @@ void player_respawn(Entity* self);
 void player_quit(Entity* self);
 void player_upgrade(PlayerData* data);
 PlayerData* get_player_data();
-GFC_Box get_player_hurtbox();
+GFC_Primitive get_player_hurtbox();
 
 #endif

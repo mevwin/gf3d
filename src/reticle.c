@@ -27,12 +27,7 @@ Entity* reticle_spawn(GFC_Vector3D position){
     data->y_bound = -60;
     data->z_bound = 58; // 172 x 116
 
-    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-                            self->position.y - (self->model->bounds.h / 2),
-                            self->position.z - (self->model->bounds.d / 2),
-                            self->model->bounds.w,
-                            self->model->bounds.h,
-                            self->model->bounds.d);
+    update_hurtbox(self);
 
     return self;
 }
@@ -56,6 +51,9 @@ void reticle_update(Entity* self) {
     self->position.x = cursor.x;
     self->position.z = cursor.y;
 
+    // update hurtbox
+    update_hurtbox(self);
+
     // only check reticle targeting if in missile mode
     if (player_data->currMode == MISSILE) {
         entityList = get_entityList();
@@ -66,7 +64,7 @@ void reticle_update(Entity* self) {
                 continue;
 
             // collision detection check for missile attack
-            if (gfc_box_overlap(self->hurtbox, target->hurtbox)) {
+            if (gfc_box_overlap(self->hurtbox.s.b, target->hurtbox.s.b)) {
                 enemy_data = target->data;
                 
                 // only activate target untargeted, alive enemies
@@ -74,7 +72,6 @@ void reticle_update(Entity* self) {
                     data->locked_on = 1;
                     data->enemy_pos = &(target->position);
                     enemy_data->missile_targeted = 1;
-                    entityList = NULL;
                     break;
                 }
                 else 
@@ -82,14 +79,6 @@ void reticle_update(Entity* self) {
             }
         }
     }
-
-    // update hurtbox
-    self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-                            self->position.y - (self->model->bounds.h / 2),
-                            self->position.z - (self->model->bounds.d / 2),
-                            self->model->bounds.w,
-                            self->model->bounds.h,
-                            self->model->bounds.d);
 
     // keep reticle within camera
     if (self->position.x >= data->x_bound - 1.0)

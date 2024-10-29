@@ -75,12 +75,7 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 	self->position = position;
 	data->spawn_pos = position;
 
-	self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-							self->position.y - (self->model->bounds.h / 2),
-							self->position.z - (self->model->bounds.d / 2),
-							self->model->bounds.w,
-							self->model->bounds.h,
-							self->model->bounds.d);
+	update_hurtbox(self);
 
 	enemy_count++;
 
@@ -178,12 +173,7 @@ void enemy_update(Entity* self) {
 			data->missile_targeted = 0;
 
 		// update hurtbox
-		self->hurtbox = gfc_box(self->position.x - (self->model->bounds.w / 2),
-								self->position.y - (self->model->bounds.h / 2),
-								self->position.z - (self->model->bounds.d / 2),
-								self->model->bounds.w,
-								self->model->bounds.h,
-								self->model->bounds.d);
+		update_hurtbox(self);
 
 		if (data->took_damage)
 			enemy_take_damage(self, data);
@@ -254,7 +244,7 @@ void enemy_die(Entity* self, EnemyData* data, int item_type) {
 	item_spawn(SCRAP, self->position, data->dist_to_player);
 	item_spawn(item_type, self->position, data->dist_to_player);
 	self->rotation.y = 0;
-	self->hurtbox = gfc_box(400.0, -150.0, 200.0, 1.0, 1.0, 1.0);	// make dummy hitbox not accessible to player
+	self->hurtbox.s.b = gfc_box(400.0, -150.0, 200.0, 1.0, 1.0, 1.0);	// make dummy hitbox not accessible to player
 }
 
 void enemy_update_stats(EnemyData* data) {
