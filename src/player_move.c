@@ -5,6 +5,9 @@
 #include "player_move.h"
 #include "projectile.h"
 
+#define NO_MOVEMENT3D (gfc_vector3d(0, 0, 0))
+#define NO_MOVEMENT2D (gfc_vector2d(0, 0))
+
 void player_movement(Entity* self, PlayerData* data) {
     if (!data) return;
     if (!self) return;
@@ -17,79 +20,79 @@ void player_movement(Entity* self, PlayerData* data) {
 
     if (gfc_input_command_down("moveup")) {
         if (!check_movebounds(self, updir, data))
-            updir = gfc_vector3d(0, 0, 0);
+            updir = NO_MOVEMENT3D;
 
         gfc_vector3d_add(self->position, self->position, updir);
 
         // animation panning up
-        if (self->rotation.y > -0.25)
-            self->rotation.y -= 0.03;
-        else self->rotation.y = -0.25;
+        if (self->rotation.y > -0.25f)
+            self->rotation.y -= 0.03f;
+        else self->rotation.y = -0.25f;
     }
 
     if (gfc_input_command_down("movedown")) {
         gfc_vector3d_negate(updir, updir);
         if (!check_movebounds(self, updir, data))
-            updir = gfc_vector3d(0, 0, 0);
+            updir = NO_MOVEMENT3D;
 
         gfc_vector3d_add(self->position, self->position, updir);
 
         // animation panning down
-        if (self->rotation.y < 0.25)
-            self->rotation.y += 0.04;
-        else self->rotation.y = 0.25;
+        if (self->rotation.y < 0.25f)
+            self->rotation.y += 0.04f;
+        else self->rotation.y = 0.25f;
     }
 
     if (gfc_input_command_down("moveright")) {
         gfc_vector2d_negate(rigdir, rigdir);
         if (!check_movebounds(self, gfc_vector3d(rigdir.x, rigdir.y, 0), data))
-            rigdir = gfc_vector2d(0, 0);
+            rigdir = NO_MOVEMENT2D;
 
         gfc_vector2d_add(self->position, self->position, rigdir);
 
         // animation panning right
-        if (self->rotation.x > -0.25 && self->rotation.z > -0.25) {
-            self->rotation.x -= 0.04;
-            self->rotation.z -= 0.04;
+        if (self->rotation.x > -0.25f && self->rotation.z > -0.25f) {
+            self->rotation.x -= 0.04f;
+            self->rotation.z -= 0.04f;
         }
         else {
-            self->rotation.x = -0.25;
-            self->rotation.z = -0.25;
+            self->rotation.x = -0.25f;
+            self->rotation.z = -0.25f;
         }
     }
 
     if (gfc_input_command_down("moveleft")) {
         if (!check_movebounds(self, gfc_vector3d(rigdir.x, rigdir.y, 0), data))
-            rigdir = gfc_vector2d(0, 0);
+            rigdir = NO_MOVEMENT2D;
 
         gfc_vector2d_add(self->position, self->position, rigdir);
 
         // animation panning left
-        if (self->rotation.x < 0.25 && self->rotation.z < 0.25) {
-            self->rotation.x += 0.04;
-            self->rotation.z += 0.04;
+        if (self->rotation.x < 0.25f && self->rotation.z < 0.25f) {
+            self->rotation.x += 0.04f;
+            self->rotation.z += 0.04f;
         }
 
         else {
-            self->rotation.x = 0.25;
-            self->rotation.z = 0.25;
+            self->rotation.x = 0.25f;
+            self->rotation.z = 0.25f;
         }
     }
 
     // undoes rotation on ship when player isn't pressing a button
     if (self->rotation.y < 0 && !gfc_input_command_down("moveup"))
-        self->rotation.y += 0.01;
+        self->rotation.y += 0.01f;
 
     if (self->rotation.y > 0 && !gfc_input_command_down("movedown"))
-        self->rotation.y -= 0.01;
+        self->rotation.y -= 0.01f;
 
     if (self->rotation.x < 0 && self->rotation.z < 0 && !gfc_input_command_down("moveright")) {
-        self->rotation.x += 0.01;
-        self->rotation.z += 0.01;
+        self->rotation.x += 0.01f;
+        self->rotation.z += 0.01f;
     }
     if (self->rotation.x > 0 && self->rotation.z > 0 && !gfc_input_command_down("moveleft")) {
-        self->rotation.x -= 0.01;
-        self->rotation.z -= 0.01;
+        self->rotation.x -= 0.01f;
+        self->rotation.z -= 0.01f;
     }
 
     // fix for offsetting due to model Z rotation
@@ -97,7 +100,8 @@ void player_movement(Entity* self, PlayerData* data) {
         self->position.y = data->og_pos.y;
 
     // resets barrel roll rotation
-    if (self->rotation.x < -5 || self->rotation.x > 5) self->rotation.x = 0;
+    if (self->rotation.x < -5.0f || self->rotation.x > 5.0f) 
+        self->rotation.x = 0;
 
     // barrel_roll checks
     if (gfc_input_command_down("movedown") && 
@@ -127,7 +131,7 @@ void player_movement(Entity* self, PlayerData* data) {
 }
 
 void player_cam(Entity* self, PlayerData* data) {
-    GFC_Vector3D lookTarget, camera = { 0 };
+    GFC_Vector3D lookTarget, camera;
 
     if (!self) return;
     if (!data) return;
@@ -135,18 +139,20 @@ void player_cam(Entity* self, PlayerData* data) {
     // camera_view
     if (!(data->freelook)) {
         gfc_vector3d_copy(lookTarget, gfc_vector3d(0, self->position.y, 0));
-        camera = gfc_vector3d(0, self->position.y + 90, 0);
+        camera = gfc_vector3d(0, self->position.y + 90.0f, 0);
         gf3d_camera_look_at(lookTarget, &camera);
     }
     else slog("Free Look Enabled");
 }
 
 void barrel_roll(Entity* self, PlayerData* data){
+    GFC_Vector3D updir;
+    GFC_Vector2D rigdir;
     if (!data) return;
     if (!self) return;
 
-    GFC_Vector3D updir = { 0, 0, data->upspeed * 3};
-    GFC_Vector2D rigdir = { data->rigspeed*5, 0 };
+    updir = gfc_vector3d(0, 0, data->upspeed * 3.0f);
+    rigdir = gfc_vector2d(data->rigspeed * 5.0f, 0);
 
     gfc_vector3d_rotate_about_x(&updir, self->rotation.x);
     rigdir = gfc_vector2d_rotate(rigdir, self->rotation.z);
@@ -157,63 +163,63 @@ void barrel_roll(Entity* self, PlayerData* data){
     if (data->roll == DOWN) {
         gfc_vector3d_negate(updir, updir);
         if (!check_movebounds(self, updir, data))
-            updir = gfc_vector3d(0, 0, 0);
+            updir = NO_MOVEMENT3D;
 
         gfc_vector3d_add(self->position, self->position, updir);
 
         // animation
-        data->upspeed -= 0.1;
+        data->upspeed -= 0.1f;
        
         if (data->upspeed < 0) {
             data->mid_roll = 0;
-            data->upspeed = 1.2;
+            data->upspeed = 1.2f;
         }
     }
     else if (data->roll == RIGHT) {
         gfc_vector2d_negate(rigdir, rigdir);
         if (!check_movebounds(self, gfc_vector3d(rigdir.x, rigdir.y, 0), data))
-            rigdir = gfc_vector2d(0, 0);
+            rigdir = NO_MOVEMENT2D;
 
         gfc_vector2d_add(self->position, self->position, rigdir);
 
-        data->rigspeed -= 0.1;
+        data->rigspeed -= 0.1f;
 
         // animation
-        self->rotation.x -= 0.55;
+        self->rotation.x -= 0.55f;
 
         if (data->rigspeed < 0) {
             data->mid_roll = 0;
-            data->rigspeed = 1.2;
+            data->rigspeed = 1.2f;
         }
     }
     else if (data->roll == UP) {
         if (!check_movebounds(self, updir, data))
-            updir = gfc_vector3d(0, 0, 0);
+            updir = NO_MOVEMENT3D;
 
         gfc_vector3d_add(self->position, self->position, updir);
 
         // animation
-        data->upspeed -= 0.1;
+        data->upspeed -= 0.1f;
 
         if (data->upspeed < 0) {
             data->mid_roll = 0;
-            data->upspeed = 1.2;
+            data->upspeed = 1.2f;
         }
     }
     else if (data->roll == LEFT) {
         if (!check_movebounds(self, gfc_vector3d(rigdir.x, rigdir.y, 0), data))
-            rigdir = gfc_vector2d(0, 0);
+            rigdir = NO_MOVEMENT2D;
 
         gfc_vector2d_add(self->position, self->position, rigdir);
 
-        data->rigspeed -= 0.1;
+        data->rigspeed -= 0.1f;
 
         // animation
-        self->rotation.x += 0.55;
+        self->rotation.x += 0.55f;
 
         if (data->rigspeed < 0) {
             data->mid_roll = 0;
-            data->rigspeed = 1.2;
+            data->rigspeed = 1.2f;
         }
     }
 }

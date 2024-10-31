@@ -68,7 +68,7 @@ void reticle_update(Entity* self) {
                 enemy_data = target->data;
                 
                 // only activate target untargeted, alive enemies
-                if (!enemy_data->missile_targeted && enemy_data->currHealth > 0.0) {
+                if (!enemy_data->missile_targeted && enemy_data->currHealth > 0) {
                     data->locked_on = 1;
                     data->enemy_pos = &(target->position);
                     enemy_data->missile_targeted = 1;
@@ -81,14 +81,14 @@ void reticle_update(Entity* self) {
     }
 
     // keep reticle within camera
-    if (self->position.x >= data->x_bound - 1.0)
-        self->position.x = data->x_bound - 2.0;
-    if (self->position.x <= -data->x_bound + 1.0)
-        self->position.x = -data->x_bound + 2.0;
-    if (self->position.z >= data->z_bound - 1.0)
-        self->position.z = data->z_bound - 2.0;
-    if (self->position.z <= -data->z_bound + 1.0)
-        self->position.z = -data->z_bound + 2.0;
+    if (self->position.x >= data->x_bound - 1)
+        self->position.x = data->x_bound - 2.0f;
+    if (self->position.x <= -data->x_bound + 1)
+        self->position.x = -data->x_bound + 2.0f;
+    if (self->position.z >= data->z_bound - 1)
+        self->position.z = data->z_bound - 2.0f;
+    if (self->position.z <= -data->z_bound + 1)
+        self->position.z = -data->z_bound + 2.0f;
 }
 
 void reticle_free(Entity* self) {

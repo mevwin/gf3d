@@ -21,18 +21,18 @@ EnemyData* enemy_data_init() {
 
 	data->enemy_type = type;
 
-	data->maxHealth = 1500.0;
-	data->currHealth = 1500.0;
+	data->maxHealth = 1500.0f;
+	data->currHealth = 1500.0f;
 
-	data->base_damage = 100.0;
-	data->pea_speed = 1.5;
+	data->base_damage = 100.0f;
+	data->pea_speed = 1.5f;
 
-	data->upspeed = (float)1.2;
-	data->rigspeed = (float)0.6;
+	data->upspeed = 1.2f;
+	data->rigspeed = 0.6f;
 
 	data->proj_count = 0;
-	data->damage_taken = 0.0;
-	data->next_single_shot = 0.0;
+	data->damage_taken = 0;
+	data->next_single_shot = 0;
 
 	data->x_bound = 74; // left is positive, right is negative
 	data->z_bound = 50;
@@ -95,7 +95,7 @@ void enemy_think(Entity* self) {
 	player_data = get_player_data();
 
 	// don't do anything if player is dead
-	if (player_data->player_dead || data->currHealth <= 0.0 || 
+	if (player_data->player_dead || data->currHealth <= 0 || 
 		player_data->in_shop || player_data->paused ||
 		player_data->nuke_flag
 		) return;
@@ -117,7 +117,7 @@ void enemy_think(Entity* self) {
 	player_pos.y = data->player_pos->y;
 	player_pos.z = data->player_pos->z;
 
-	time = SDL_GetTicks() / 1000.0;
+	time = CURRENT_TIME;
 
 	if (!player_data->player_no_attack) {
 		enemy_proj_spawn(self->position, player_pos, self, time);
@@ -186,7 +186,7 @@ void enemy_update(Entity* self) {
 		if (player_data->active_item == HAPPY_TRIGGER || player_data->active_item == INVINCIBILITY)
 			rand = 1 + gfc_random_int(2);
 		if (player_data->currHealth >= player_data->maxHealth && rand == HEALTH_PICKUP)
-			rand = 1.0;
+			rand = 1;
 
 		enemy_die(self, data, rand);
 		data->enemy_dead = 1;
@@ -244,7 +244,7 @@ void enemy_die(Entity* self, EnemyData* data, int item_type) {
 	item_spawn(SCRAP, self->position, data->dist_to_player);
 	item_spawn(item_type, self->position, data->dist_to_player);
 	self->rotation.y = 0;
-	self->hurtbox.s.b = gfc_box(400.0, -150.0, 200.0, 1.0, 1.0, 1.0);	// make dummy hitbox not accessible to player
+	self->hurtbox.s.b = gfc_box(400, -150, 200, 1, 1, 1);	// make dummy hitbox not accessible to player
 }
 
 void enemy_update_stats(EnemyData* data) {
@@ -253,9 +253,9 @@ void enemy_update_stats(EnemyData* data) {
 	if (!data) return;
 
 	for (i = wave_count; i > 0; i--) {
-		data->maxHealth *= 1.1;
+		data->maxHealth *= 1.1f;
 		data->currHealth = data->maxHealth;
-		data->base_damage *= 1.1;
+		data->base_damage *= 1.1f;
 	}
 	//slog("enemy stats updated %d times", wave_count);
 }

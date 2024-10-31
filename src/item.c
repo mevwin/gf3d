@@ -4,6 +4,11 @@
 #include "enemy.h"
 #include "item.h"
 
+#define ITEM_Z_OFFSET 15.0f
+#define POWERUP_DURATION 25.0f
+#define SCRAP_SPEED 1.0f
+#define POWERUP_SPEED 2.0f
+
 /**
 * define how an item will be interacted with
 * maybe make some global function that can get the item by volume
@@ -21,7 +26,7 @@ void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
     item_t = (Item_Type) type;
 
     // only allow powerups within the past 20 seconds
-    time = SDL_GetTicks() / 1000.0;
+    time = CURRENT_TIME;
     if (time < last_powerup && (item_t == HAPPY_TRIGGER || item_t == INVINCIBILITY))
         item_t = NONE;
     
@@ -42,24 +47,24 @@ void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
 
     if (type == SCRAP) {
         self->model = get_models()->scrap;
-        data->forspeed = 1.0;
+        data->forspeed = SCRAP_SPEED;
     }
     else if (type == HEALTH_PICKUP) {
-        self->position.z += 20.0;
+        self->position.z += ITEM_Z_OFFSET;
         self->model = get_models()->health_pickup;
-        data->forspeed = 2.0;
+        data->forspeed = POWERUP_SPEED;
     }
     else if (type == HAPPY_TRIGGER) {
-        self->position.z += 20.0;
+        self->position.z += ITEM_Z_OFFSET;
         self->model = get_models()->happy_trigger;
-        data->forspeed = 2.0;
-        last_powerup = time + 25.0;
+        data->forspeed = POWERUP_SPEED;
+        last_powerup = time + POWERUP_DURATION;
     }
     else if (type == INVINCIBILITY) {
-        self->position.z += 20.0;
+        self->position.z += ITEM_Z_OFFSET;
         self->model = get_models()->invincibility;
-        data->forspeed = 2.0;
-        last_powerup = time + 25.0;
+        data->forspeed = POWERUP_SPEED;
+        last_powerup = time + POWERUP_DURATION;
     }
 
     data->type = type;
@@ -93,13 +98,13 @@ void item_think(Entity* self) {
     self->position.y += data->forspeed;
     self->position.z -= data->upspeed;
 
-
     // checks if item hit player (use spheres)
-    if (self->position.y > -30 && gfc_sphere_overlap(self->hurtbox.s.s, self->hurtbox.s.s) && data->active) {
+    if (self->position.y > -30.0f && gfc_sphere_overlap(self->hurtbox.s.s, self->hurtbox.s.s) && data->active) {
         item_activate(self, data->type);
         data->active = 0;
     }
 }
+
 void item_update(Entity* self) {
     ItemData* data;
     PlayerData* player_data;
@@ -112,7 +117,7 @@ void item_update(Entity* self) {
 
     if (player_data->in_shop || player_data->paused || !data->active || player_data->player_dead) return;
 
-    if (self->position.y > 90.0 || player_data->player_dead)
+    if (self->position.y > 90.0f || player_data->player_dead)
         entity_free(self);
 
     // updates movement
@@ -133,7 +138,7 @@ void item_activate(Entity* self, int type) {
     float time;
 
     player = get_player_data();
-    time = SDL_GetTicks() / 1000.0;
+    time = CURRENT_TIME;
 
     if (type == SCRAP) {
         extra_amount = 1 + gfc_random_int(3);
@@ -145,23 +150,22 @@ void item_activate(Entity* self, int type) {
     else if (type == HEALTH_PICKUP) {
         extra_amount = 100 * (1 + gfc_random_int(3));
         if ((player->currHealth + extra_amount) <= player->maxHealth)
-            player->currHealth += extra_amount;
+            player->currHealth += (float) extra_amount;
         else
             player->currHealth = player->maxHealth;
     }
     else if (type == HAPPY_TRIGGER) {
         player->active_item = HAPPY_TRIGGER;
-        player->item_duration = time + 5.0;
+        player->item_duration = time + 5.0f;
     }
     else if (type == INVINCIBILITY) {
         player->active_item = INVINCIBILITY;
-        player->item_duration = time + 10.0;
+        player->item_duration = time + 10.0f;
     }
 
-    if (type != SCRAP){
-        gfc_sound_play(get_sound_data()->item_pickup, 0, 0.5, -1, -1);
-    }
-
+    if (type != SCRAP)
+        gfc_sound_play(get_sound_data()->item_pickup, 0, 0.5f, -1, -1);
+ 
     entity_free(self);
 }
 

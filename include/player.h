@@ -3,6 +3,9 @@
 
 #include "entity.h"
 
+#define NEXT_CHARGE_SHOT 0.9f
+#define CHARGE_SHOT_DELAY 0.5f
+
 typedef struct {
     // player values
     float           upspeed;            // vertical speed

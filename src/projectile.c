@@ -8,6 +8,11 @@
 #include "reticle.h"
 #include "item.h"
 
+#define SHOT_DELAY 0.15f
+#define SHOT_DELAY_TRIGGER 0.3f
+#define SUPER_NUKE_DMG 20.0f
+#define ENEMY_FENCER_BOX(p) (gfc_box(p.x - 24.0f, p.y - 13.0f, p.z - 17.0f, 48.0f, 26.0f, 34.0f))
+
 void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float curr_time, Uint8 vortexed) {
     Entity* self;
     ProjData* data;
@@ -23,7 +28,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
 
     player_data = get_player_data();
 
-    time = SDL_GetTicks() / 1000.0;
+    time = CURRENT_TIME;
 
     /**
     * prevent projectile from spawning if:
@@ -76,16 +81,16 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
     if (data->type == SINGLE_SHOT || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
         self->model = data->type == SINGLE_SHOT ? get_models()->single_proj : get_models()->charge_proj;
-        data->forspeed = data->type == SINGLE_SHOT ? player_data->proj_speed : player_data->proj_speed * 1.25;
+        data->forspeed = data->type == SINGLE_SHOT ? player_data->proj_speed : player_data->proj_speed * 1.25f;
         data->damage = data->type == SINGLE_SHOT ? player_data->base_damage + player_data->single_shot_bonus : player_data->base_damage * player_data->charge_shot_mult;
         
         if (vortexed)
             data->damage = player_data->vortex_damage;
 
-        player_data->next_shot = data->type == SINGLE_SHOT ? curr_time + 0.15 : 0;
+        player_data->next_shot = data->type == SINGLE_SHOT ? curr_time + SHOT_DELAY : 0;
 
         if (player_data->active_item == HAPPY_TRIGGER)
-            player_data->next_shot = curr_time + 0.3;
+            player_data->next_shot = curr_time + SHOT_DELAY_TRIGGER;
 
         conver = reticle_pos.y / data->forspeed;
         data->rigspeed = (dist_x / conver);
@@ -102,7 +107,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
 
         self->think = proj_think_missile;
         self->model = get_models()->single_proj;
-        data->forspeed = player_data->proj_speed * 0.75;
+        data->forspeed = player_data->proj_speed * 0.75f;
         //data->forspeed = 1.0;
         data->damage = player_data->base_damage + player_data->missile_bonus;
         data->missile_target = rec_data->enemy_pos;
@@ -127,10 +132,10 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
         player_data->nuke_flag = 1;
         self->think = proj_think_super_nuke;
         self->model = get_models()->super_nuke;
-        data->damage = 20.0;
+        data->damage = SUPER_NUKE_DMG;
         data->nuke_deton_pos = gfc_vector3d(0, reticle_pos.y, 0);
 
-        data->forspeed = 1.5;
+        data->forspeed = 1.5f;
 
         dist_x = data->nuke_deton_pos.x - self->position.x;
         dist_y = data->nuke_deton_pos.z - self->position.z;
@@ -140,8 +145,8 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
         data->upspeed = (dist_y / conver);
 
         player_data->currScrap -= player_data->nuke_cost;
-        time = SDL_GetTicks() / 1000.0;
-        data->nuke_dur = time + 3.0;
+        time = CURRENT_TIME;
+        data->nuke_dur = time + 3.0f;
         data->nuke_active = 0;
     }
     
@@ -150,7 +155,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
     }
 
     if (data->type != VORTEX)
-        gfc_sound_play(get_sound_data()->projectile_fire, 0, 0.3, -1, -1);
+        gfc_sound_play(get_sound_data()->projectile_fire, 0, 0.3f, -1, -1);
 
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
 
@@ -173,7 +178,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     data->owner = owner;
     enemy_data = owner->data;
 
-    time = SDL_GetTicks() / 1000.0;
+    time = CURRENT_TIME;
 
     // enforcing maximum projectile count per entity
     if (enemy_data->proj_count == MAX_PROJ ||
@@ -194,15 +199,9 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
         fencer_spawn = player_pos;
         self->free = proj_free;
         self->model = get_models()->fencer_attack;
-        self->hurtbox.s.b = gfc_box(
-            self->position.x - 24.0,
-            self->position.y - 13.0,
-            self->position.z - 17.0,
-            48.0,
-            26.0,
-            34.0);
+        self->hurtbox.s.b = ENEMY_FENCER_BOX(self->position);
 
-        data->damage = enemy_data->base_damage / 10.0;
+        data->damage = enemy_data->base_damage / 10.0f;
 
         fencer_count++;
         return;
@@ -233,9 +232,9 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     if (data->type == PEAS || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
         self->model = data->type == PEAS ? get_models()->peas_shot : get_models()->chargers_shot;
-        data->forspeed = data->type == PEAS ? enemy_data->pea_speed : enemy_data->pea_speed * 1.25;
-        data->damage = data->type == PEAS ? enemy_data->base_damage : enemy_data->base_damage * 2.0;
-        enemy_data->next_single_shot = data->type == PEAS ? curr_time + 0.9 : curr_time + 1.8;
+        data->forspeed = data->type == PEAS ? enemy_data->pea_speed : enemy_data->pea_speed * 1.25f;
+        data->damage = data->type == PEAS ? enemy_data->base_damage : enemy_data->base_damage * 2.0f;
+        enemy_data->next_single_shot = data->type == PEAS ? curr_time + 0.9f : curr_time + 1.8f;
 
         conver = enemy_data->dist_to_player / data->forspeed;
         data->rigspeed = (dist_x / conver);
@@ -244,7 +243,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
 
     update_hurtbox(self);
 
-    gfc_sound_play(get_sound_data()->projectile_fire, 0, 0.1, -1, -1);
+    gfc_sound_play(get_sound_data()->projectile_fire, 0, 0.1f, -1, -1);
 
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
 }
@@ -266,7 +265,7 @@ void proj_update(Entity* self) {
 
     if (data->owner_type == ENEMY) {
         enemy_data = data->owner->data;
-        if (enemy_data->currHealth <= 0.0) 
+        if (enemy_data->currHealth <= 0) 
             data->y_bound = -30;
     }
 
@@ -293,7 +292,7 @@ void proj_update(Entity* self) {
     
     // checks if projectile hits anything
     // enemy attacking player
-    if (data->owner_type == ENEMY && self->position.y > -20.0 && gfc_box_overlap(self->hurtbox.s.b, get_player_hurtbox().s.b)) {
+    if (data->owner_type == ENEMY && self->position.y > -20.0f && gfc_box_overlap(self->hurtbox.s.b, get_player_hurtbox().s.b)) {
         player_data = get_player_data();
         player_data->took_damage = 1;
         player_data->damaged_type = data->type;
@@ -301,7 +300,7 @@ void proj_update(Entity* self) {
         entity_free(self);
     }
     // player attacking enemy 
-    else if (data->owner_type == PLAYER && self->position.y < -40.0 && data->type != VORTEX && data->type != SUPER_NUKE) {
+    else if (data->owner_type == PLAYER && self->position.y < -40.0f && data->type != VORTEX && data->type != SUPER_NUKE) {
         entityList = get_entityList();
 
         // check which enemy got hit
@@ -404,6 +403,9 @@ void proj_think_missile(Entity* self) {
     if ((gf2d_mouse_button_held(2) || gf2d_mouse_button_pressed(2)) && 
         !data->missile_active) 
         return;
+
+    if (get_player_data()->missile_count >= get_player_data()->max_missile)
+        entity_free(self);
     
     data->missile_active = 1;
 
@@ -413,7 +415,6 @@ void proj_think_missile(Entity* self) {
   
     if (!proj_exist(self, self->data))
         entity_free(self);
-   
 }
 
 void proj_think_vortex(Entity* self) {
@@ -437,12 +438,7 @@ void proj_think_vortex(Entity* self) {
         p_data->vortex_flag = 0;
 
     entityList = get_entityList();
-    if (p_data->vortex_flag && p_data->vortex_dur > 0.0) {
-        if (p_data->vortex_dur - 1.0 <= 0.0)
-            p_data->vortex_dur = 0.0;
-        else
-            p_data->vortex_dur -= 1.0;
-
+    if (p_data->vortex_flag && p_data->vortex_dur > 0) {
         for (i = 0; i < MAX_ENTITY; i++) {
             proj = &entityList[i];
 
@@ -459,18 +455,23 @@ void proj_think_vortex(Entity* self) {
             player_pos.y = p_data->player_pos->y;
             player_pos.z = p_data->player_pos->z;
 
-            if (data->owner_type == ENEMY && gfc_vector3d_distance_between_less_than(player_pos, proj->position, 20.0)) {
+            if (data->owner_type == ENEMY && gfc_vector3d_distance_between_less_than(player_pos, proj->position, 20.0f)) {
                 p_data->vortex_damage += data->damage;
-                data->damage = 0.0;
+                data->damage = 0;
                 entity_free(proj);
             }
         }
+
+        if (p_data->vortex_dur - 1.0f <= 0.0)
+            p_data->vortex_dur = 0;
+        else
+            p_data->vortex_dur -= 1.0f;
     }
 
     if (!p_data->vortex_flag) {
-        time = SDL_GetTicks() / 1000.0;
-        p_data->vortex_damage *= 1.7;
-        if (p_data->vortex_damage > 0.0) {
+        time = CURRENT_TIME;
+        p_data->vortex_damage *= 1.7f;
+        if (p_data->vortex_damage > 0) {
             player_pos.x = p_data->player_pos->x;
             player_pos.y = p_data->player_pos->y;
             player_pos.z = p_data->player_pos->z;
@@ -481,8 +482,8 @@ void proj_think_vortex(Entity* self) {
             entity_free(self);
 
         p_data->currMode = SINGLE_SHOT;
-        p_data->vortex_damage = 0.0;
-        p_data->next_charged_shot = time + 0.9;
+        p_data->vortex_damage = 0;
+        p_data->next_charged_shot = time + 0.9f;
         p_data->next_shot = time + 0.15;
 
         for (i = 0; i < MAX_ENTITY; i++) {
@@ -531,7 +532,7 @@ void proj_think_super_nuke(Entity* self) {
     else { // nuke is active;
         // stay in place
         // let ui.c take care of the visuals
-        time = SDL_GetTicks() / 1000.0;
+        time = CURRENT_TIME;
 
         if (time < data->nuke_dur) {
             // attack all enemies
@@ -569,7 +570,7 @@ void fencer_attack(Entity* self) {
 
     p_data = get_player_data();
     enemy_data = data->owner->data;
-    time = SDL_GetTicks() / 1000.0;
+    time = CURRENT_TIME;
 
     if (p_data->player_dead || p_data->paused || p_data->in_shop) return;
     
@@ -578,7 +579,7 @@ void fencer_attack(Entity* self) {
         player_take_damage(self, p_data, time);
     }
 
-    if (enemy_data->currHealth <= 0.0) {
+    if (enemy_data->currHealth <= 0) {
         entity_free(self);
     }
 }

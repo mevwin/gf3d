@@ -174,8 +174,8 @@ int main(int argc,char *argv[])
     gf3d_camera_set_scale(gfc_vector3d(1,1,1));
     gf3d_camera_set_position(gfc_vector3d(15,-15,10));
     gf3d_camera_look_at(gfc_vector3d(0,0,0),NULL);
-    gf3d_camera_set_move_step(0.6);
-    gf3d_camera_set_rotate_step(0.05);
+    gf3d_camera_set_move_step(0.6f);
+    gf3d_camera_set_rotate_step(0.05f);
     
     //gf3d_camera_enable_free_look(1);
 

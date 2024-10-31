@@ -38,6 +38,7 @@ void entity_system_init(Uint32 maxEnts){
         return;
     }
 
+    // initialize all entity models and textures
     models->player = gf3d_model_load("models/player_ship/player_ship_single.model");
     models->single_shot = gf3d_texture_load("models/player_ship/color_77.png");
     models->charge_shot = gf3d_texture_load("models/player_ship/color_44.png");
@@ -94,6 +95,7 @@ void entity_system_close(){
     gf3d_model_free(models->invincibility);
 
     free(entity_manager.entity_list);
+    memset(&entity_manager, 0, sizeof(EntityManager));
     free(models);
 }
 

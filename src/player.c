@@ -9,6 +9,9 @@
 #include "reticle.h"
 #include "item.h"
 
+#define PLAYER_SPAWN gfc_vector3d(0, 0 ,0);
+#define DAMAGE_TIMING 0.5f
+
 static Entity* self;
 
 Entity* player_spawn() {
@@ -32,12 +35,10 @@ Entity* player_spawn() {
 
     player_data_init(data);
 
-    position = gfc_vector3d(0, 0, 0);
+    position = PLAYER_SPAWN;
     self->position = position;
     data->og_pos = self->position;
     data->player_pos = &(self->position);
-
-    self->hurtbox.s.p = self->position;
     
     update_hurtbox(self);
 
@@ -60,33 +61,33 @@ void player_data_init(PlayerData* data) {
     if (!data) return;
 
     // movement speed
-    data->upspeed = 1.2;
-    data->rigspeed = 1.2;
+    data->upspeed = 1.3f;
+    data->rigspeed = 1.3f;
 
     // default player health/resources
-    data->maxHealth = 1200.0;
-    data->currHealth = 1200.0;
-    data->maxShield = 0.0;
-    data->currShield = 0.0;
+    data->maxHealth = 1200.0f;
+    data->currHealth = 1200.0f;
+    data->maxShield = 0;
+    data->currShield = 0;
     data->maxScrap = 50;
     data->currScrap = 0;
-    data->vortex_max = 40.0;
+    data->vortex_max = 40.0f;
     data->vortex_dur = data->vortex_max; 
 
     // default player attack
     data->currMode = SINGLE_SHOT;
-    data->base_damage = 200.0;
-    data->proj_speed = 8.0;
-    data->vortex_damage = 0.0;
+    data->base_damage = 200.0f;
+    data->proj_speed = 8.0f;
+    data->vortex_damage = 0.0f;
 
     data->single_shot_bonus = 0;
-    data->charge_shot_mult = 3.0;
-    data->missile_bonus = data->base_damage * 2.0;
+    data->charge_shot_mult = 3.0f;
+    data->missile_bonus = data->base_damage * 2.0f;
     data->max_missile = 5;
     data->nuke_cost = data->maxScrap;
    
     data->active_item = NONE;
-    data->item_duration = 0.0;
+    data->item_duration = 0;
 
     // default player bounds
     data->x_bound = 49; // left is positive, right is negative
@@ -95,9 +96,9 @@ void player_data_init(PlayerData* data) {
     // player personal flags/checks
     data->change_flag = 1;
     data->took_damage = 0;
-    data->take_damage_timing = 0.0;
+    data->take_damage_timing = 0;
     data->damage_taken = 0;
-    data->emp_time = 0.0;
+    data->emp_time = 0;
 
     data->player_dead = 0;
     data->in_shop = 0;
@@ -112,9 +113,9 @@ void player_data_init(PlayerData* data) {
     data->missile_spawn = 0;
     
     // default shot timing
-    data->next_shot = SDL_GetTicks() / 1000.0;
-    data->next_charged_shot = (SDL_GetTicks() / 1000.0) + 0.9;
-    data->charge_shot_delay = 0.0;
+    data->next_shot = CURRENT_TIME;
+    data->next_charged_shot = CURRENT_TIME + NEXT_CHARGE_SHOT;
+    data->charge_shot_delay = 0;
 
     data->player_no_attack = 0;
     
@@ -142,14 +143,14 @@ void player_think(Entity* self) {
         barrel_roll(self, data);
 
     /* player attack checks */
-    time = SDL_GetTicks() / 1000.0;
+    time = CURRENT_TIME;
     rec_data = data->reticle->data;
 
         // CHARGE_SHOT attack
     if (gf2d_mouse_button_pressed(0) && data->currMode == CHARGE_SHOT && !data->vortex_flag) {
         player_attack(self, data);
-        data->next_charged_shot = time + 0.9;
-        data->charge_shot_delay = time + 0.5;
+        data->next_charged_shot = time + NEXT_CHARGE_SHOT;
+        data->charge_shot_delay = time + CHARGE_SHOT_DELAY;
         data->change_flag = 1;
     }
         // SINGLE_SHOT
@@ -159,7 +160,7 @@ void player_think(Entity* self) {
         data->currMode != CHARGE_SHOT && 
         !data->vortex_flag)
     {
-        data->next_charged_shot = time + 0.9;
+        data->next_charged_shot = time + NEXT_CHARGE_SHOT;
         player_attack(self, data);
     }
         // MISSILE
@@ -174,20 +175,20 @@ void player_think(Entity* self) {
         else
             data->missile_spawn = 0;
         
-        data->next_charged_shot = time + 0.9;
+        data->next_charged_shot = time + NEXT_CHARGE_SHOT;
         player_attack(self, data);
     }
         // VORTEX
     else if (gfc_input_command_released("vortex") && data->currMode != VORTEX && data->vortex_dur >= (data->vortex_max / 3.0)) {
         data->currMode = VORTEX;
-        data->next_charged_shot = time + 0.9;
+        data->next_charged_shot = time + NEXT_CHARGE_SHOT;
         data->vortex_flag = 1;
 
         player_attack(self, data);
     }
     else if (gfc_input_command_released("nuke") && data->currMode != VORTEX && data->currScrap >= data->nuke_cost) {
         data->currMode = SUPER_NUKE;
-        data->next_charged_shot = time + 0.9;
+        data->next_charged_shot = time + NEXT_CHARGE_SHOT;
 
         player_attack(self, data);
     }
@@ -231,11 +232,11 @@ void player_update(Entity* self) {
     player_cam(self, data);
 
     /* updates model based on current attack type */
-    time = SDL_GetTicks() / 1000.0;
+    time = CURRENT_TIME;
 
         // CHARGE_SHOT texture
     if (time >= data->next_charged_shot && 
-        time < data->next_charged_shot + 0.03 && 
+        time < data->next_charged_shot + 0.03f && 
         !data->took_damage &&
         !data->vortex_flag &&
         !data->currMode != MISSILE
@@ -275,28 +276,28 @@ void player_update(Entity* self) {
     // reduce player movement when shooting
     if (!data->mid_roll) {
         if (gf2d_mouse_button_pressed(0) || gf2d_mouse_button_held(0)) {
-            data->upspeed = 1.0;
-            data->rigspeed = 1.0;
+            data->upspeed = 1.0f;
+            data->rigspeed = 1.0f;
         }
         else {
-            data->upspeed = 1.3;
-            data->rigspeed = 1.3;
+            data->upspeed = 1.3f;
+            data->rigspeed = 1.3f;
         }
     }
 
     // shield restoration
-    if (data->currShield < data->maxShield && data->maxShield > 0.0) 
-        data->currShield += 1.0;
+    if (data->currShield < data->maxShield && data->maxShield > 0) 
+        data->currShield += 1.0f;
 
     // vortex duration restoration
     if (data->currMode != VORTEX && data->vortex_dur < data->vortex_max && !gfc_input_command_held("vortex"))
-        data->vortex_dur += 0.1;
+        data->vortex_dur += 0.1f;
 
     // active powerup checks
-    time = SDL_GetTicks() / 1000.0;
+    time = CURRENT_TIME;
     if (data->active_item == HAPPY_TRIGGER && time < data->item_duration) {
         data->currMode = CHARGE_SHOT;
-        data->next_charged_shot = 0.0;
+        data->next_charged_shot = 0;
     }
     else if (data->active_item == INVINCIBILITY && time < data->item_duration) {
         // do nothing here
@@ -307,10 +308,10 @@ void player_update(Entity* self) {
     // check if player was hurt
     if (data->took_damage && data->active_item != INVINCIBILITY) {
         player_take_damage(self, data, time);
-        gfc_sound_play(get_sound_data()->player_damaged, 0, 0.3, -1, -1);
+        gfc_sound_play(get_sound_data()->player_damaged, 0, 0.3f, -1, -1);
     }
     // check if player is dead
-    if (data->currHealth <= 0.0 && !data->player_dead)
+    if (data->currHealth <= 0 && !data->player_dead)
         player_die(self);
 }
 
@@ -340,8 +341,8 @@ void player_attack(Entity* self, PlayerData* data) {
     cursor_pos.z = data->reticle->position.z;
 
     // creates projectile under the ship
-    attack_start.z -= 3;
-    curr_time = SDL_GetTicks() / 1000.0;
+    attack_start.z -= 3.0f;
+    curr_time = CURRENT_TIME;
     player_proj_spawn(attack_start, cursor_pos, curr_time, 0);
 }
 
@@ -353,12 +354,12 @@ void player_take_damage(Entity* self, PlayerData* data, float time) {
 
     self->model->texture = get_models()->damaged;
     data->change_flag = 1;
-    data->take_damage_timing = time + 0.5;
+    data->take_damage_timing = time + DAMAGE_TIMING;
 
-    if (data->currShield > 0.0) {
-        if (data->currShield - data->damage_taken <= 0.0) { // not enough shields
+    if (data->currShield > 0) {
+        if (data->currShield - data->damage_taken <= 0) { // not enough shields
             data->currHealth += data->currShield;
-            data->currShield = 0.0;
+            data->currShield = 0;
             data->currHealth -= data->damage_taken;
         }
         else // has enough shields
@@ -390,7 +391,7 @@ void player_death(Entity* self) {
     data->player_no_attack = 1;
     self->model->texture = get_models()->dead;
     
-    gfc_sound_play(get_sound_data()->death_sound, 0, 0.3, -1, -1);
+    gfc_sound_play(get_sound_data()->death_sound, 0, 0.3f, -1, -1);
 
     entity_free(data->reticle);
 }
@@ -404,10 +405,10 @@ void player_respawn(Entity* self) {
     data = self->data;
     if (!data) return;
 
-    self->position = gfc_vector3d(0, 0, 0);
+    self->position = PLAYER_SPAWN;
     self->model->texture = get_models()->single_shot;
     player_data_init(data);
-    reticle_pos = gfc_vector3d(self->position.x, -60, self->position.z);
+    reticle_pos = gfc_vector3d(self->position.x, -60.0f, self->position.z);
     data->reticle = reticle_spawn(reticle_pos);
 }
 
@@ -425,7 +426,8 @@ void player_upgrade( PlayerData* data) {
     data->maxShield = 0;
 
     data->base_damage += data->single_shot_bonus;
-    data->single_shot_bonus = 0.0;
+    data->single_shot_bonus = 0;
+
 }
 
 PlayerData* get_player_data() {
