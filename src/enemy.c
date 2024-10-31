@@ -7,6 +7,8 @@
 #include "projectile.h"
 #include "item.h"
 
+#define ENEMY_HURTBOX (gfc_box(400, -150, 200, 1, 1, 1))	// make dummy hitbox not accessible to player
+
 EnemyData* enemy_data_init() {
 	EnemyData* data;
 	Enemy_Type type;
@@ -244,7 +246,7 @@ void enemy_die(Entity* self, EnemyData* data, int item_type) {
 	item_spawn(SCRAP, self->position, data->dist_to_player);
 	item_spawn(item_type, self->position, data->dist_to_player);
 	self->rotation.y = 0;
-	self->hurtbox.s.b = gfc_box(400, -150, 200, 1, 1, 1);	// make dummy hitbox not accessible to player
+	self->hurtbox.s.b = ENEMY_HURTBOX;
 }
 
 void enemy_update_stats(EnemyData* data) {
@@ -253,9 +255,9 @@ void enemy_update_stats(EnemyData* data) {
 	if (!data) return;
 
 	for (i = wave_count; i > 0; i--) {
-		data->maxHealth *= 1.1f;
+		data->maxHealth *= 1.2f;
 		data->currHealth = data->maxHealth;
-		data->base_damage *= 1.1f;
+		data->base_damage *= 1.2f;
 	}
 	//slog("enemy stats updated %d times", wave_count);
 }

@@ -388,7 +388,7 @@ void player_hud(PlayerData* data) {
     currVortex = (float) (data->vortex_dur / data->vortex_max);
 
     enemy_kill = (float) enemy_killed;
-    currEnem = (float) (enemy_kill / enemy_goal);
+    currEnem = (float) (enemy_kill / ENEMY_GOAL);
 
     // health bar draws
     bar_position = gfc_vector2d(10, 20);

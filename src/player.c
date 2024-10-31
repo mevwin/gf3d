@@ -42,15 +42,6 @@ Entity* player_spawn() {
     
     update_hurtbox(self);
 
-    /*
-    data->vortex_box = gfc_box(self->position.x - (self->model->bounds.w / 2),
-                                self->position.y - (self->model->bounds.h / 2),
-                                self->position.z - (self->model->bounds.d / 2),
-                                2.0 * self->model->bounds.w,
-                                2.0 * self->model->bounds.h,
-                                2.0 * self->model->bounds.d);
-    */
-
     reticle_pos = gfc_vector3d(position.x, -60, position.z);
     data->reticle = reticle_spawn(reticle_pos);
 
@@ -310,6 +301,7 @@ void player_update(Entity* self) {
         player_take_damage(self, data, time);
         gfc_sound_play(get_sound_data()->player_damaged, 0, 0.3f, -1, -1);
     }
+
     // check if player is dead
     if (data->currHealth <= 0 && !data->player_dead)
         player_die(self);
@@ -382,6 +374,8 @@ void player_die(Entity* self) {
 
     data->player_dead = 1;
     player_death(self);
+
+    /* TODO: add player death animation maybe */
 }
 
 void player_death(Entity* self) {
@@ -391,8 +385,9 @@ void player_death(Entity* self) {
     data->player_no_attack = 1;
     self->model->texture = get_models()->dead;
     
-    gfc_sound_play(get_sound_data()->death_sound, 0, 0.3f, -1, -1);
+    gfc_sound_play(get_sound_data()->death_sound, 0, 0.2f, -1, -1);
 
+    // kill reticle
     entity_free(data->reticle);
 }
 
@@ -427,7 +422,6 @@ void player_upgrade( PlayerData* data) {
 
     data->base_damage += data->single_shot_bonus;
     data->single_shot_bonus = 0;
-
 }
 
 PlayerData* get_player_data() {

@@ -5,28 +5,24 @@
 
 #define MAX_PROJ 20
 
-typedef enum{
-	SINGLE_SHOT,	// player or enemy
-	CHARGE_SHOT,	// player or enemy
-	VORTEX,			// player only
-	MISSILE,		// player only
-	SUPER_NUKE		// player only
-}ProjType;
-
 typedef struct {
-	ProjType		type;			// projectile_type
+	Uint8			type;			// projectile_type
 	int				y_bound;		// limit to how far a projectile travels
 	Entity*			owner;			// who shot the projectile
 	Entity_Type		owner_type;		// enemy or player
 	float			damage;			// damage it will deal
 
 	// projectile flags
-	Uint8			vortexed;		
+	Uint8			vortexed;		// was the projectile from player vortex?
+	
+		// missile data
 	Uint8			missile_active;	// is missile in motion
 	GFC_Vector3D*	missile_target;	// pointer to the missile target
-	Uint8			nuke_active;
-	GFC_Vector3D    nuke_deton_pos;
-	float			nuke_dur;
+		
+		// nuke data
+	Uint8			nuke_active;	// is nuke attack active?
+	GFC_Vector3D    nuke_deton_pos;	// nuke's detonation position
+	float			nuke_dur;		// nuke duraton
 
 	// projectile movement details
 	float           forspeed;		// y-movement
@@ -34,10 +30,26 @@ typedef struct {
 	float			rigspeed;		// x-movement
 }ProjData;
 
-GFC_Vector3D fencer_spawn;
+GFC_Vector3D fencer_spawn;	// position of fencer attack region
 
+/**
+* @brief spawn a player attack/projectile
+* @param position: spawn position, relative to player position
+* @param reticle_pos: reticie position
+* @param curr_time: current time from attack call
+* @param vortexed: was the projectile formed from vortex attack?
+*/
 void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float curr_time, Uint8 vortexed);
+
+/**
+* @brief spawn an enemy attack/projectile
+* @param position: spawn position, relative to enemy position
+* @param player_pos: last recorded position of player
+* @param owner: pointer to enemy entity
+* @param curr_time: curren time from attack call
+*/
 void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* owner, float curr_time);
+
 void proj_update(Entity* self);
 void proj_free(Entity* self);
 
@@ -60,10 +72,20 @@ void proj_think_missile(Entity* self);
 * @brief vortex weapon sucks in enemy projectiles and sends them to reticle position
 */
 void proj_think_vortex(Entity* self);
+
+/**
+* @brief super nuke travels to center of screen and detonates, attacking all enemies
+*/
 void proj_think_super_nuke(Entity* self);
 
-void fencer_attack(Entity* self);
 
+/**
+* @brief enemy attack that restricts player movement to a certain region on-screen
+*/
+void fencer_think(Entity* self);
 
+void bomber_think(Entity* self);
+
+void emper_think(Entity* self);
 
 #endif

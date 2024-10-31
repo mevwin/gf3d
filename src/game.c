@@ -81,24 +81,24 @@ void level_update(Entity* player, PlayerData* p_data) {
             p_data->paused = 0;
     }
 
-    if (p_data->in_shop) {
+    if (p_data->in_shop) { // shop menu
         shop_hud_draw(p_data);
         shop_think(p_data);
         gf2d_mouse_draw();
     }
-    else if (p_data->paused) {
+    else if (p_data->paused) { // pause menu
         pause_menu(p_data);
         pause_menu_think(p_data);
         gf2d_mouse_draw();
     }
-    else if (p_data->player_dead) {
+    else if (p_data->player_dead) { // death screen
         player_death_screen(p_data);
         gf2d_mouse_draw();
-        shop_reset(); // reset upgrade checks if player has died
         entity_reset();
 
         // player respawn
         if (gf2d_mouse_button_released(2)) {
+            shop_reset(); // reset upgrade checks if player has died
             player_respawn(player);
             enemy_count = 0;
             enemy_killed = 0;
@@ -115,11 +115,11 @@ void level_update(Entity* player, PlayerData* p_data) {
             wave_start(p_data);  
 
         // game condition
-        if (enemy_count < 4 && enemy_killed < enemy_goal && enemy_start)
+        if (enemy_count < ENEMY_MAX && enemy_killed < ENEMY_GOAL && enemy_start)
             enemy_spawn(&(player->position));
        
-        if (enemy_killed >= enemy_goal) {
-            enemy_killed = enemy_goal;
+        if (enemy_killed >= ENEMY_GOAL) {
+            enemy_killed = ENEMY_GOAL;
             enemy_reset();
             wave_completed(p_data);
         }   
@@ -131,7 +131,7 @@ int main(int argc,char *argv[])
     //local variables
     Model *sky, *trench;
     GFC_Matrix4 skyMat, trenchMat;
-    Entity* player, * enemy;
+    Entity* player;
     PlayerData* player_data;
 
     //initializtion    
@@ -185,13 +185,11 @@ int main(int argc,char *argv[])
     game_start = 0;
     enemy_start = 0;
     enemy_killed = 0;
-    enemy_goal = 20.0;
     wave_count = 0;
     _done = 0;
 
     player = NULL;
     player_data = NULL;
-    enemy = NULL;
     
     //windows
 
@@ -230,6 +228,10 @@ int main(int argc,char *argv[])
 
                 // game updates
                 if (game_start) {
+                    if (!player) {
+                        slog("player failed to spawn");
+                        return;
+                    }
                     player_data = player->data;
                     level_update(player, player_data);
                 }

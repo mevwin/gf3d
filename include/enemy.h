@@ -3,7 +3,10 @@
 
 #include "entity.h"
 
+#define ENEMY_MAX 4 // max amount of enemies on-screen
+#define ENEMY_GOAL 20.0f
 #define FENCER_MAX 1
+#define EMPER_MAX 1
 
 typedef enum EnemyType{
 	PEAS,		// SINGLE_SHOT
@@ -15,7 +18,7 @@ typedef enum EnemyType{
 
 typedef struct {
 	// enemy stats
-	int				enemy_type;			// type of enemy
+	Enemy_Type		enemy_type;			// type of enemy
 	float           maxHealth;          // enemy's maximum health
 	float           currHealth;         // enemy's current health
 	float			base_damage;		// starting damage

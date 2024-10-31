@@ -3,8 +3,16 @@
 
 #include "entity.h"
 
-#define NEXT_CHARGE_SHOT 0.9f
+#define NEXT_CHARGE_SHOT 1.0f
 #define CHARGE_SHOT_DELAY 0.5f
+
+typedef enum {
+    SINGLE_SHOT,
+    CHARGE_SHOT,
+    VORTEX,	
+    MISSILE,	
+    SUPER_NUKE
+}Player_Atk_Type;
 
 typedef struct {
     // player values
@@ -70,7 +78,7 @@ typedef struct {
     // other
     GFC_Vector3D    og_pos;             // container for keeping model in place due to constant rotation
     Entity*         reticle;            // pointer to player reticle
-    GFC_Vector3D*   player_pos;
+    GFC_Vector3D*   player_pos;         // pointer for other entities to get player position
 
     // debug camera
     Uint8           freelook;           // debug camera
