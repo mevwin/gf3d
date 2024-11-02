@@ -6,8 +6,9 @@
 #include "player.h"
 #include "projectile.h"
 #include "item.h"
+#include "level.h"
 
-#define ENEMY_HURTBOX (gfc_box(400, -150, 200, 1, 1, 1))	// make dummy hitbox not accessible to player
+#define ENEMY_HURTBOX (gfc_box(400, -150, 200, 1, 1, 1))	// make temporary dummy hitbox not accessible to player when enemy is dead
 
 EnemyData* enemy_data_init() {
 	EnemyData* data;
@@ -18,7 +19,8 @@ EnemyData* enemy_data_init() {
 
 	type = (Enemy_Type) gfc_random_int(3);
 
-	if (type == FENCERS && fencer_count >= FENCER_MAX)
+	// can only have one fencer onscreen
+	if (type == FENCERS && get_level_data()->fencer_count >= FENCER_MAX)
 		type = (Enemy_Type) gfc_random_int(2);
 
 	data->enemy_type = type;
@@ -29,9 +31,6 @@ EnemyData* enemy_data_init() {
 	data->base_damage = 100.0f;
 	data->pea_speed = 1.5f;
 
-	data->upspeed = 1.2f;
-	data->rigspeed = 0.6f;
-
 	data->proj_count = 0;
 	data->damage_taken = 0;
 	data->next_single_shot = 0;
@@ -40,12 +39,25 @@ EnemyData* enemy_data_init() {
 	data->z_bound = 50;
 	data->dist_to_player = -65;
 
+	if (data->enemy_type == PEAS || data->enemy_type == CHARGERS) {
+		data->move_type = DVD_LOGO;
+		data->upspeed = 0.3f;
+		data->rigspeed = 0.5f;
+	}
+	else if (data->enemy_type == FENCERS || data->enemy_type == EMPERS) {
+		data->rigspeed = 0.6f;
+		data->move_type = HORIZONTAL;
+	}
+	else if (data->enemy_type == BOMBERS)
+		data->move_type = STATIONARY;
+
 	return data;
 }
 
 Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 	Entity* self;
 	EnemyData* data;
+	LevelData* level;
 	GFC_Vector3D position;
 
 	self = entity_new();
@@ -56,15 +68,16 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 
 	if (!data) return;
 
-	if (wave_count > 0) enemy_update_stats(data);
+	level = get_level_data();
+	if (level->wave_count > 0) 
+		enemy_update_stats(data);
 
 	if (data->enemy_type == PEAS) 
 		self->model = get_models()->peas;
 	else if (data->enemy_type == CHARGERS)
 		self->model = get_models()->chargers;
-	else if (data->enemy_type == FENCERS) {
+	else if (data->enemy_type == FENCERS) 
 		self->model = get_models()->fencer;
-	}
 	
 	self->think = enemy_think;
 	self->update = enemy_update;
@@ -79,13 +92,15 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 
 	update_hurtbox(self);
 
-	enemy_count++;
+	level->enemy_count++;
 
 	return self;
 }
+
 void enemy_think(Entity* self) {
 	EnemyData* data;
 	PlayerData* player_data;
+	LevelData* level;
 	GFC_Vector3D player_pos;
 	float time;
 
@@ -95,10 +110,11 @@ void enemy_think(Entity* self) {
 	if (!data) return;
 
 	player_data = get_player_data();
+	level = get_level_data();
 
 	// don't do anything if player is dead
 	if (player_data->player_dead || data->currHealth <= 0 || 
-		player_data->in_shop || player_data->paused ||
+		level->in_shop || level->paused ||
 		player_data->nuke_flag
 		) return;
 	
@@ -124,13 +140,17 @@ void enemy_think(Entity* self) {
 	if (!player_data->player_no_attack) {
 		enemy_proj_spawn(self->position, player_pos, self, time);
 	}
-	enemy_move(self);
+
+	if (data->move_type != STATIONARY)
+		enemy_move(self);
+
 	//slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
 }
 
 void enemy_update(Entity* self) {
 	EnemyData* data;
 	PlayerData* player_data;
+	LevelData* level;
 	float dist_x, dist_y, z_angle, y_angle;
 	int rand;
 
@@ -140,8 +160,9 @@ void enemy_update(Entity* self) {
 	if (!data) return;
 
 	player_data = get_player_data();
+	level = get_level_data();
 
-	if (player_data->in_shop || player_data->paused || !player_data)
+	if (level->in_shop || level->paused || !player_data)
 		return;
 
 	// dont do anything or find new player
@@ -150,8 +171,6 @@ void enemy_update(Entity* self) {
 		self->rotation.x = 0;
 		return;
 	}
-	// rounding floats to nearest tenth
-	data->currHealth = roundf(10 * data->currHealth) / 10;
 
 	if (data->currHealth > 0.0) {
 		if (!player_data->player_no_attack) {
@@ -182,6 +201,7 @@ void enemy_update(Entity* self) {
 
 		return;
 	}
+
 	if (data->currHealth <= 0.0 && !data->enemy_dead) {
 		rand = 1 + gfc_random_int(4);
 
@@ -194,7 +214,7 @@ void enemy_update(Entity* self) {
 		data->enemy_dead = 1;
 	}
 
-	self->rotation.y -= 0.1;
+	self->rotation.y -= 0.1f;
 
 	if (data->enemy_dead && data->proj_count <= 0)
 		entity_free(self);
@@ -208,27 +228,35 @@ void enemy_move(Entity* self) {
 	data = self->data;
 	if (!data) return;
 
-	if (self->position.x > data->x_bound)
-		data->rigspeed = -data->rigspeed;
-	else if (self->position.x < -data->x_bound)
+	// for both DVD_LOGO and HORIZONTAL
+	if (self->position.x > data->x_bound || self->position.x < -data->x_bound)
 		data->rigspeed = -data->rigspeed;
 
 	self->position.x += data->rigspeed;
+
+	if (data->move_type == DVD_LOGO) {
+		if (self->position.z > (data->z_bound - 6.0f) || self->position.z < -data->z_bound)
+			data->upspeed = -data->upspeed;
+
+		self->position.z += data->upspeed;
+	}
 }
 
 void enemy_free(Entity* self) {
 	EnemyData* data;
+	LevelData* level;
 
 	if (!self) return;
 
 	data = self->data;
+	level = get_level_data();
 
 	if (data->enemy_type == FENCERS)
-		fencer_count--;
+		level->fencer_count--;
 
 	free(data);
-	enemy_count--;
-	enemy_killed++;
+	level->enemy_count--;
+	level->enemy_killed++;
 	//slog("enemy_killed: %d", enemy_killed);
 }
 
@@ -237,7 +265,7 @@ void enemy_take_damage(Entity* self, EnemyData* data) {
 
 	data->currHealth -= data->damage_taken;
 	data->took_damage = 0;
-	data->damage_taken = 0.0;
+	data->damage_taken = 0;
 }
 
 void enemy_die(Entity* self, EnemyData* data, int item_type) {
@@ -254,13 +282,14 @@ void enemy_update_stats(EnemyData* data) {
 	
 	if (!data) return;
 
-	for (i = wave_count; i > 0; i--) {
+	for (i = get_level_data()->wave_count; i > 0; i--) {
 		data->maxHealth *= 1.2f;
 		data->currHealth = data->maxHealth;
 		data->base_damage *= 1.2f;
 	}
 	//slog("enemy stats updated %d times", wave_count);
 }
+
 /**
 * define enemy/AI behavior as a FSA
 * define states of the enemy through enumerations

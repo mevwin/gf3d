@@ -5,6 +5,7 @@
 #include "gf2d_sprite.h"
 #include "player.h"
 #include "enemy.h"
+#include "level.h"
 
 /*
 typedef enum {
@@ -73,14 +74,19 @@ typedef struct {
     GFC_Rect        quit_block;
 }UIData;
 
-Uint8 game_start, enemy_start;
-int _done;
-
 void UI_init();
 void UI_free();
 
 void shop_hud_draw(PlayerData* data);
+
+/**
+* @brief where upgrades are actually given to player
+*/
 void shop_think(PlayerData* data);
+
+/**
+* @brief reset shop progress
+*/
 void shop_reset();
 //ShopData* get_shop_data();
 
@@ -90,10 +96,10 @@ void start_menu();
 Entity* start_menu_think();
 
 void pause_menu();
-void pause_menu_think(PlayerData* data);
+void pause_menu_think(LevelData* data);
 
-void wave_start(PlayerData* data);
-void wave_completed(PlayerData* data);
+void wave_start(LevelData* data);
+void wave_completed(PlayerData* data, LevelData* level);
 
 void player_death_screen(PlayerData* data);
 

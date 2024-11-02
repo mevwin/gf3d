@@ -8,6 +8,7 @@
 #include "projectile.h"
 #include "reticle.h"
 #include "item.h"
+#include "level.h"
 
 #define PLAYER_SPAWN gfc_vector3d(0, 0 ,0);
 #define DAMAGE_TIMING 0.5f
@@ -90,11 +91,7 @@ void player_data_init(PlayerData* data) {
     data->take_damage_timing = 0;
     data->damage_taken = 0;
     data->emp_time = 0;
-
     data->player_dead = 0;
-    data->in_shop = 0;
-    data->paused = 0;
-    data->wave_end = 0;
 
     // player attack flags/checks
     data->proj_count = 0;
@@ -117,6 +114,7 @@ void player_data_init(PlayerData* data) {
 void player_think(Entity* self) {
     PlayerData* data;
     ReticleData* rec_data;
+    LevelData* level;
     float time;
 
     if (!self) return;
@@ -125,7 +123,8 @@ void player_think(Entity* self) {
     if (!data) return;
 
     // don't do anything if player is dead or in_shop or game is pause
-    if (data->player_dead || data->in_shop || data->paused || data->wave_end) return;
+    level = get_level_data();
+    if (data->player_dead || level->in_shop || level->paused || level->wave_end) return;
     
     // movement checks
     if (!data->mid_roll)
@@ -210,6 +209,7 @@ void player_think(Entity* self) {
 
 void player_update(Entity* self) {
     PlayerData* data;
+    LevelData* level;
     float time;
 
     if (!self) return;
@@ -217,7 +217,8 @@ void player_update(Entity* self) {
     data = self->data;
     if (!data) return;
 
-    if (data->in_shop || data->paused || data->player_dead || data->wave_end) return;
+    level = get_level_data();
+    if (level->in_shop || level->paused || data->player_dead || level->wave_end) return;
 
     // update camera
     player_cam(self, data);
@@ -385,7 +386,7 @@ void player_death(Entity* self) {
     data->player_no_attack = 1;
     self->model->texture = get_models()->dead;
     
-    gfc_sound_play(get_sound_data()->death_sound, 0, 0.2f, -1, -1);
+    gfc_sound_play(get_sound_data()->death_sound, 0, 0.5f, -1, -1);
 
     // kill reticle
     entity_free(data->reticle);

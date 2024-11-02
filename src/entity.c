@@ -101,7 +101,7 @@ void entity_system_close(){
 
 void entity_draw(Entity *self){
     GFC_Matrix4 matrix; // not constructors in C
-    if (!self) return;
+    if (!self || self->no_draw ||!self->model) return;
 
     if (self->draw) self->draw(self);
 
@@ -165,6 +165,7 @@ Entity *entity_new(){
         // any default values should be set
         entity_manager.entity_list[i]._inuse = 1;
         entity_manager.entity_list[i].scale = gfc_vector3d(1,1,1); // scale of zero means entity doesn't exist
+        entity_manager.entity_list[i].no_draw = 0;
 
         return &entity_manager.entity_list[i];
     }

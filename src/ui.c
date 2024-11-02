@@ -244,12 +244,15 @@ void shop_hud_draw(PlayerData* data) {
 }
 
 void shop_think(PlayerData* data) {
+    LevelData* level;
+
     if (!data) return;
 
-    if (!data->wave_end) return;
+    level = get_level_data();
+    if (!level->wave_end) return;
 
     if (gf2d_mouse_button_released(2))
-        data->in_shop = 0;
+        level->in_shop = 0;
 
     if (gf2d_mouse_button_released(0)) {
         if (gf2d_mouse_in_rect(UI_data->shields_block)) {
@@ -317,7 +320,7 @@ void shop_think(PlayerData* data) {
                 return;
             }
             else if (data->currScrap >= UI_data->upgrade_cost) {
-                data->charge_shot_mult += 3.0f;
+                data->charge_shot_mult += 1.0f;
                 data->currScrap -= UI_data->upgrade_cost;
                 UI_data->charge_shot_check++;
                 //slog("more charge");
@@ -370,9 +373,12 @@ void player_hud(PlayerData* data) {
     float start, scrap, maxscrap, nuke_cost;
     float currHealth, currShield, currScrap, currVortex, currNuke;
     float enemy_kill, currEnem;
+    LevelData* level;
 
     if (!data) return;
-    if (data->player_dead || data->in_shop || data->wave_end) return;
+
+    level = get_level_data();
+    if (data->player_dead || level->in_shop || level->wave_end) return;
     
     res = gf3d_vgraphics_get_resolution();
 
@@ -387,7 +393,7 @@ void player_hud(PlayerData* data) {
 
     currVortex = (float) (data->vortex_dur / data->vortex_max);
 
-    enemy_kill = (float) enemy_killed;
+    enemy_kill = (float) level->enemy_killed;
     currEnem = (float) (enemy_kill / ENEMY_GOAL);
 
     // health bar draws
@@ -506,15 +512,18 @@ void start_menu() {
 }
 
 Entity* start_menu_think() {
+    LevelData* level;
+
+    level = get_level_data();
     if (gf2d_mouse_button_released(0)) {
         if (gf2d_mouse_in_rect(UI_data->start_block)) {
             gfc_sound_play( get_sound_data()->confirm, 0, 1, -1, -1 );
-            game_start = 1;
-            enemy_start = 0;
+            level->game_start = 1;
+            level->enemy_start = 0;
             return player_spawn();
         }
         if (gf2d_mouse_in_rect(UI_data->s_quit_block)) {
-            _done = 1;
+            level->_done = 1;
             return NULL;
         } 
     }
@@ -535,7 +544,7 @@ void pause_menu() {
     gf2d_font_draw_text_wrap_tag("QUIT", FT_H2, GFC_COLOR_WHITE, UI_data->quit_block);
 }
 
-void pause_menu_think(PlayerData* data) {
+void pause_menu_think(LevelData* data) {
     if (!data) return;
 
     if (gf2d_mouse_button_released(0)) {
@@ -545,15 +554,15 @@ void pause_menu_think(PlayerData* data) {
         }
         if (gf2d_mouse_in_rect(UI_data->quit_block)) {
             entity_despawn_all();
-            enemy_count = 0;
-            enemy_killed = 0;
-            game_start = 0;
+            data->enemy_count = 0;
+            data->enemy_killed = 0;
+            data->game_start = 0;
             gfc_sound_play(get_sound_data()->cancel, 0, 1, -1, -1);
         }
     }
 }
 
-void wave_start(PlayerData* data) {
+void wave_start(LevelData* data) {
     GFC_Vector2D res, text_loc;
 
     if (!data) return;
@@ -561,8 +570,8 @@ void wave_start(PlayerData* data) {
     res = gf3d_vgraphics_get_resolution();
 
     if (gf2d_mouse_button_released(2)) {
-        enemy_start = 1;
-        fencer_count = 0;
+        data->enemy_start = 1;
+        data->fencer_count = 0;
         data->wave_end = 0;
         gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
     }
@@ -575,7 +584,7 @@ void wave_start(PlayerData* data) {
     }
 }
 
-void wave_completed(PlayerData* data) {
+void wave_completed(PlayerData* data, LevelData* level) {
     GFC_Vector2D res, text_loc;
 
     res = gf3d_vgraphics_get_resolution();
@@ -590,20 +599,20 @@ void wave_completed(PlayerData* data) {
         data->nuke_flag = 0;
 
     // play victory theme
-    if (!data->wave_end) {
+    if (!level->wave_end) {
         gfc_sound_play(get_sound_data()->victory, 0, 0.3f, -1, -1);
     }
-    data->wave_end = 1;
+    level->wave_end = 1;
 
     if (gf2d_mouse_button_released(2)) {
         player_upgrade(data);
         shop_reset();
-        wave_count++;
-        data->in_shop = 1;
-        enemy_start = 0;
-        enemy_count = 0;
-        fencer_count = 0;
-        enemy_killed = 0;
+        level->wave_count++;
+        level->in_shop = 1;
+        level->enemy_start = 0;
+        level->enemy_count = 0;
+        level->fencer_count = 0;
+        level->enemy_killed = 0;
     }
 }
 
@@ -623,13 +632,15 @@ void player_death_screen(PlayerData* data) {
 void enemy_hud(EnemyData* data, GFC_Vector3D position) {
     float health, maxhealth, currHealth;
     PlayerData* player_data;
+    LevelData* level;
     GFC_Vector2D bar_position, scale, fencer_start;
     GFC_Rect fencer_attack;
 
     if (!data) return;
     
     player_data = get_player_data();
-    if (player_data->player_dead || player_data->in_shop) return;
+    level = get_level_data();
+    if (player_data->player_dead || level->in_shop || data->enemy_dead) return;
 
     health = data->currHealth;
     maxhealth = data->maxHealth;
@@ -650,8 +661,8 @@ void enemy_hud(EnemyData* data, GFC_Vector3D position) {
     gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, 100, 20), GFC_COLOR_WHITE);
 
     // draw fencer attack region
-    if (fencer_count >= FENCER_MAX) {
-        fencer_start = gfc_3DPos_to_2DPos(fencer_spawn, player_data->x_bound, player_data->z_bound);
+    if (level->fencer_count >= FENCER_MAX) {
+        fencer_start = gfc_3DPos_to_2DPos(level->fencer_spawn, player_data->x_bound, player_data->z_bound);
         fencer_start.x -= 360.0f;
         fencer_start.y -= 240.0f;
         fencer_attack = gfc_rect(fencer_start.x, fencer_start.y, 720.0f, 480.0f);

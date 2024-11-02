@@ -61,6 +61,7 @@ typedef struct Entity_S{
 
     Entity_Type     entity_type;                // type of entity
     GFC_Primitive   hurtbox;                    // entity's hurtbox
+    Uint8           no_draw;
     
 }Entity;
 /**

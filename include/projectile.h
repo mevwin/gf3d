@@ -30,8 +30,6 @@ typedef struct {
 	float			rigspeed;		// x-movement
 }ProjData;
 
-GFC_Vector3D fencer_spawn;	// position of fencer attack region
-
 /**
 * @brief spawn a player attack/projectile
 * @param position: spawn position, relative to player position
@@ -50,7 +48,8 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
 */
 void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* owner, float curr_time);
 
-void proj_update(Entity* self);
+void proj_update_player(Entity* self);
+void proj_update_enemy(Entity* self);
 void proj_free(Entity* self);
 
 /**

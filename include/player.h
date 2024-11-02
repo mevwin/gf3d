@@ -57,11 +57,7 @@ typedef struct {
     float           damage_taken;       // damage received from enemy
     Uint8           damaged_type;       // type of enemy attack
     float           emp_time;
-
-    Uint8           player_dead;        // flag for player death state
-    Uint8           in_shop;            // is player in the shop menu
-    Uint8           paused;             // is the player pausing the game
-    Uint8           wave_end;           
+    Uint8           player_dead;        // flag for player death state          
 
     // player attack flags/checks
     int             proj_count;         // current amount of projectiles fired

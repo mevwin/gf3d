@@ -3,11 +3,6 @@
 
 #include "entity.h"
 
-#define ENEMY_MAX 4 // max amount of enemies on-screen
-#define ENEMY_GOAL 20.0f
-#define FENCER_MAX 1
-#define EMPER_MAX 1
-
 typedef enum EnemyType{
 	PEAS,		// SINGLE_SHOT
 	CHARGERS,	// CHARGE_SHOT
@@ -15,6 +10,12 @@ typedef enum EnemyType{
 	BOMBERS,	// trynamite-type enemy
 	EMPERS		// don't kill it in time, EMP that freezes ship
 }Enemy_Type;
+
+typedef enum {
+	HORIZONTAL,
+	DVD_LOGO,
+	STATIONARY
+}Enemy_Move;
 
 typedef struct {
 	// enemy stats
@@ -25,6 +26,7 @@ typedef struct {
 	float			pea_speed;			// SINGLE_SHOT projectile speed
 
 	// enemy movement
+	Enemy_Move		move_type;
 	float			forspeed;			// y movement
 	float           upspeed;			// z movement
 	float           rigspeed;			// x movement
@@ -48,11 +50,6 @@ typedef struct {
 	Uint8			missile_targeted;	// flag for player missile attack
 
 }EnemyData;
-
-Uint32 enemy_count;
-Uint32 enemy_killed;
-Uint8  fencer_count;
-Uint32 wave_count;
 
 EnemyData* enemy_data_init();
 Entity* enemy_spawn(GFC_Vector3D* player_pos);

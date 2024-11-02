@@ -3,6 +3,7 @@
 #include "player.h"
 #include "enemy.h"
 #include "item.h"
+#include "level.h"
 
 #define ITEM_Z_OFFSET 15.0f
 #define POWERUP_DURATION 25.0f
@@ -83,16 +84,17 @@ void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
 
 void item_think(Entity* self) {
     ItemData* data; 
-    PlayerData* player_data;
+    LevelData* level;
 
     data = self->data;
     if (!data) return;
 
-    player_data = get_player_data();
+    level = get_level_data();
 
-    if (player_data->wave_end) item_activate(self, data->type);
+    if (level->wave_end) 
+        item_activate(self, data->type);
 
-    if (player_data->in_shop || player_data->paused || !data->active || player_data->player_dead) return;
+    if (level->in_shop || level->paused || !data->active || get_player_data()->player_dead) return;
 
     self->position.x -= data->rigspeed;
     self->position.y += data->forspeed;
@@ -108,14 +110,16 @@ void item_think(Entity* self) {
 void item_update(Entity* self) {
     ItemData* data;
     PlayerData* player_data;
+    LevelData* level;
     float dist_x, dist_y, conver;
 
     data = self->data;
     if (!data) return;
 
     player_data = get_player_data();
+    level = get_level_data();
 
-    if (player_data->in_shop || player_data->paused || !data->active || player_data->player_dead) return;
+    if (level->in_shop || level->paused || !data->active || player_data->player_dead) return;
 
     if (self->position.y > 90.0f || player_data->player_dead)
         entity_free(self);

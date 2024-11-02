@@ -29,6 +29,7 @@
 #include "player.h"
 #include "enemy.h"
 #include "ui.h"
+#include "level.h"
 
 extern int __DEBUG;
 
@@ -37,11 +38,6 @@ static float fps = 0;
 
 void parse_arguments(int argc,char *argv[]);
 void game_frame_delay();
-
-void exitGame()
-{
-    _done = 1;
-}
 
 void draw_origin()
 {
@@ -56,76 +52,6 @@ void draw_origin()
         gfc_vector3d(0,0,0),gfc_vector3d(0,0,0),gfc_vector3d(1,1,1),0.1,gfc_color(0,0,1,1));
 }
 
-void level_update(Entity* player, PlayerData* p_data) {
-    if (!player || !p_data) return;
-
-    if (gfc_input_command_pressed("shop")) {
-        if (!p_data->in_shop) {
-            if (p_data->paused)
-                p_data->paused = 0;
-
-            p_data->in_shop = 1;
-        }
-        else
-            p_data->in_shop = 0;
-    }
-
-    if (gfc_input_command_pressed("escape")) {
-        if (!p_data->paused) {
-            if (p_data->in_shop)
-                p_data->in_shop = 0;
-
-            p_data->paused = 1;
-        }
-        else
-            p_data->paused = 0;
-    }
-
-    if (p_data->in_shop) { // shop menu
-        shop_hud_draw(p_data);
-        shop_think(p_data);
-        gf2d_mouse_draw();
-    }
-    else if (p_data->paused) { // pause menu
-        pause_menu(p_data);
-        pause_menu_think(p_data);
-        gf2d_mouse_draw();
-    }
-    else if (p_data->player_dead) { // death screen
-        player_death_screen(p_data);
-        gf2d_mouse_draw();
-        entity_reset();
-
-        // player respawn
-        if (gf2d_mouse_button_released(2)) {
-            shop_reset(); // reset upgrade checks if player has died
-            player_respawn(player);
-            enemy_count = 0;
-            enemy_killed = 0;
-            enemy_start = 0;
-            fencer_count = 0;
-            wave_count = 0;
-        }
-    }
-    else { // game in play
-        enemy_hud_all();
-        player_hud(player->data);
-
-        if (!enemy_start) 
-            wave_start(p_data);  
-
-        // game condition
-        if (enemy_count < ENEMY_MAX && enemy_killed < ENEMY_GOAL && enemy_start)
-            enemy_spawn(&(player->position));
-       
-        if (enemy_killed >= ENEMY_GOAL) {
-            enemy_killed = ENEMY_GOAL;
-            enemy_reset();
-            wave_completed(p_data);
-        }   
-    }
-}
-
 int main(int argc,char *argv[])
 {
     //local variables
@@ -133,6 +59,7 @@ int main(int argc,char *argv[])
     GFC_Matrix4 skyMat, trenchMat;
     Entity* player;
     PlayerData* player_data;
+    LevelData* level;
 
     //initializtion    
     parse_arguments(argc,argv);
@@ -169,8 +96,6 @@ int main(int argc,char *argv[])
     gfc_matrix4_identity(skyMat);
     //gfc_matrix4_identity(trenchMat);
     
-
-    //camera, definitely needs change for player entity
     gf3d_camera_set_scale(gfc_vector3d(1,1,1));
     gf3d_camera_set_position(gfc_vector3d(15,-15,10));
     gf3d_camera_look_at(gfc_vector3d(0,0,0),NULL);
@@ -180,21 +105,17 @@ int main(int argc,char *argv[])
     //gf3d_camera_enable_free_look(1);
 
     // game init initialization
+    level_init();
     game_sound_data_init();
-    enemy_count = 0;
-    game_start = 0;
-    enemy_start = 0;
-    enemy_killed = 0;
-    wave_count = 0;
-    _done = 0;
 
+    level = get_level_data();
     player = NULL;
     player_data = NULL;
     
     //windows
 
     // main game loop, constant series of updates  
-    while(!_done)
+    while(!level->_done)
     {
         gfc_input_update(); //look here for SDL stuff
         gf2d_mouse_update();
@@ -212,7 +133,7 @@ int main(int argc,char *argv[])
                 gf3d_model_draw_sky(sky,skyMat,GFC_COLOR_WHITE);
                 //gf3d_model_draw(trench, trenchMat, GFC_COLOR_WHITE, NULL, 0);
                 entity_draw_all();
-                draw_origin();
+                //draw_origin();
                 
                 //2D draws
                 //gf2d_mouse_draw();
@@ -220,14 +141,14 @@ int main(int argc,char *argv[])
                 //gf2d_font_draw_text_wrap_tag("ALT+F4 to exit", FT_Normal, gfc_color(0, 1, 0, 1), gfc_rect(player->position.x, player->position.y, 10, 20));
                 
                 // game start
-                if (!game_start){
+                if (!level->game_start){
                     start_menu();
                     player = start_menu_think(player_data);
                     gf2d_mouse_draw();
                 }
 
                 // game updates
-                if (game_start) {
+                if (level->game_start) {
                     if (!player) {
                         slog("player failed to spawn");
                         return;
@@ -237,7 +158,7 @@ int main(int argc,char *argv[])
                 }
 
         gf3d_vgraphics_render_end();
-        if (gfc_input_command_down("exit"))_done = 1; // exit condition
+        if (gfc_input_command_down("exit")) level->_done = 1; // exit condition
 
         game_frame_delay();
     }    
