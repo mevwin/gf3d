@@ -61,6 +61,7 @@ typedef struct {
     Sprite*         enemy_health_back;
 
     float           nuke_alpha;
+    float           emper_alpha;
     Uint8           audio_flag;
 
     /*start menu*/

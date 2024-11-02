@@ -2,6 +2,6 @@
     "model":
     {
         "obj":"models/enemy/enemy_ship.obj",
-        "texture":"models/enemy/color_CC.png"
+        "texture":"models/enemy/MasterPaletteIMG.png"
     }
 }

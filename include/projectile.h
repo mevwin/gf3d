@@ -85,6 +85,4 @@ void fencer_think(Entity* self);
 
 void bomber_think(Entity* self);
 
-void emper_think(Entity* self);
-
 #endif

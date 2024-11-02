@@ -19,6 +19,7 @@ void level_init() {
     
     level->enemy_count = 0;
     level->enemy_killed = 0;
+    level->emper_flag = 0;
     level->fencer_flag = 0;
     
     level->wave_count = 0;

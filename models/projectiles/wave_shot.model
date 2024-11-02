@@ -1,7 +1,0 @@
-{
-    "model":
-    {
-        "obj":"models/projectiles/wave_shot.obj",
-        "texture": "models/projectiles/color_66.png"
-    }
-}

@@ -20,28 +20,30 @@ typedef enum {
 }Entity_Type;
 
 typedef struct {
-    Model* player;
-    Texture* single_shot;
-    Texture* charge_shot;
-    Texture* damaged;
-    Texture* dead;
+    Model*      player;
+    Texture*    single_shot;
+    Texture*    charge_shot;
+    Texture*    damaged;
+    Texture*    dead;
 
-    Model* single_proj;
-    Model* charge_proj;
-    Model* super_nuke;
-    Model* reticle;
+    Model*      single_proj;
+    Model*      charge_proj;
+    Model*      super_nuke;
+    Model*      reticle;
 
-    Model* peas;
-    Model* peas_shot;
-    Model* chargers;
-    Model* chargers_shot;
-    Model* fencer;
-    Model* fencer_attack;
+    Model*      peas;
+    Model*      peas_shot;
+    Model*      chargers;
+    Model*      chargers_shot;
+    Model*      fencer;
+    Model*      fencer_attack;
+    Model*      emper;
+    Texture*    emper_spawn;
 
-    Model* scrap;
-    Model* health_pickup;
-    Model* happy_trigger;
-    Model* invincibility;
+    Model*      scrap;
+    Model*      health_pickup;
+    Model*      happy_trigger;
+    Model*      invincibility;
 }Entity_Models;
 
 typedef struct Entity_S{

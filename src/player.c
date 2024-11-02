@@ -124,8 +124,11 @@ void player_think(Entity* self) {
 
     // don't do anything if player is dead or in_shop or game is pause
     level = get_level_data();
+    time = CURRENT_TIME;
     if (data->player_dead || level->in_shop || level->paused || level->wave_end) return;
     
+    if (data->emp_time > time && data->active_item != INVINCIBILITY) return;
+
     // movement checks
     if (!data->mid_roll)
         player_movement(self, data);

@@ -570,7 +570,6 @@ void proj_think_super_nuke(Entity* self) {
             p_data->nuke_flag = 0;
             entity_free(self);
         }
-        
     }
 }
 
@@ -604,9 +603,5 @@ void fencer_think(Entity* self) {
 }
 
 void bomber_think(Entity* self) {
-
-}
-
-void emper_think(Entity* self) {
 
 }
