@@ -7,6 +7,10 @@
 static LevelData* level;
 
 void level_init() {
+    int i, x_start, y_start, z_start;
+    float neg;
+    Entity* asteroid;
+
     level = gfc_allocate_array(sizeof(LevelData), 1);
     
     level->game_start = 0;
@@ -15,14 +19,58 @@ void level_init() {
     
     level->enemy_count = 0;
     level->enemy_killed = 0;
-    level->fencer_count = 0;
+    level->fencer_flag = 0;
     
     level->wave_count = 0;
     level->in_shop = 0;
     level->paused = 0;
     level->wave_end = 0;
 
+    // asteroid init
+    level->asteroid = gf3d_model_load("models/trench/asteroid.model");
+    level->asteroid_list = gfc_list_new_size(ASTEROID_MAX);
+    for (i = 0; i < ASTEROID_MAX; i++) {
+        asteroid = entity_new();
+        asteroid->entity_type = ASTEROID;
+
+        x_start = gfc_random_int(220);
+        neg = gfc_crandom();
+        if (neg < 0)
+            x_start = -x_start;
+
+        y_start = -600 + (gfc_random_int(20) * 20);
+        z_start = -55 - gfc_random_int(20);
+
+        asteroid->position = gfc_vector3d(x_start, y_start, z_start);
+        asteroid->model = level->asteroid;
+        gfc_list_append(level->asteroid_list, asteroid);
+    }
+
     atexit(level_free);
+}
+
+void level_visuals() {
+    int i;
+    Entity* curr;
+    
+    if (level->in_shop || level->paused || level->wave_end) return;
+
+    for (i = 0; i < ASTEROID_MAX; i++) {
+        curr = (Entity*) gfc_list_nth(level->asteroid_list, i);
+        
+        if (i % 2 == 0) {
+            curr->rotation.x += 0.01f;
+            curr->position.y += 3.0f;
+        }
+        else {
+            curr->rotation.x -= 0.01f;
+            curr->position.y += 5.0f;
+        }
+        curr->rotation.z += 0.01f;
+
+        if (curr->position.y >= 30)
+            curr->position.y = -700;
+    }
 }
 
 void level_update(void* p, void* player_data) {
@@ -30,6 +78,8 @@ void level_update(void* p, void* player_data) {
     PlayerData* p_data = (PlayerData*) player_data;
 
     if (!player || !p_data) return;
+
+    level_visuals();
 
     if (gfc_input_command_pressed("shop")) {
         if (!level->in_shop) {
@@ -75,7 +125,7 @@ void level_update(void* p, void* player_data) {
             level->enemy_count = 0;
             level->enemy_killed = 0;
             level->enemy_start = 0;
-            level->fencer_count = 0;
+            level->fencer_flag = 0;
             level->wave_count = 0;
         }
     }
@@ -99,6 +149,9 @@ void level_update(void* p, void* player_data) {
 }
 
 void level_free() {
+    gf3d_model_free(level->asteroid);
+    gfc_list_foreach(level->asteroid_list, (void (*) (void*)) entity_free);
+    gfc_list_delete(level->asteroid_list);
     free(level);
 }
 

@@ -279,6 +279,9 @@ void entity_despawn_all() {
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
+        if (target->entity_type == ASTEROID)
+            continue;
+
         entity_free(target);
     }
 }
@@ -293,7 +296,7 @@ void entity_reset() {
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
-        if (target->entity_type == PLAYER || target->entity_type == ENEMY)
+        if (target->entity_type == PLAYER || target->entity_type == ENEMY || target->entity_type == ASTEROID)
             continue;
 
         entity_free(target);
@@ -303,7 +306,7 @@ void entity_reset() {
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
-        if (target->entity_type != ENEMY) continue;
+        if (target->entity_type != ENEMY || target->entity_type == ASTEROID) continue;
 
         entity_free(target);
     }
@@ -319,7 +322,7 @@ void enemy_reset() {
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
-        if (target->entity_type != PROJECTILE)
+        if (target->entity_type != PROJECTILE || target->entity_type == ASTEROID)
             continue;
 
         entity_free(target);
@@ -328,7 +331,7 @@ void enemy_reset() {
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
-        if (target->entity_type != ENEMY)
+        if (target->entity_type != ENEMY || target->entity_type == ASTEROID)
             continue;
 
         entity_free(target);

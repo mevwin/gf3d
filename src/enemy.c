@@ -13,14 +13,17 @@
 EnemyData* enemy_data_init() {
 	EnemyData* data;
 	Enemy_Type type;
+	LevelData* level;
 
 	data = gfc_allocate_array(sizeof(EnemyData), 1);
 	if (!data) return NULL;
 
+	level = get_level_data();
 	type = (Enemy_Type) gfc_random_int(3);
 
-	// can only have one fencer onscreen
-	if (type == FENCERS && get_level_data()->fencer_count >= FENCER_MAX)
+	if (type == FENCERS && !level->fencer_flag)
+		level->fencer_flag = 1;
+	else if (type == FENCERS && level->fencer_flag)
 		type = (Enemy_Type) gfc_random_int(2);
 
 	data->enemy_type = type;
@@ -252,7 +255,7 @@ void enemy_free(Entity* self) {
 	level = get_level_data();
 
 	if (data->enemy_type == FENCERS)
-		level->fencer_count--;
+		level->fencer_flag = 0;
 
 	free(data);
 	level->enemy_count--;
@@ -275,6 +278,9 @@ void enemy_die(Entity* self, EnemyData* data, int item_type) {
 	item_spawn(item_type, self->position, data->dist_to_player);
 	self->rotation.y = 0;
 	self->hurtbox.s.b = ENEMY_HURTBOX;
+
+	if (data->enemy_type == FENCERS)
+		get_level_data()->fencer_flag = 0;
 }
 
 void enemy_update_stats(EnemyData* data) {

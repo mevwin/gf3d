@@ -1,0 +1,6 @@
+{
+  "model": {
+    "obj": "models/trench/asteroid.obj",
+    "texture": "models/trench/Asteroid_1e.png"
+  }
+}

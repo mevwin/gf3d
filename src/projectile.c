@@ -189,8 +189,8 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     // enforcing maximum projectile count per entity
     if (enemy_data->proj_count == MAX_PROJ ||
         time < enemy_data->next_single_shot ||
-        (enemy_data->enemy_type == FENCERS && level->fencer_count >= FENCER_MAX)
-        ) {
+        (enemy_data->enemy_type == FENCERS && enemy_data->proj_count >= 1)
+        ){
         entity_free(self);
         return;
     }
@@ -203,15 +203,14 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     if (enemy_data->enemy_type == FENCERS) {
         self->think = fencer_think;
         self->position = player_pos;
-        level->fencer_spawn = player_pos;
+        
         self->free = proj_free;
         self->model = get_models()->fencer_attack;
         self->hurtbox.s.b = ENEMY_FENCER_BOX(self->position);
         self->no_draw = 1;
 
         data->damage = enemy_data->base_damage / 10.0f;
-
-        level->fencer_count++;
+        level->fencer_spawn = player_pos;
         return;
     }
 

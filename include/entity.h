@@ -15,7 +15,8 @@ typedef enum {
     ENEMY,
     PROJECTILE,
     RETICLE,
-    ITEM
+    ITEM, 
+    ASTEROID
 }Entity_Type;
 
 typedef struct {

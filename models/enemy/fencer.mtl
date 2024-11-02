@@ -1,0 +1,52 @@
+# Blender 4.2.2 LTS MTL File: 'fencer.blend'
+# www.blender.org
+
+newmtl color_11
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd C:/Users/vielg/Downloads/SNES - Star Fox Star Wing - Space Kite I/MasterPalette IMG.png
+
+newmtl color_22
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd C:/Users/vielg/Downloads/SNES - Star Fox Star Wing - Space Kite I/MasterPalette IMG.png
+
+newmtl color_33
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd C:/Users/vielg/Downloads/SNES - Star Fox Star Wing - Space Kite I/MasterPalette IMG.png
+
+newmtl color_44
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd C:/Users/vielg/Downloads/SNES - Star Fox Star Wing - Space Kite I/MasterPalette IMG.png
+
+newmtl color_88
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd C:/Users/vielg/Downloads/SNES - Star Fox Star Wing - Space Kite I/MasterPalette IMG.png

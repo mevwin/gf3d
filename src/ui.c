@@ -582,7 +582,7 @@ void wave_start(void* l) {
 
     if (gf2d_mouse_button_released(2)) {
         data->enemy_start = 1;
-        data->fencer_count = 0;
+        data->fencer_flag = 0;
         data->wave_end = 0;
         gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
     }
@@ -629,7 +629,7 @@ void wave_completed(void* p, void* l) {
         level->in_shop = 1;
         level->enemy_start = 0;
         level->enemy_count = 0;
-        level->fencer_count = 0;
+        level->fencer_flag = 0;
         level->enemy_killed = 0;
     }
 }
@@ -681,7 +681,7 @@ void enemy_hud(void* e, GFC_Vector3D position) {
     gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, 100, 20), GFC_COLOR_WHITE);
 
     // draw fencer attack region
-    if (level->fencer_count >= FENCER_MAX) {
+    if (level->fencer_flag) {
         fencer_start = gfc_3DPos_to_2DPos(level->fencer_spawn, player_data->x_bound, player_data->z_bound);
         fencer_start.x -= 360.0f;
         fencer_start.y -= 240.0f;
