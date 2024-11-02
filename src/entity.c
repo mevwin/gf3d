@@ -57,6 +57,7 @@ void entity_system_init(Uint32 maxEnts){
     models->fencer_attack = gf3d_model_load("models/projectiles/fencer_attack.model");
     models->emper = gf3d_model_load("models/enemy/emper.model");
     models->emper_spawn = gf3d_texture_load("models/enemy/color_55.png");
+    models->bomber = gf3d_model_load("models/enemy/bomber.model");
 
     models->scrap = gf3d_model_load("models/item/enemy_scrap.model");
     models->health_pickup = gf3d_model_load("models/item/health_pickup.model");
@@ -92,6 +93,7 @@ void entity_system_close(){
     gf3d_model_free(models->fencer_attack);
     gf3d_model_free(models->emper);
     gf3d_texture_free(models->emper_spawn);
+    gf3d_model_free(models->bomber);
 
     gf3d_model_free(models->scrap);
     gf3d_model_free(models->health_pickup);

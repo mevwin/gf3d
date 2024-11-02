@@ -21,17 +21,19 @@ EnemyData* enemy_data_init() {
 	if (!data) return NULL;
 
 	level = get_level_data();
-	type = (Enemy_Type) gfc_random_int(4);
+	type = (Enemy_Type) gfc_random_int(5);
 
+	// only one fencer on-screen
 	if (type == FENCERS && !level->fencer_flag)
 		level->fencer_flag = 1;
 	else if (type == FENCERS && level->fencer_flag)
-		type = (Enemy_Type) gfc_random_int(3);
+		type = (Enemy_Type) gfc_random_int(4);
 
+	// only one emper on-screen
 	if (type == EMPERS && !level->emper_flag)
 		level->emper_flag = 1;
 	else if (type == EMPERS && level->emper_flag)
-		type = (Enemy_Type)gfc_random_int(2);
+		type = (Enemy_Type)gfc_random_int(3);
 
 	data->enemy_type = type;
 
@@ -69,8 +71,12 @@ EnemyData* enemy_data_init() {
 		
 		data->move_type = HORIZONTAL;
 	}
-	else if (data->enemy_type == BOMBERS)
-		data->move_type = STATIONARY;
+	else if (data->enemy_type == BOMBERS) {
+		data->move_type = HORIZONTAL;
+		data->base_damage = 400.0f;
+		data->maxHealth = 10.0f;
+		data->rigspeed = 0.3f;
+	}
 
 	data->currHealth = data->maxHealth;
 
@@ -113,6 +119,8 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 		self->think = emper_think;
 		data->emper_attack_time = CURRENT_TIME + EMPER_CHARGE_TIME;
 	}
+	else if (data->enemy_type == BOMBERS)
+		self->model = models->bomber;
 	
 	data->player_pos = player_pos;
 
@@ -167,7 +175,7 @@ void enemy_think(Entity* self) {
 
 	time = CURRENT_TIME;
 
-	if (!player_data->player_no_attack) {
+	if (!player_data->player_no_attack && data->enemy_type != BOMBERS) {
 		enemy_proj_spawn(self->position, player_pos, self, time);
 	}
 
@@ -231,23 +239,28 @@ void enemy_update(Entity* self) {
 
 		return;
 	}
+	rand = random_item();
+	// bomber deaths are a special case
+	if (data->enemy_type != BOMBERS) {
+		if (data->currHealth <= 0.0 && !data->enemy_dead) 
+			enemy_die(self, data, rand);
 
-	if (data->currHealth <= 0.0 && !data->enemy_dead) {
-		rand = 1 + gfc_random_int(4);
+		self->rotation.y -= 0.1f;
 
-		if (player_data->active_item == HAPPY_TRIGGER || player_data->active_item == INVINCIBILITY)
-			rand = 1 + gfc_random_int(2);
-		if (player_data->currHealth >= player_data->maxHealth && rand == HEALTH_PICKUP)
-			rand = 1;
-
-		enemy_die(self, data, rand);
-		data->enemy_dead = 1;
+		if (data->enemy_dead && data->proj_count <= 0)
+			entity_free(self);
 	}
-
-	self->rotation.y -= 0.1f;
-
-	if (data->enemy_dead && data->proj_count <= 0)
-		entity_free(self);
+	else if (data->enemy_type == BOMBERS) {
+		if (data->currHealth <= 0.0 && !data->enemy_dead) {
+			if (data->damaged_type == CHARGE_SHOT) 
+				enemy_die(self, data, rand);
+			else {
+				bomber_die(self, data, self->position);
+			}
+		}
+		else if (data->enemy_dead && data->proj_count == 0)
+			entity_free(self);
+	}
 }
 
 void enemy_move(Entity* self) {
@@ -339,8 +352,24 @@ void enemy_take_damage(Entity* self, EnemyData* data) {
 	data->damage_taken = 0;
 }
 
+int random_item() {
+	PlayerData* player_data;
+	int rand;
+
+	rand = 1 + gfc_random_int(4);
+	
+	player_data = get_player_data();
+
+	if (player_data->active_item == HAPPY_TRIGGER || player_data->active_item == INVINCIBILITY)
+		rand = 1 + gfc_random_int(2);
+	if (player_data->currHealth >= player_data->maxHealth && rand == HEALTH_PICKUP)
+		rand = 1;
+
+	return rand;
+}
+
 void enemy_die(Entity* self, EnemyData* data, int item_type) {
-	if (!data) return;
+	if (!self || !data) return;
 
 	item_spawn(SCRAP, self->position, data->dist_to_player);
 	item_spawn(item_type, self->position, data->dist_to_player);
@@ -349,6 +378,35 @@ void enemy_die(Entity* self, EnemyData* data, int item_type) {
 
 	if (data->enemy_type == FENCERS)
 		get_level_data()->fencer_flag = 0;
+
+	data->enemy_dead = 1;
+}
+
+void bomber_die(Entity* self, EnemyData* data, GFC_Vector3D position){
+	GFC_Vector3D player_pos, spawn_pos;
+
+	if (!self || !data) return;
+
+	self->hurtbox.s.b = ENEMY_HURTBOX;
+	self->no_draw = 1;
+
+	player_pos.x = data->player_pos->x;
+	player_pos.y = data->player_pos->y;
+	player_pos.z = data->player_pos->z;
+	gfc_vector3d_copy(spawn_pos, position);
+
+	spawn_pos.x -= 5.0f;
+	spawn_pos.z += 5.0f;
+	enemy_proj_spawn(spawn_pos, player_pos, self, CURRENT_TIME);
+
+	spawn_pos.x += 10.0f;
+	enemy_proj_spawn(spawn_pos, player_pos, self, CURRENT_TIME);
+
+	spawn_pos = self->position;
+	spawn_pos.z -= 10.0f;
+	enemy_proj_spawn(spawn_pos, player_pos, self, CURRENT_TIME);
+
+	data->enemy_dead = 1;
 }
 
 void enemy_update_stats(EnemyData* data) {

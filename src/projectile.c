@@ -113,10 +113,8 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
         self->think = proj_think_missile;
         self->model = get_models()->single_proj;
         data->forspeed = player_data->proj_speed * 0.75f;
-        //data->forspeed = 1.0;
         data->damage = player_data->base_damage + player_data->missile_bonus;
         data->missile_target = rec_data->enemy_pos;
-        //data->missile_target = &(player_data->reticle->position);
 
         // initial movement speed
         dist_x = data->missile_target->x - self->position.x;
@@ -170,6 +168,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     ProjData* data;
     EnemyData* enemy_data;
     LevelData* level;
+    Entity_Models* models;
     float dist_x, dist_y, conver, z_angle, y_angle, time;
 
     self = entity_new();
@@ -185,6 +184,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
 
     time = CURRENT_TIME;
     level = get_level_data();
+    models = get_models();
 
     // enforcing maximum projectile count per entity
     if (enemy_data->proj_count == MAX_PROJ ||
@@ -205,7 +205,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
         self->position = player_pos;
         
         self->free = proj_free;
-        self->model = get_models()->fencer_attack;
+        self->model = models->fencer_attack;
         self->hurtbox.s.b = ENEMY_FENCER_BOX(self->position);
         self->no_draw = 1;
 
@@ -221,7 +221,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     data->vortexed = 0;
 
     // rotating projectile to player
-    if (data->type == PEAS || data->type == CHARGERS) {
+    if (data->type == PEAS || data->type == CHARGERS || data->type == BOMBERS) {
         dist_x = player_pos.x - position.x;
         dist_y = player_pos.z - position.z;
 
@@ -234,10 +234,20 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
 
     if (data->type == PEAS || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
-        self->model = data->type == PEAS ? get_models()->peas_shot : get_models()->chargers_shot;
+        self->model = data->type == PEAS ? models->peas_shot : models->chargers_shot;
         data->forspeed = data->type == PEAS ? enemy_data->pea_speed : enemy_data->pea_speed * 1.25f;
         data->damage = data->type == PEAS ? enemy_data->base_damage : enemy_data->base_damage * 2.0f;
         enemy_data->next_single_shot = data->type == PEAS ? curr_time + 0.9f : curr_time + 1.8f;
+
+        conver = enemy_data->dist_to_player / data->forspeed;
+        data->rigspeed = (dist_x / conver);
+        data->upspeed = (dist_y / conver);
+    }
+    else if (data->type == BOMBERS) {
+        self->think = bomber_think;
+        self->model = models->single_proj;
+        data->forspeed = 1.0f;
+        data->damage = enemy_data->base_damage;
 
         conver = enemy_data->dist_to_player / data->forspeed;
         data->rigspeed = (dist_x / conver);
@@ -330,7 +340,7 @@ void proj_update_enemy(Entity* self) {
     update_hurtbox(self);
  
     enemy_data = data->owner->data;
-    if (enemy_data->currHealth <= 0)
+    if (enemy_data->currHealth <= 0 && enemy_data->enemy_type != BOMBERS)
         data->y_bound = -30;
 
     // enemy attacking player
@@ -603,5 +613,38 @@ void fencer_think(Entity* self) {
 }
 
 void bomber_think(Entity* self) {
+    PlayerData* p_data;
+    EnemyData* enemy_data;
+    LevelData* level;
+    ProjData* data;
+    float dist_x, dist_y, conver, z_angle, y_angle;
 
+    if (!self) return;
+
+    data = self->data;
+    if (!data) return;
+
+    p_data = get_player_data();
+    enemy_data = data->owner->data;
+    level = get_level_data();
+
+    if (p_data->player_dead || level->paused || level->in_shop) return;
+
+    // update missile trajectory if missile is active
+    dist_x = enemy_data->player_pos->x - self->position.x;
+    dist_y = enemy_data->player_pos->z - self->position.z;
+
+    z_angle = atan(dist_x / (enemy_data->dist_to_player + 5));
+    self->rotation.z = z_angle;
+
+    y_angle = atan(dist_y / (enemy_data->dist_to_player + 5));
+    self->rotation.y = -y_angle;
+
+    conver = self->position.y / data->forspeed;
+    data->rigspeed = (dist_x / conver);
+    data->upspeed = (dist_y / conver);
+
+    self->position.x -= data->rigspeed;
+    self->position.y += data->forspeed;
+    self->position.z -= data->upspeed;
 }

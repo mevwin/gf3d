@@ -39,6 +39,7 @@ typedef struct {
     Model*      fencer_attack;
     Model*      emper;
     Texture*    emper_spawn;
+    Model*      bomber;
 
     Model*      scrap;
     Model*      health_pickup;

@@ -1,0 +1,7 @@
+{
+    "model":
+    {
+        "obj":"models/enemy/bomber.obj",
+        "texture":"models/enemy/color_88.png"
+    }
+}
