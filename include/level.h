@@ -1,7 +1,7 @@
 #ifndef __LEVEL_H__
 #define __LEVEL_H__
 
-#define ENEMY_MAX 4 // max amount of enemies on-screen
+#define ENEMY_MIN_LIMIT 4 // minimum limit amount of enemies on-screen
 #define ENEMY_GOAL 20.0f
 #define FENCER_MAX 1
 #define EMPER_MAX 1
@@ -24,6 +24,7 @@ typedef struct {
 }LevelData;
 
 void level_init();
+void level_visuals();
 void level_update(void* p, void* player_data);
 void level_free();
 LevelData* get_level_data();

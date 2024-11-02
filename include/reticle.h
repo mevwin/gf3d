@@ -1,3 +1,6 @@
+#ifndef __RETICLE_H__
+#define __RETICLE_H__
+
 #include "entity.h"
 
 typedef struct {
@@ -14,3 +17,5 @@ Entity* reticle_spawn(GFC_Vector3D position);
 void reticle_update(Entity* self);
 void reticle_free(Entity* self);
 GFC_Vector3D get_reticle_pos();
+
+#endif

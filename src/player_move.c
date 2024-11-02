@@ -18,7 +18,7 @@ void player_movement(Entity* self, PlayerData* data) {
     gfc_vector3d_rotate_about_x(&updir, self->rotation.x);
     rigdir = gfc_vector2d_rotate(rigdir, self->rotation.z);
 
-    if (gfc_input_command_down("moveup")) {
+    if (gfc_input_command_down("moveup") && !gfc_input_command_down("movedown")) {
         if (!check_movebounds(self, updir, data))
             updir = NO_MOVEMENT3D;
 
@@ -30,7 +30,7 @@ void player_movement(Entity* self, PlayerData* data) {
         else self->rotation.y = -0.25f;
     }
 
-    if (gfc_input_command_down("movedown")) {
+    if (gfc_input_command_down("movedown") && !gfc_input_command_down("moveup")) {
         gfc_vector3d_negate(updir, updir);
         if (!check_movebounds(self, updir, data))
             updir = NO_MOVEMENT3D;
@@ -43,7 +43,7 @@ void player_movement(Entity* self, PlayerData* data) {
         else self->rotation.y = 0.25f;
     }
 
-    if (gfc_input_command_down("moveright")) {
+    if (gfc_input_command_down("moveright") && !gfc_input_command_down("moveleft")) {
         gfc_vector2d_negate(rigdir, rigdir);
         if (!check_movebounds(self, gfc_vector3d(rigdir.x, rigdir.y, 0), data))
             rigdir = NO_MOVEMENT2D;
@@ -61,7 +61,7 @@ void player_movement(Entity* self, PlayerData* data) {
         }
     }
 
-    if (gfc_input_command_down("moveleft")) {
+    if (gfc_input_command_down("moveleft") && !gfc_input_command_down("moveright")) {
         if (!check_movebounds(self, gfc_vector3d(rigdir.x, rigdir.y, 0), data))
             rigdir = NO_MOVEMENT2D;
 

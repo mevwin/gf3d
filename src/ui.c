@@ -6,6 +6,9 @@
 #include "gfc_vector.h"
 #include "gf2d_mouse.h"
 #include "ui.h"
+#include "player.h"
+#include "enemy.h"
+#include "level.h"
 #include "projectile.h"
 #include "item.h"
 
@@ -118,11 +121,16 @@ void UI_free() {
     free(UI_data);
 }
 
-void shop_hud_draw(PlayerData* data) {
+void shop_hud_draw(void* d) {
     GFC_Rect upgrade_bar;
     GFC_Vector2D res, bar_position, scale;
     float x_start, y_start, upgrade_bar_length, x1, x2, upgrade_cost, upgrade_length;
     float scrap, maxscrap, currScrap;
+    PlayerData* data;
+
+    data = (PlayerData*) d;
+
+    if (!data) return;
 
     res = gf3d_vgraphics_get_resolution();
     gf2d_draw_rect_filled(gfc_rect(0, 0, res.x, res.y), UI_data->shop_color);
@@ -138,8 +146,8 @@ void shop_hud_draw(PlayerData* data) {
     gf2d_font_draw_line_tag("SHOP", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(605.0, 100.0));
 
     // scrap bar draw
-    scrap = (float)data->currScrap;
-    maxscrap = (float)data->maxScrap;
+    scrap = (float) data->currScrap;
+    maxscrap = (float) data->maxScrap;
     currScrap = (float)(scrap / maxscrap);
 
     x_start = (res.x / 2) - 200.0;
@@ -243,9 +251,11 @@ void shop_hud_draw(PlayerData* data) {
     gf2d_draw_rect_filled(upgrade_bar, GFC_COLOR_LIGHTCYAN);
 }
 
-void shop_think(PlayerData* data) {
+void shop_think(void* d) {
     LevelData* level;
+    PlayerData* data;
 
+    data = (PlayerData*) d;
     if (!data) return;
 
     level = get_level_data();
@@ -362,19 +372,15 @@ void shop_reset() {
     // don't reset nuke upgrade
 }
 
-/*
-ShopData* get_UI_data() {
-    return UI_data;
-}
-*/
-
-void player_hud(PlayerData* data) {
+void player_hud(void* d) {
     GFC_Vector2D res, bar_position, scale;
     float start, scrap, maxscrap, nuke_cost;
     float currHealth, currShield, currScrap, currVortex, currNuke;
     float enemy_kill, currEnem;
     LevelData* level;
+    PlayerData* data;
 
+    data = (PlayerData*) d;
     if (!data) return;
 
     level = get_level_data();
@@ -544,7 +550,10 @@ void pause_menu() {
     gf2d_font_draw_text_wrap_tag("QUIT", FT_H2, GFC_COLOR_WHITE, UI_data->quit_block);
 }
 
-void pause_menu_think(LevelData* data) {
+void pause_menu_think(void* l) {
+    LevelData* data;
+
+    data = (LevelData*) l;
     if (!data) return;
 
     if (gf2d_mouse_button_released(0)) {
@@ -562,9 +571,11 @@ void pause_menu_think(LevelData* data) {
     }
 }
 
-void wave_start(LevelData* data) {
+void wave_start(void* l) {
     GFC_Vector2D res, text_loc;
+    LevelData* data;
 
+    data = (LevelData*) l;
     if (!data) return;
 
     res = gf3d_vgraphics_get_resolution();
@@ -584,8 +595,15 @@ void wave_start(LevelData* data) {
     }
 }
 
-void wave_completed(PlayerData* data, LevelData* level) {
+void wave_completed(void* p, void* l) {
     GFC_Vector2D res, text_loc;
+    PlayerData* data; 
+    LevelData* level;
+
+    data = (PlayerData*) p;
+    level = (LevelData*) l;
+
+    if (!p || !l) return;
 
     res = gf3d_vgraphics_get_resolution();
     gf2d_draw_rect_filled(gfc_rect(0, 0, res.x, res.y), gfc_color(65, 65, 65, 0.4f));
@@ -616,7 +634,7 @@ void wave_completed(PlayerData* data, LevelData* level) {
     }
 }
 
-void player_death_screen(PlayerData* data) {
+void player_death_screen() {
     GFC_Vector2D res, text_loc;
 
     res = gf3d_vgraphics_get_resolution();
@@ -629,13 +647,15 @@ void player_death_screen(PlayerData* data) {
     gf2d_font_draw_line_tag("Press Right Click to Restart", FT_H3, GFC_COLOR_WHITE, text_loc);
 }
 
-void enemy_hud(EnemyData* data, GFC_Vector3D position) {
+void enemy_hud(void* e, GFC_Vector3D position) {
     float health, maxhealth, currHealth;
     PlayerData* player_data;
+    EnemyData* data;
     LevelData* level;
     GFC_Vector2D bar_position, scale, fencer_start;
     GFC_Rect fencer_attack;
 
+    data = (EnemyData*) e;
     if (!data) return;
     
     player_data = get_player_data();

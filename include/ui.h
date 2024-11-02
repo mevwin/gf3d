@@ -3,9 +3,7 @@
 
 #include "gfc_shape.h"
 #include "gf2d_sprite.h"
-#include "player.h"
-#include "enemy.h"
-#include "level.h"
+#include "entity.h"
 
 /*
 typedef enum {
@@ -77,33 +75,32 @@ typedef struct {
 void UI_init();
 void UI_free();
 
-void shop_hud_draw(PlayerData* data);
+void shop_hud_draw(void* d);
 
 /**
 * @brief where upgrades are actually given to player
 */
-void shop_think(PlayerData* data);
+void shop_think(void* d);
 
 /**
 * @brief reset shop progress
 */
 void shop_reset();
-//ShopData* get_shop_data();
 
-void player_hud(PlayerData* data);
+void player_hud(void* d);
 
 void start_menu();
 Entity* start_menu_think();
 
 void pause_menu();
-void pause_menu_think(LevelData* data);
+void pause_menu_think(void* l);
 
-void wave_start(LevelData* data);
-void wave_completed(PlayerData* data, LevelData* level);
+void wave_start(void* l);
+void wave_completed(void* p, void* l);
 
-void player_death_screen(PlayerData* data);
+void player_death_screen();
 
-void enemy_hud(EnemyData* data, GFC_Vector3D position);
+void enemy_hud(void* e, GFC_Vector3D position);
 void enemy_hud_all();
 
 

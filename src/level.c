@@ -64,7 +64,7 @@ void level_update(void* p, void* player_data) {
         gf2d_mouse_draw();
     }
     else if (p_data->player_dead) { // death screen
-        player_death_screen(p_data);
+        player_death_screen();
         gf2d_mouse_draw();
         entity_reset();
 
@@ -87,7 +87,7 @@ void level_update(void* p, void* player_data) {
             wave_start(level);
 
         // game condition
-        if (level->enemy_count < ENEMY_MAX && level->enemy_killed < ENEMY_GOAL && level->enemy_start)
+        if (level->enemy_count < ENEMY_MIN_LIMIT && level->enemy_killed < ENEMY_GOAL && level->enemy_start)
             enemy_spawn(&(player->position));
 
         if (level->enemy_killed >= ENEMY_GOAL) {

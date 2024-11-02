@@ -3,10 +3,37 @@
   "WorkspaceRootPath": "C:\\Users\\vielg\\gf3d\\win\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\include\\ui.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\ui.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\level.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\player_move.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\player.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\reticle.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\include\\level.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\include\\reticle.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\projectile.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\include\\entity.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\gfc\\include\\gfc_audio.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\include\\ui.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\include\\projectile.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
@@ -18,34 +45,13 @@
       "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\include\\enemy.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\include\\level.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\ui.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\game.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\enemy.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\reticle.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\game.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\player.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\item.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\projectile.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\gfc\\include\\gfc_audio.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\include\\entity.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8E8BB929-84A8-4EFF-99B4-C803D08535CF}|win.vcxproj|C:\\Users\\vielg\\gf3d\\src\\entity.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
@@ -58,17 +64,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 229,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 14,
               "Title": "game.c",
               "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\src\\game.c",
               "RelativeDocumentMoniker": "..\\src\\game.c",
               "ToolTip": "C:\\Users\\vielg\\gf3d\\src\\game.c",
               "RelativeToolTip": "..\\src\\game.c",
-              "ViewState": "AgIAAGsAAAAAAAAAAAAAAHkAAAAMAAAAAAAAAA==",
+              "ViewState": "AgIAAFUAAAAAAAAAAAAAACkAAAASAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-10-26T02:03:23.842Z",
               "IsPinned": true,
@@ -76,13 +82,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 3,
               "Title": "player.c",
               "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\src\\player.c",
               "RelativeDocumentMoniker": "..\\src\\player.c",
               "ToolTip": "C:\\Users\\vielg\\gf3d\\src\\player.c",
               "RelativeToolTip": "..\\src\\player.c",
-              "ViewState": "AgIAAIkBAAAAAAAAAAAAANsAAAAdAAAAAAAAAA==",
+              "ViewState": "AgIAACwBAAAAAAAAAAAAAC4BAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-10-27T22:01:16.859Z",
               "IsPinned": true,
@@ -90,7 +96,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 16,
               "Title": "item.c",
               "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\src\\item.c",
               "RelativeDocumentMoniker": "..\\src\\item.c",
@@ -104,29 +110,15 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 4,
               "Title": "reticle.c",
               "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\src\\reticle.c",
               "RelativeDocumentMoniker": "..\\src\\reticle.c",
               "ToolTip": "C:\\Users\\vielg\\gf3d\\src\\reticle.c",
               "RelativeToolTip": "..\\src\\reticle.c",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADAAAAAdAAAAAAAAAA==",
+              "ViewState": "AgIAAFoAAAAAAAAAAAAAAGEAAAAWAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-10-28T16:12:47.668Z",
-              "IsPinned": true,
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "projectile.c",
-              "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\src\\projectile.c",
-              "RelativeDocumentMoniker": "..\\src\\projectile.c",
-              "ToolTip": "C:\\Users\\vielg\\gf3d\\src\\projectile.c",
-              "RelativeToolTip": "..\\src\\projectile.c",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFICAAA1AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2024-10-28T04:43:51.055Z",
               "IsPinned": true,
               "EditorCaption": ""
             },
@@ -138,7 +130,7 @@
               "RelativeDocumentMoniker": "..\\src\\level.c",
               "ToolTip": "C:\\Users\\vielg\\gf3d\\src\\level.c",
               "RelativeToolTip": "..\\src\\level.c",
-              "ViewState": "AgIAACAAAAAAAAAAAAAAAFYAAAAeAAAAAAAAAA==",
+              "ViewState": "AgIAACcAAAAAAAAAAAAAAFkAAAAwAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-11-02T04:29:39.318Z",
               "IsPinned": true,
@@ -146,16 +138,42 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 2,
+              "Title": "player_move.c",
+              "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\src\\player_move.c",
+              "RelativeDocumentMoniker": "..\\src\\player_move.c",
+              "ToolTip": "C:\\Users\\vielg\\gf3d\\src\\player_move.c",
+              "RelativeToolTip": "..\\src\\player_move.c",
+              "ViewState": "AgIAAEsAAAAAAAAAAAAAAIIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2024-11-02T05:43:13.287Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
               "Title": "ui.c",
               "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\src\\ui.c",
               "RelativeDocumentMoniker": "..\\src\\ui.c",
               "ToolTip": "C:\\Users\\vielg\\gf3d\\src\\ui.c",
               "RelativeToolTip": "..\\src\\ui.c",
-              "ViewState": "AgIAAAYCAAAAAAAAAAAAAB8AAAAEAAAAAAAAAA==",
+              "ViewState": "AgIAACQCAAAAAAAAAAAcwEkCAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-10-24T01:51:40.311Z",
-              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "projectile.c",
+              "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\src\\projectile.c",
+              "RelativeDocumentMoniker": "..\\src\\projectile.c",
+              "ToolTip": "C:\\Users\\vielg\\gf3d\\src\\projectile.c",
+              "RelativeToolTip": "..\\src\\projectile.c",
+              "ViewState": "AgIAAOABAAAAAAAAAAAMwPoBAAA5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2024-10-28T04:43:51.055Z",
               "EditorCaption": ""
             },
             {
@@ -180,7 +198,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 15,
               "Title": "enemy.c",
               "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\src\\enemy.c",
               "RelativeDocumentMoniker": "..\\src\\enemy.c",
@@ -193,21 +211,22 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 17,
               "Title": "entity.c",
               "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\src\\entity.c",
               "RelativeDocumentMoniker": "..\\src\\entity.c",
               "ToolTip": "C:\\Users\\vielg\\gf3d\\src\\entity.c",
               "RelativeToolTip": "..\\src\\entity.c",
-              "ViewState": "AgIAAB0AAAAAAAAAAAAAADAAAABFAAAAAAAAAA==",
+              "ViewState": "AgIAABoAAAAAAAAAAIBJwDAAAABFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2024-10-30T02:15:43.184Z"
+              "WhenOpened": "2024-10-30T02:15:43.184Z",
+              "EditorCaption": ""
             }
           ]
         },
         {
           "DockedWidth": 231,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
@@ -217,7 +236,7 @@
               "RelativeDocumentMoniker": "..\\include\\level.h",
               "ToolTip": "C:\\Users\\vielg\\gf3d\\include\\level.h",
               "RelativeToolTip": "..\\include\\level.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAASAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-11-02T04:29:47.631Z",
               "IsPinned": true,
@@ -225,7 +244,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 13,
               "Title": "enemy.h",
               "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\include\\enemy.h",
               "RelativeDocumentMoniker": "..\\include\\enemy.h",
@@ -238,20 +257,33 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
+              "Title": "reticle.h",
+              "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\include\\reticle.h",
+              "RelativeDocumentMoniker": "..\\include\\reticle.h",
+              "ToolTip": "C:\\Users\\vielg\\gf3d\\include\\reticle.h",
+              "RelativeToolTip": "..\\include\\reticle.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-11-02T05:48:07.302Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
               "Title": "player.h",
               "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\include\\player.h",
               "RelativeDocumentMoniker": "..\\include\\player.h",
               "ToolTip": "C:\\Users\\vielg\\gf3d\\include\\player.h",
               "RelativeToolTip": "..\\include\\player.h",
-              "ViewState": "AgIAAC0AAAAAAAAAAAAAADoAAAAdAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-10-31T21:16:50.1Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 11,
               "Title": "projectile.h",
               "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\include\\projectile.h",
               "RelativeDocumentMoniker": "..\\include\\projectile.h",
@@ -264,33 +296,33 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 10,
               "Title": "ui.h",
               "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\include\\ui.h",
               "RelativeDocumentMoniker": "..\\include\\ui.h",
               "ToolTip": "C:\\Users\\vielg\\gf3d\\include\\ui.h",
               "RelativeToolTip": "..\\include\\ui.h",
-              "ViewState": "AgIAAD8AAAAAAAAAAAAAAGIAAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFwAAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-10-31T21:10:24.234Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 8,
               "Title": "entity.h",
               "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\include\\entity.h",
               "RelativeDocumentMoniker": "..\\include\\entity.h",
               "ToolTip": "C:\\Users\\vielg\\gf3d\\include\\entity.h",
               "RelativeToolTip": "..\\include\\entity.h",
-              "ViewState": "AgIAACEAAAAAAAAAAAAAAD8AAAAbAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAD8AAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-11-02T03:17:45.566Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 9,
               "Title": "gfc_audio.h",
               "DocumentMoniker": "C:\\Users\\vielg\\gf3d\\gfc\\include\\gfc_audio.h",
               "RelativeDocumentMoniker": "..\\gfc\\include\\gfc_audio.h",
