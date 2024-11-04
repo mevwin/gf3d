@@ -1,8 +1,6 @@
 #ifndef __LEVEL_H__
 #define __LEVEL_H__
 
-#include "gfc_list.h"
-
 #define ENEMY_MIN_LIMIT 5 // minimum limit amount of enemies on-screen
 #define ENEMY_GOAL 20.0f
 #define ASTEROID_MAX 20
@@ -12,6 +10,7 @@ typedef struct {
 	Uint8			enemy_start;
 	Uint8			_done;
 
+	float			last_powerup;		// time stamp of last active powerup
 	Uint32			enemy_count;
 	int				enemy_killed;
 	Uint8			emper_flag;
@@ -25,10 +24,14 @@ typedef struct {
 
 	Model*			asteroid;
 	GFC_List*		asteroid_list;
+	Uint8			asteroids_made;
 
+	Uint8			assets_made;
 }LevelData;
 
 void level_init();
+void asteroid_init();
+void asteroid_free();
 void level_visuals();
 void level_update(void* p, void* player_data);
 void level_free();

@@ -15,17 +15,15 @@ typedef enum {
 
 typedef struct {
 	int				type;			// type of item
-	Uint8			active;			
+	Uint8			active;			// is currently moving to player
 
 	// movement details
 	float			forspeed;		// y-movement
 	float           upspeed;		// z-movement
 	float           rigspeed;		// x-movement
-	float			dist_to_player;
+	float			dist_to_player;	// y-distance to player
 
 }ItemData;
-
-float last_powerup;
 
 void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player);
 void item_think(Entity* self);

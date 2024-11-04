@@ -10,27 +10,21 @@
 #define SCRAP_SPEED 1.0f
 #define POWERUP_SPEED 2.0f
 
-/**
-* define how an item will be interacted with
-* maybe make some global function that can get the item by volume
-* make states that define the behavior of the item at a certain point
-* item pickups should funciton like enemy projectiles, except they're homing
-* two bounding boxes for player, one for enemy targets, one for item pickups
-*/
-
 void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
     Entity* self;
     ItemData* data;
+    LevelData* level;
     float dist_x, dist_y, conver, time;
     Item_Type item_t;
 
     item_t = (Item_Type) type;
 
     // only allow powerups within the past 20 seconds
+    level = get_level_data();
     time = CURRENT_TIME;
-    if (time < last_powerup && (item_t == HAPPY_TRIGGER || item_t == INVINCIBILITY))
+    if (time < level->last_powerup && (item_t == HAPPY_TRIGGER || item_t == INVINCIBILITY))
         item_t = NONE;
-    
+
     if (item_t == NONE) return;
 
     // sanity check
@@ -59,13 +53,13 @@ void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
         self->position.z += ITEM_Z_OFFSET;
         self->model = get_models()->happy_trigger;
         data->forspeed = POWERUP_SPEED;
-        last_powerup = time + POWERUP_DURATION;
+        level->last_powerup = time + POWERUP_DURATION;
     }
     else if (type == INVINCIBILITY) {
         self->position.z += ITEM_Z_OFFSET;
         self->model = get_models()->invincibility;
         data->forspeed = POWERUP_SPEED;
-        last_powerup = time + POWERUP_DURATION;
+        level->last_powerup = time + POWERUP_DURATION;
     }
 
     data->type = type;
@@ -146,14 +140,14 @@ void item_activate(Entity* self, int type) {
 
     if (type == SCRAP) {
         extra_amount = 1 + gfc_random_int(3);
-        if ((player->currScrap + extra_amount) <= player->maxScrap)
+        if ((player->currScrap + extra_amount) < player->maxScrap)
             player->currScrap += extra_amount;
         else
             player->currScrap = player->maxScrap;
     }
     else if (type == HEALTH_PICKUP) {
         extra_amount = 100 * (1 + gfc_random_int(3));
-        if ((player->currHealth + extra_amount) <= player->maxHealth)
+        if ((player->currHealth + extra_amount) < player->maxHealth)
             player->currHealth += (float) extra_amount;
         else
             player->currHealth = player->maxHealth;

@@ -9,14 +9,14 @@
 #define NO_MOVEMENT2D (gfc_vector2d(0, 0))
 
 void player_movement(Entity* self, PlayerData* data) {
+    GFC_Vector3D updir;
+    GFC_Vector2D rigdir;
+
     if (!data) return;
     if (!self) return;
 
-    GFC_Vector3D updir = { 0, 0, data->upspeed };
-    GFC_Vector2D rigdir = { data->rigspeed, 0 };
-
-    gfc_vector3d_rotate_about_x(&updir, self->rotation.x);
-    rigdir = gfc_vector2d_rotate(rigdir, self->rotation.z);
+    updir = gfc_vector3d(0, 0, data->upspeed);
+    rigdir = gfc_vector2d(data->rigspeed, 0);
 
     if (gfc_input_command_down("moveup") && !gfc_input_command_down("movedown")) {
         if (!check_movebounds(self, updir, data))
@@ -81,18 +81,18 @@ void player_movement(Entity* self, PlayerData* data) {
 
     // undoes rotation on ship when player isn't pressing a button
     if (self->rotation.y < 0 && !gfc_input_command_down("moveup"))
-        self->rotation.y += 0.01f;
+        self->rotation.y += 0.03f;
 
     if (self->rotation.y > 0 && !gfc_input_command_down("movedown"))
-        self->rotation.y -= 0.01f;
+        self->rotation.y -= 0.03f;
 
     if (self->rotation.x < 0 && self->rotation.z < 0 && !gfc_input_command_down("moveright")) {
-        self->rotation.x += 0.01f;
-        self->rotation.z += 0.01f;
+        self->rotation.x += 0.03f;
+        self->rotation.z += 0.03f;
     }
     if (self->rotation.x > 0 && self->rotation.z > 0 && !gfc_input_command_down("moveleft")) {
-        self->rotation.x -= 0.01f;
-        self->rotation.z -= 0.01f;
+        self->rotation.x -= 0.03f;
+        self->rotation.z -= 0.03f;
     }
 
     // fix for offsetting due to model Z rotation
@@ -153,12 +153,6 @@ void barrel_roll(Entity* self, PlayerData* data){
 
     updir = gfc_vector3d(0, 0, data->upspeed * 3.0f);
     rigdir = gfc_vector2d(data->rigspeed * 5.0f, 0);
-
-    gfc_vector3d_rotate_about_x(&updir, self->rotation.x);
-    rigdir = gfc_vector2d_rotate(rigdir, self->rotation.z);
-
-    //if (gf2d_mouse_button_released(0))
-        //data->curr_mode = WAVE_SHOT;
 
     if (data->roll == DOWN) {
         gfc_vector3d_negate(updir, updir);

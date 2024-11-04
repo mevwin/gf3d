@@ -3,7 +3,6 @@
 
 #include "gfc_shape.h"
 #include "gf2d_sprite.h"
-#include "entity.h"
 
 /*
 typedef enum {
@@ -91,7 +90,7 @@ void shop_reset();
 void player_hud(void* d);
 
 void start_menu();
-Entity* start_menu_think();
+void* start_menu_think();
 
 void pause_menu();
 void pause_menu_think(void* l);

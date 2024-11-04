@@ -76,7 +76,7 @@ typedef struct {
     Entity*         reticle;            // pointer to player reticle
     GFC_Vector3D*   player_pos;         // pointer for other entities to get player position
 
-    // debug camera
+    // debug
     Uint8           freelook;           // debug camera
     Uint8           player_no_attack;   // flag to make enemies docile
 

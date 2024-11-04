@@ -3,6 +3,7 @@
 #include "simple_logger.h"
 #include "gfc_matrix.h"
 #include "entity.h"
+#include "level.h"
 
 typedef struct{
     Entity  *entity_list;
@@ -38,6 +39,24 @@ void entity_system_init(Uint32 maxEnts){
         return;
     }
 
+    atexit(entity_system_close);
+}
+
+void entity_system_close(){
+    int i;
+
+    for( i = 0; i < entity_manager.entityMax; i++){
+        if (!entity_manager.entity_list[i]._inuse) continue;
+        entity_free(&entity_manager.entity_list[i]);
+    }
+
+    free(entity_manager.entity_list);
+    memset(&entity_manager, 0, sizeof(EntityManager));
+
+    free(models);
+}
+
+void entity_assets_init() {
     // initialize all entity models and textures
     models->player = gf3d_model_load("models/player_ship/player_ship_single.model");
     models->single_shot = gf3d_texture_load("models/player_ship/color_77.png");
@@ -63,18 +82,10 @@ void entity_system_init(Uint32 maxEnts){
     models->health_pickup = gf3d_model_load("models/item/health_pickup.model");
     models->happy_trigger = gf3d_model_load("models/item/happy_trigger.model");
     models->invincibility = gf3d_model_load("models/item/invincibility.model");
-
-    atexit(entity_system_close);
+    get_level_data()->assets_made = 1;
 }
 
-void entity_system_close(){
-    int i;
-
-    for( i = 0; i < entity_manager.entityMax; i++){
-        if (!entity_manager.entity_list[i]._inuse) continue;
-        entity_free(&entity_manager.entity_list[i]);
-    }
-
+void entity_assets_close() {
     gf3d_model_free(models->player);
     gf3d_texture_free(models->single_shot);
     gf3d_texture_free(models->charge_shot);
@@ -100,9 +111,7 @@ void entity_system_close(){
     gf3d_model_free(models->happy_trigger);
     gf3d_model_free(models->invincibility);
 
-    free(entity_manager.entity_list);
-    memset(&entity_manager, 0, sizeof(EntityManager));
-    free(models);
+    get_level_data()->assets_made = 0;
 }
 
 void entity_draw(Entity *self){
@@ -183,13 +192,10 @@ void entity_free(Entity *self){
     // check if pointer is null
     if (!self) return;
     
-    //self->_inuse = 0;
 
     if (self->free) self->free(self);
 
     // free up anything that may have been allocated FOR this
-    //gf3d_model_free(self->model);
-    //self->model = NULL;
     memset(self, 0, sizeof(Entity));
 }
 
@@ -272,7 +278,9 @@ void entity_despawn_all() {
 
     entityList = get_entityList();
     
-    // despawn all projectiles first
+    asteroid_free();
+
+    // despawn all projectiles next
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
@@ -284,9 +292,6 @@ void entity_despawn_all() {
 
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
-
-        if (target->entity_type == ASTEROID)
-            continue;
 
         entity_free(target);
     }
@@ -308,11 +313,11 @@ void entity_reset() {
         entity_free(target);
     }
 
-    // despawn everything except player
+    // despawn everything except player and asteroid
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
-        if (target->entity_type != ENEMY || target->entity_type == ASTEROID) continue;
+        if (target->entity_type != ENEMY) continue;
 
         entity_free(target);
     }
@@ -328,7 +333,7 @@ void enemy_reset() {
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
-        if (target->entity_type != PROJECTILE || target->entity_type == ASTEROID)
+        if (target->entity_type != PROJECTILE)
             continue;
 
         entity_free(target);
@@ -337,7 +342,7 @@ void enemy_reset() {
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
-        if (target->entity_type != ENEMY || target->entity_type == ASTEROID)
+        if (target->entity_type != ENEMY)
             continue;
 
         entity_free(target);

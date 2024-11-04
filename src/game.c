@@ -86,7 +86,6 @@ int main(int argc,char *argv[])
     //game init
     srand(SDL_GetTicks()); 
     slog_sync();
-    UI_init();
 
     //game setup
     gf2d_mouse_load("actors/mouse.actor");
@@ -105,14 +104,13 @@ int main(int argc,char *argv[])
     //gf3d_camera_enable_free_look(1);
 
     // game init initialization
+    UI_init();
     level_init();
     game_sound_data_init();
 
     level = get_level_data();
     player = NULL;
     player_data = NULL;
-    
-    //windows
 
     // main game loop, constant series of updates  
     while(!level->_done)
@@ -120,8 +118,6 @@ int main(int argc,char *argv[])
         gfc_input_update(); //look here for SDL stuff
         gf2d_mouse_update();
         gf2d_font_update();
-        entity_think_all();
-        entity_update_all();
 
         //camera updates
         gf3d_camera_controls_update(); //arrow and ASDW are registered here
@@ -132,7 +128,6 @@ int main(int argc,char *argv[])
                 //3D draws
                 gf3d_model_draw_sky(sky,skyMat,GFC_COLOR_WHITE);
                 //gf3d_model_draw(trench, trenchMat, GFC_COLOR_WHITE, NULL, 0);
-                entity_draw_all();
                 //draw_origin();
                 
                 //2D draws
@@ -143,7 +138,7 @@ int main(int argc,char *argv[])
                 // game start
                 if (!level->game_start){
                     start_menu();
-                    player = start_menu_think(player_data);
+                    player = (Entity*) start_menu_think();
                     gf2d_mouse_draw();
                 }
 
@@ -151,7 +146,7 @@ int main(int argc,char *argv[])
                 if (level->game_start) {
                     if (!player) {
                         slog("player failed to spawn");
-                        return;
+                        break;
                     }
                     player_data = player->data;
                     level_update(player, player_data);

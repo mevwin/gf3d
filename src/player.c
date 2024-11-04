@@ -1,9 +1,9 @@
 #include "simple_logger.h"
 #include "gfc_input.h"
-#include "gfc_vector.h"
 #include "gfc_audio.h"
 #include "gf2d_mouse.h"
 #include "player.h"
+#include "enemy.h"
 #include "player_move.h"
 #include "projectile.h"
 #include "reticle.h"
@@ -104,8 +104,6 @@ void player_data_init(PlayerData* data) {
     data->next_shot = CURRENT_TIME;
     data->next_charged_shot = CURRENT_TIME + NEXT_CHARGE_SHOT;
     data->charge_shot_delay = 0;
-
-    data->player_no_attack = 0;
     
     // debug init
     data->player_no_attack = 0;
@@ -139,7 +137,7 @@ void player_think(Entity* self) {
     time = CURRENT_TIME;
     rec_data = data->reticle->data;
 
-        // CHARGE_SHOT attack
+        // CHARGE_SHOT
     if (gf2d_mouse_button_pressed(0) && data->currMode == CHARGE_SHOT && !data->vortex_flag) {
         player_attack(self, data);
         data->next_charged_shot = time + NEXT_CHARGE_SHOT;
@@ -147,9 +145,8 @@ void player_think(Entity* self) {
         data->change_flag = 1;
     }
         // SINGLE_SHOT
-    else if ((gf2d_mouse_button_pressed(0) || gf2d_mouse_button_held(0)) &&
+    else if ((gf2d_mouse_button_pressed(0) || gf2d_mouse_button_held(0)) && !data->mid_roll &&
         data->charge_shot_delay <= time &&
-        !data->mid_roll &&
         data->currMode != CHARGE_SHOT && 
         !data->vortex_flag)
     {
@@ -157,10 +154,9 @@ void player_think(Entity* self) {
         player_attack(self, data);
     }
         // MISSILE
-    else if ((gf2d_mouse_button_held(2) && data->currScrap > 0 && 
-        data->missile_count < data->max_missile && !data->vortex_flag
-        ))
-{
+    else if (gf2d_mouse_button_held(2) && data->currScrap > 0 && 
+        data->missile_count < data->max_missile && !data->vortex_flag)
+    {
         data->currMode = MISSILE;
         
         if (rec_data->locked_on)
@@ -179,7 +175,7 @@ void player_think(Entity* self) {
 
         player_attack(self, data);
     }
-    else if (gfc_input_command_released("nuke") && data->currMode != VORTEX && data->currScrap >= data->nuke_cost) {
+    else if (gfc_input_command_released("nuke") && !data->vortex_flag && data->currScrap >= data->nuke_cost) {
         data->currMode = SUPER_NUKE;
         data->next_charged_shot = time + NEXT_CHARGE_SHOT;
 
@@ -187,15 +183,12 @@ void player_think(Entity* self) {
     }
 
     // debug tools
-    if (gfc_input_command_pressed("freelook")) {
-        data->freelook = !data->freelook;
-        gf3d_camera_enable_free_look(data->freelook);
-    }
+    //if (gfc_input_command_pressed("freelook")) {
+        //data->freelook = !data->freelook;
+        //gf3d_camera_enable_free_look(data->freelook);
+    //}
 
     if (gfc_input_command_pressed("change_attack")) {
-        //data->currMode++;
-        
-        //if (data->currMode > SUPER_NUKE) data->currMode = SINGLE_SHOT;
         if (!data->player_no_attack)
             data->player_no_attack = 1;
         else
@@ -203,11 +196,6 @@ void player_think(Entity* self) {
 
         data->currScrap = data->maxScrap;
     }
-
-    //slog("weapon: %d", data->currMode);
-    //slog("X: %f, Y: %f, Z: %f", self->position.x, self->position.y, self->position.z);
-    //slog("currScrap: %d", data->currScrap);
-    //slog("missile_count: %d", data->missile_count);
 }
 
 void player_update(Entity* self) {
@@ -252,7 +240,7 @@ void player_update(Entity* self) {
 
     update_hurtbox(self);
 
-    // sanity check, making sure player stats are not over the max or under 0.0
+    // sanity check, making sure player stats are not over the max
     if (data->currHealth > data->maxHealth)
         data->currHealth = data->maxHealth;
     if (data->currScrap > data->maxScrap)
@@ -262,11 +250,8 @@ void player_update(Entity* self) {
     if (data->vortex_dur > data->vortex_max)
         data->vortex_dur = data->vortex_max;
 
+    // update health bar
     data->total_health_bar = data->maxHealth + data->maxShield;
-
-    // rounding floats to nearest tenth
-    //data->currHealth = roundf(10 * data->currHealth) / 10;
-    //data->currShield = roundf(10 * data->currShield) / 10;
     
     // reduce player movement when shooting
     if (!data->mid_roll) {
@@ -282,7 +267,7 @@ void player_update(Entity* self) {
 
     // shield restoration
     if (data->currShield < data->maxShield && data->maxShield > 0) 
-        data->currShield += 1.0f;
+        data->currShield += 1.5f;
 
     // vortex duration restoration
     if (data->currMode != VORTEX && data->vortex_dur < data->vortex_max && !gfc_input_command_held("vortex"))
@@ -301,9 +286,10 @@ void player_update(Entity* self) {
         data->active_item = NONE;
 
     // check if player was hurt
-    if (data->took_damage && data->active_item != INVINCIBILITY) {
+    if (data->took_damage) {
         player_take_damage(self, data, time);
-        gfc_sound_play(get_sound_data()->player_damaged, 0, 0.3f, -1, -1);
+        if (data->active_item != INVINCIBILITY && data->damaged_type != FENCERS)
+            gfc_sound_play(get_sound_data()->player_damaged, 0, 0.3f, -1, -1);
     }
 
     // check if player is dead
@@ -332,9 +318,7 @@ void player_attack(Entity* self, PlayerData* data) {
     if (!self) return;
     
     gfc_vector3d_copy(attack_start, self->position);
-    cursor_pos.x = data->reticle->position.x;
-    cursor_pos.y = data->reticle->position.y;
-    cursor_pos.z = data->reticle->position.z;
+    gfc_vector3d_copy(cursor_pos, data->reticle->position);
 
     // creates projectile under the ship
     attack_start.z -= 3.0f;

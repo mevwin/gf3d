@@ -125,6 +125,9 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
         data->upspeed = (dist_y / conver);
 
         player_data->currScrap--;
+        if (player_data->currScrap < 0)
+            player_data->currScrap = 0;
+
         player_data->missile_spawn = 0;
         data->missile_active = 0;
     }
@@ -148,6 +151,9 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
         data->upspeed = (dist_y / conver);
 
         player_data->currScrap -= player_data->nuke_cost;
+        if (player_data->currScrap < 0)
+            player_data->currScrap = 0;
+
         time = CURRENT_TIME;
         data->nuke_dur = time + 3.0f;
         data->nuke_active = 0;
@@ -209,7 +215,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
         self->hurtbox.s.b = ENEMY_FENCER_BOX(self->position);
         self->no_draw = 1;
 
-        data->damage = enemy_data->base_damage / 10.0f;
+        data->damage = enemy_data->base_damage;
         level->fencer_spawn = player_pos;
         return;
     }
@@ -256,7 +262,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
 
     update_hurtbox(self);
 
-    gfc_sound_play(get_sound_data()->projectile_fire, 0, 0.1f, -1, -1);
+    //gfc_sound_play(get_sound_data()->projectile_fire, 0, 0.1f, -1, -1);
 
     //slog("Rig: %f | Up: %f", data->rigspeed, data->upspeed);
 }
@@ -338,6 +344,10 @@ void proj_update_enemy(Entity* self) {
     if (level->in_shop || level->paused) return;
 
     update_hurtbox(self);
+
+    player_data = get_player_data();
+    if (player_data->nuke_flag)
+        entity_free(self);
  
     enemy_data = data->owner->data;
     if (enemy_data->currHealth <= 0 && enemy_data->enemy_type != BOMBERS)
@@ -345,7 +355,6 @@ void proj_update_enemy(Entity* self) {
 
     // enemy attacking player
     if (self->position.y > -20.0f && gfc_box_overlap(self->hurtbox.s.b, get_player_hurtbox().s.b)) {
-        player_data = get_player_data();
         player_data->took_damage = 1;
         player_data->damaged_type = data->type;
         player_data->damage_taken = data->damage;
@@ -465,13 +474,15 @@ void proj_think_vortex(Entity* self) {
     level = get_level_data();
     if (level->in_shop || level->paused) return;
 
-    if (p_data->player_dead) entity_free(self);
+    if (p_data->player_dead) 
+        entity_free(self);
 
-    if (gf2d_mouse_button_pressed(0))
+    if (gf2d_mouse_button_pressed(0) ||
+        p_data->vortex_flag && p_data->vortex_damage <= 0 && p_data->vortex_dur <= 0)
         p_data->vortex_flag = 0;
 
-    entityList = get_entityList();
     if (p_data->vortex_flag && p_data->vortex_dur > 0) {
+        entityList = get_entityList();
         for (i = 0; i < MAX_ENTITY; i++) {
             proj = &entityList[i];
 
@@ -481,12 +492,11 @@ void proj_think_vortex(Entity* self) {
             // collision detection check
             data = proj->data;
             
+                // skip fencer attack
             if (data->type == FENCERS)
                 continue;
          
-            player_pos.x = p_data->player_pos->x;
-            player_pos.y = p_data->player_pos->y;
-            player_pos.z = p_data->player_pos->z;
+            gfc_vector3d_copy_ptr(player_pos, p_data->player_pos);
 
             if (data->owner_type == ENEMY && gfc_vector3d_distance_between_less_than(player_pos, proj->position, 20.0f)) {
                 p_data->vortex_damage += data->damage;
@@ -495,15 +505,9 @@ void proj_think_vortex(Entity* self) {
             }
         }
 
-        if (p_data->vortex_dur - 1.0f <= 0.0)
-            p_data->vortex_dur = 0;
-        else
-            p_data->vortex_dur -= 1.0f;
+        p_data->vortex_dur -= 1.0f;
     }
-    else if (p_data->vortex_flag && p_data->vortex_damage <= 0 && p_data->vortex_dur <= 0)
-        p_data->vortex_flag = 0;
-
-    if (!p_data->vortex_flag) {
+    else if (!p_data->vortex_flag) {
         time = CURRENT_TIME;
 
         p_data->vortex_damage *= 1.7f; // damage scaling
@@ -519,6 +523,7 @@ void proj_think_vortex(Entity* self) {
 
         p_data->currMode = SINGLE_SHOT;
         p_data->vortex_damage = 0;
+        p_data->vortex_dur = 0;
         p_data->next_charged_shot = time + 0.9f;
         p_data->next_shot = time + 0.15f;
 
@@ -604,7 +609,8 @@ void fencer_think(Entity* self) {
     
     if (!gfc_box_overlap(self->hurtbox.s.b, get_player_hurtbox().s.b)){
         p_data->damage_taken = data->damage;
-        player_take_damage(self, p_data, time);
+        p_data->damaged_type = FENCERS;
+        p_data->took_damage = 1;
     }
 
     if (enemy_data->currHealth <= 0)
@@ -630,7 +636,7 @@ void bomber_think(Entity* self) {
 
     if (p_data->player_dead || level->paused || level->in_shop) return;
 
-    // update missile trajectory if missile is active
+    // update attack trajectory
     dist_x = enemy_data->player_pos->x - self->position.x;
     dist_y = enemy_data->player_pos->z - self->position.z;
 

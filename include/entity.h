@@ -68,9 +68,6 @@ typedef struct Entity_S{
     Uint8           no_draw;
     
 }Entity;
-/**
- * always comment in header files about certain shit
- */
 
 /**
  * @brief initialize the entity manager subsystem
@@ -78,17 +75,19 @@ typedef struct Entity_S{
  */
 void entity_system_init(Uint32 maxEnts);
 
-
 /**
  * @brief close the entity subsystem when game is closed
  */
 void entity_system_close();
 
+void entity_assets_init();
+
+void entity_assets_close();
+
 /**
  * @brief draw all active entities
  */
 void entity_draw_all();
-
 
 /**
  * @brief let all active entities think
@@ -121,8 +120,22 @@ Entity_Models* get_models();
 
 void update_hurtbox(Entity* self);
 
+/**
+* @brief despawn all entities
+* @note used for exiting out of gameplay and back to start menu
+*/
 void entity_despawn_all();
+
+/**
+* @brief despawn all entities except player and asteroids
+* @note used when player dies
+*/
 void entity_reset();
+
+/**
+* @brief despawn all enemies and their projectiles
+* @note used to clear all enemies when a wave is complete
+*/
 void enemy_reset();
 
 #endif

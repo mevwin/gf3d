@@ -1,13 +1,10 @@
 #include "simple_logger.h"
-#include "gf3d_draw.h"
-#include "SDL_scancode.h"
-#include "gf2d_mouse.h"
+#include "gfc_audio.h"
 #include "enemy.h"
 #include "player.h"
 #include "projectile.h"
 #include "item.h"
 #include "level.h"
-#include "gfc_audio.h"
 
 #define EMPER_CHARGE_TIME 5.0f;
 #define ENEMY_HURTBOX (gfc_box(400, -150, 200, 1, 1, 1))	// make temporary dummy hitbox not accessible to player when enemy is dead
@@ -67,6 +64,7 @@ EnemyData* enemy_data_init() {
 		else {
 			data->rigspeed = 0.6f;
 			data->maxHealth = 1800.0f;
+			data->base_damage = 10.0f;
 		}
 		
 		data->move_type = HORIZONTAL;
@@ -83,7 +81,7 @@ EnemyData* enemy_data_init() {
 	return data;
 }
 
-Entity* enemy_spawn(GFC_Vector3D* player_pos) {
+void enemy_spawn(GFC_Vector3D* player_pos) {
 	Entity* self;
 	EnemyData* data;
 	LevelData* level;
@@ -131,8 +129,6 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos) {
 	update_hurtbox(self);
 
 	level->enemy_count++;
-
-	return self;
 }
 
 void enemy_think(Entity* self) {
@@ -168,11 +164,7 @@ void enemy_think(Entity* self) {
 	if (keys[SDL_SCANCODE_L])
 		self->position.x -= 1.0;
 		*/
-
-	player_pos.x = data->player_pos->x;
-	player_pos.y = data->player_pos->y;
-	player_pos.z = data->player_pos->z;
-
+	gfc_vector3d_copy_ptr(player_pos, data->player_pos);
 	time = CURRENT_TIME;
 
 	if (!player_data->player_no_attack && data->enemy_type != BOMBERS) {
@@ -421,22 +413,3 @@ void enemy_update_stats(EnemyData* data) {
 	}
 	//slog("enemy stats updated %d times", wave_count);
 }
-
-/**
-* define enemy/AI behavior as a FSA
-* define states of the enemy through enumerations
-* Ex:
-* typedef enum{
-*	IDLE,
-*	ATTACK,
-*	IN_PAIN,
-*	DIE,
-*	DEATH
-* }enemy_states;
-* 
-* have think functions for each state
-* decide in each state what to do
-* 
-* make .def for defining monsters
-* entity_load_from_def(entityDef)
-*/

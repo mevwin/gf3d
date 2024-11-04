@@ -3,7 +3,6 @@
 #include "gfc_audio.h"
 #include "gf2d_font.h"
 #include "gf2d_draw.h"
-#include "gfc_vector.h"
 #include "gf2d_mouse.h"
 #include "ui.h"
 #include "player.h"
@@ -95,7 +94,6 @@ void UI_init() {
     y_start += 130.0f;
     UI_data->quit_block = UPGRADE_BLOCK(x_start, y_start);
 
-    last_powerup = 0.0f;
     UI_data->nuke_alpha = 0.0f;
     UI_data->emper_alpha = 0.0f;
 
@@ -133,22 +131,22 @@ void shop_hud_draw(void* d) {
 
     gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), UI_data->shop_color);
 
-    if (UI_data->shop_color_hue + 0.5 > 360.0)
-        UI_data->shop_color_hue = 0.0;
+    if (UI_data->shop_color_hue + 0.5f > 360)
+        UI_data->shop_color_hue = 0;
     else {
-        UI_data->shop_color_hue += 0.5;
+        UI_data->shop_color_hue += 0.5f;
         UI_data->shop_color_hue = roundf(10 * UI_data->shop_color_hue) / 10;
     }
 
     gfc_color_set_hue(UI_data->shop_color_hue, &(UI_data->shop_color));
-    gf2d_font_draw_line_tag("SHOP", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(605.0, 100.0));
+    gf2d_font_draw_line_tag("SHOP", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(605, 100));
 
     // scrap bar draw
     scrap = (float) data->currScrap;
     maxscrap = (float) data->maxScrap;
     currScrap = (float)(scrap / maxscrap);
 
-    x_start = (RES.x / 2) - 200.0;
+    x_start = (RES.x / 2) - 200.0f;
     y_start = 150.0f;
     bar_position = gfc_vector2d(x_start, y_start);
     scale = gfc_vector2d(currScrap, 1);
@@ -472,8 +470,8 @@ void player_hud(void* d) {
         gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(255, 0, 0, UI_data->nuke_alpha));
     }
     else {
-        UI_data->nuke_alpha -= 0.05;
-        if (UI_data->nuke_alpha > 0.0)
+        UI_data->nuke_alpha -= 0.05f;
+        if (UI_data->nuke_alpha > 0)
             gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(255, 0, 0, UI_data->nuke_alpha));
         else
             UI_data->nuke_alpha = 0;
@@ -514,21 +512,29 @@ void start_menu() {
     gf2d_font_draw_text_wrap_tag("QUIT", FT_H2, GFC_COLOR_WHITE, UI_data->s_quit_block);
 }
 
-Entity* start_menu_think() {
+void* start_menu_think() {
     LevelData* level;
 
     level = get_level_data();
     if (gf2d_mouse_button_released(0)) {
         if (gf2d_mouse_in_rect(UI_data->start_block)) {
             gfc_sound_play( get_sound_data()->confirm, 0, 1, -1, -1 );
-            level->game_start = 1;
-            level->enemy_start = 0;
-            return player_spawn();
+            if (!level->assets_made)
+                entity_assets_init();
+            if (!level->asteroids_made)
+                asteroid_init();
+            
+            if (level->assets_made && level->asteroids_made) {
+                gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), GFC_COLOR_BLACK);
+                level->game_start = 1;
+                level->enemy_start = 0;
+                return player_spawn();
+            }
         }
-        if (gf2d_mouse_in_rect(UI_data->s_quit_block)) {
+        else if (gf2d_mouse_in_rect(UI_data->s_quit_block)) {
             level->_done = 1;
-            return NULL;
         } 
+        return NULL;
     }
 }
 
@@ -557,6 +563,7 @@ void pause_menu_think(void* l) {
         }
         if (gf2d_mouse_in_rect(UI_data->quit_block)) {
             entity_despawn_all();
+            entity_assets_close();
             data->enemy_count = 0;
             data->enemy_killed = 0;
             data->game_start = 0;
