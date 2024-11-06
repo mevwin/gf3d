@@ -1,4 +1,5 @@
 #include "simple_logger.h"
+#include "gfc_config_def.h"
 #include "gfc_input.h"
 #include "gfc_audio.h"
 #include "gf2d_mouse.h"
@@ -50,10 +51,17 @@ Entity* player_spawn() {
 }
 
 void player_data_init(PlayerData* data) {
+    SJson *value;
+    
     if (!data) return;
 
+    gfc_config_def_load("def/player_init.json");
+
+    value = gfc_config_def_get_value("def/player_init.json", "player", "upspeed");
+
+
     // movement speed
-    data->upspeed = 1.3f;
+    sj_get_float_value(value, &data->upspeed);
     data->rigspeed = 1.3f;
 
     // default player health/resources

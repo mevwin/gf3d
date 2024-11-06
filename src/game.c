@@ -77,7 +77,7 @@ int main(int argc,char *argv[])
     gf3d_materials_init();
     gf2d_font_init("config/font.cfg");
     gf2d_actor_init(1000);
-    gf3d_draw_init();//3D, draws origin
+    gf3d_draw_init();//3D
     gf2d_draw_manager_init(1000);//2D
 
     //entity init
@@ -129,11 +129,6 @@ int main(int argc,char *argv[])
                 gf3d_model_draw_sky(sky,skyMat,GFC_COLOR_WHITE);
                 //gf3d_model_draw(trench, trenchMat, GFC_COLOR_WHITE, NULL, 0);
                 //draw_origin();
-                
-                //2D draws
-                //gf2d_mouse_draw();
-                //gf2d_font_draw_line_tag("ALT+F4 to exit",FT_H1,GFC_COLOR_WHITE, gfc_vector2d(10,10));
-                //gf2d_font_draw_text_wrap_tag("ALT+F4 to exit", FT_Normal, gfc_color(0, 1, 0, 1), gfc_rect(player->position.x, player->position.y, 10, 20));
                 
                 // game start
                 if (!level->game_start){
