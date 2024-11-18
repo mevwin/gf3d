@@ -25,6 +25,8 @@ typedef struct {
 	Uint8           wave_end;
 
 	// level visuals
+	Uint8			level_type;
+
 	Model*			asteroid;
 	GFC_List*		asteroid_list;
 	Uint8			asteroids_made;
@@ -37,8 +39,9 @@ typedef struct {
 }LevelData;
 
 void level_init();
-void level_init_from_save();
+void game_data_init_from_save();
 void game_save();
+void new_level_reset();
 void asteroid_init();
 void asteroid_free();
 void level_visuals();

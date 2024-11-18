@@ -138,7 +138,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
         player_data->nuke_flag = 1;
         self->think = proj_think_super_nuke;
         self->model = get_models()->super_nuke;
-        data->damage = SUPER_NUKE_DMG;
+        data->damage = SUPER_NUKE_DMG * (get_level_data()->wave_count);
         data->nuke_deton_pos = gfc_vector3d(0, reticle_pos.y, 0);
 
         data->forspeed = 1.5f;

@@ -46,6 +46,13 @@ typedef struct {
     Uint8           charge_shot_max;
     Uint8           nuke_max; 
 
+        // player upgrade count
+    Uint8           shields_count;
+    Uint8           more_scrap_count;
+    Uint8           missiles_count;
+    Uint8           single_shot_count;
+    Uint8           charge_shot_count;
+
     /* player UI */
     Sprite*         player_health;
     Sprite*         player_shield;
@@ -74,6 +81,7 @@ typedef struct {
 }UIData;
 
 void UI_init();
+
 void UI_free();
 
 void shop_hud_draw(void* d);
@@ -104,5 +112,6 @@ void player_death_screen();
 void enemy_hud(void* e, GFC_Vector3D position);
 void enemy_hud_all();
 
+UIData* get_UI_data();
 
 #endif

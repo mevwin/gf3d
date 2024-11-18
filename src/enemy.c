@@ -410,7 +410,7 @@ void enemy_update_stats(EnemyData* data) {
 	
 	if (!data) return;
 
-	for (i = get_level_data()->wave_count; i > 0; i--) {
+	for (i = get_level_data()->wave_count; i > 1; i--) {
 		data->maxHealth *= 1.2f;
 		data->currHealth = data->maxHealth;
 		data->base_damage *= 1.2f;

@@ -36,7 +36,9 @@ Entity* player_spawn() {
     if (!data) return NULL;
 
     player_data_init(data);
-
+    if (get_level_data()->continue_from_save)
+        player_data_init_from_save(data);
+        
     position = PLAYER_SPAWN;
     self->position = position;
     data->og_pos = self->position;
@@ -117,8 +119,8 @@ void player_data_init(PlayerData* data) {
     data->missile_spawn = 0;
     
     // default shot timing
-    data->next_shot = CURRENT_TIME;
-    data->next_charged_shot = CURRENT_TIME + NEXT_CHARGE_SHOT;
+    data->next_shot = 0;
+    data->next_charged_shot = 0;
     data->charge_shot_delay = 0;
     
     // debug init
@@ -127,16 +129,27 @@ void player_data_init(PlayerData* data) {
 
 void player_data_init_from_save(PlayerData* data) {
     LevelData* level;
-    SJson* save;
+    SJson* save, *data_entry;
 
     if (!data) return;
 
     player_data_init(data);
 
     level = get_level_data();
-    save = sj_object_get_value(level->player_init, "data");
+    save = sj_load("def/player_save.json");
+    data_entry = sj_object_get_value(save, "player_data");
 
+    sj_object_get_value_as_float(data_entry, "maxHealth", &data->maxHealth);
+    sj_object_get_value_as_float(data_entry, "currHealth", &data->currHealth);
+    sj_object_get_value_as_float(data_entry, "maxShield", &data->maxShield);
+    sj_object_get_value_as_float(data_entry, "currShield", &data->currShield);
+    sj_object_get_value_as_int(data_entry, "maxScrap", &data->maxScrap);
+    sj_object_get_value_as_int(data_entry, "currScrap", &data->currScrap);
+    sj_object_get_value_as_float(data_entry, "single_shot_bonus", &data->single_shot_bonus);
+    sj_object_get_value_as_float(data_entry, "charge_shot_mult", &data->charge_shot_mult);
+    sj_object_get_value_as_int(data_entry, "nuke_cost", &data->nuke_cost);
 
+    sj_free(save);
 }
 
 void player_think(Entity* self) {

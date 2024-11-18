@@ -275,6 +275,7 @@ void shop_think(void* d) {
                 data->currShield = data->maxShield;
                 data->currScrap -= UI_data->upgrade_cost;
                 UI_data->shields_check++;
+                UI_data->shields_count++;
                 //slog("more shields");
             }
             //else
@@ -290,6 +291,7 @@ void shop_think(void* d) {
                 data->maxScrap += 5;
                 data->currScrap -= UI_data->upgrade_cost;
                 UI_data->more_scrap_check++;
+                UI_data->more_scrap_count++;
                 //slog("more scrap");
             }
             //else
@@ -304,6 +306,7 @@ void shop_think(void* d) {
                 data->missile_bonus += 150.0f;
                 data->currScrap -= UI_data->upgrade_cost;
                 UI_data->missiles_check++;
+                UI_data->missiles_count++;
                 //slog("missile up");
             }
             //else
@@ -318,6 +321,7 @@ void shop_think(void* d) {
                 data->single_shot_bonus += 50.0f;
                 data->currScrap -= UI_data->upgrade_cost;
                 UI_data->single_shot_check++;
+                UI_data->single_shot_count++;
                 //slog("more single");
             }
             //else
@@ -332,6 +336,7 @@ void shop_think(void* d) {
                 data->charge_shot_mult += 0.5f;
                 data->currScrap -= UI_data->upgrade_cost;
                 UI_data->charge_shot_check++;
+                UI_data->charge_shot_count++;
                 //slog("more charge");
             }
             //else
@@ -366,9 +371,14 @@ void shop_reset() {
     UI_data->missiles_check = 0;
     UI_data->single_shot_check = 0;
     UI_data->charge_shot_check = 0;
-    UI_data->upgrade_cost = 5;
+    UI_data->shields_count = 0;
+    UI_data->more_scrap_count = 0;
+    UI_data->missiles_count = 0;
+    UI_data->single_shot_count = 0;
+    UI_data->charge_shot_count = 0;
 
-    // don't reset nuke upgrade
+
+    // don't reset nuke upgrade or upgrade cost
 }
 
 void player_hud(void* d) {
@@ -540,6 +550,8 @@ void* start_menu_think() {
         else if (gf2d_mouse_in_rect(UI_data->continue_block)) {
             level->continue_from_save = 1;
             gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+            game_data_init_from_save();
+
             if (!level->assets_made)
                 entity_assets_init();
             if (!level->asteroids_made)
@@ -583,9 +595,10 @@ void pause_menu_think(void* l) {
             gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
         }
         if (gf2d_mouse_in_rect(UI_data->quit_block)) {
+            game_save();
+            new_level_reset();
             entity_despawn_all();
             entity_assets_close();
-            game_save();
             data->enemy_count = 0;
             data->enemy_killed = 0;
             data->game_start = 0;
@@ -609,7 +622,7 @@ void wave_start(void* l) {
         gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
     }
     else {
-        sprintf(buffer, "WAVE #%d", get_level_data()->wave_count + 1);
+        sprintf(buffer, "WAVE #%d", get_level_data()->wave_count);
         gf2d_font_draw_line_tag(buffer, FT_H1, GFC_COLOR_WHITE, TEXT_LOCATION);
 
         text_loc = TEXT_LOCATION;
@@ -742,3 +755,6 @@ void enemy_hud_all() {
     }
 }
 
+UIData* get_UI_data() {
+    return UI_data;
+}

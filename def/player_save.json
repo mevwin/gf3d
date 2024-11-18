@@ -1,4 +1,1 @@
-{"player_data":{"maxHealth":0,"currHealth":0,"maxShield":0,"currShield":0,"maxScrap":0,"currScrap":0,"base_damage":0,"single_shot_bonus":0,"charge_shot_mult":1,"nuke_cost":0
-    },"level_data":{"enemy_killed":"1","wave_count":0
-    },"upgrades":{"shields_check":0,"more_scrap_check":0,"missiles_check":0,"single_shot_check":0,"charge_shot_check":0,"nuke_check":0
-    }}
+{"player_data":{"maxHealth":"1200.000000","currHealth":"381.500000","maxShield":"100.000000","currShield":"100.000000","maxScrap":"55","currScrap":"1","single_shot_bonus":"50.000000","charge_shot_mult":"3.000000","nuke_cost":"50"},"level_data":{"wave_count":"2"},"upgrades":{"shields_check":"1","more_scrap_check":"1","missiles_check":"0","single_shot_check":"1","charge_shot_check":"0","nuke_check":"0","shields_count":"1","more_scrap_count":"1","missiles_count":"0","single_shot_count":"1","charge_shot_count":"0"}}
