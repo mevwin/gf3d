@@ -81,7 +81,10 @@ void UI_init() {
     /*start menu*/
     x_start = (RES.x / 2.0f) - 100.0f;
     y_start = (RES.y / 2.0f) - 60.0f;
-    UI_data->start_block = UPGRADE_BLOCK(x_start, y_start);
+    UI_data->new_start_block = UPGRADE_BLOCK(x_start, y_start);
+
+    y_start += 130.0;
+    UI_data->continue_block = UPGRADE_BLOCK(x_start, y_start);
 
     y_start += 130.0;
     UI_data->s_quit_block = UPGRADE_BLOCK(x_start, y_start);
@@ -298,7 +301,7 @@ void shop_think(void* d) {
                 return;
             }
             else if (data->currScrap >= UI_data->upgrade_cost) {
-                data->missile_bonus += 100.0f;
+                data->missile_bonus += 150.0f;
                 data->currScrap -= UI_data->upgrade_cost;
                 UI_data->missiles_check++;
                 //slog("missile up");
@@ -326,7 +329,7 @@ void shop_think(void* d) {
                 return;
             }
             else if (data->currScrap >= UI_data->upgrade_cost) {
-                data->charge_shot_mult += 1.0f;
+                data->charge_shot_mult += 0.5f;
                 data->currScrap -= UI_data->upgrade_cost;
                 UI_data->charge_shot_check++;
                 //slog("more charge");
@@ -505,8 +508,11 @@ void start_menu() {
     gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(65, 65, 65, 0.4f));
     gf2d_font_draw_line_tag("GAME START", FT_H1, GFC_COLOR_WHITE, game_start_tag);
 
-    gf2d_draw_rect_filled(UI_data->start_block, GFC_COLOR_GREY);
-    gf2d_font_draw_text_wrap_tag("START", FT_H2, GFC_COLOR_WHITE, UI_data->start_block);
+    gf2d_draw_rect_filled(UI_data->new_start_block, GFC_COLOR_GREY);
+    gf2d_font_draw_text_wrap_tag("NEW START", FT_H2, GFC_COLOR_WHITE, UI_data->new_start_block);
+
+    gf2d_draw_rect_filled(UI_data->continue_block, GFC_COLOR_GREY);
+    gf2d_font_draw_text_wrap_tag("CONTINUE", FT_H2, GFC_COLOR_WHITE, UI_data->continue_block);
 
     gf2d_draw_rect_filled(UI_data->s_quit_block, GFC_COLOR_GREY);
     gf2d_font_draw_text_wrap_tag("QUIT", FT_H2, GFC_COLOR_WHITE, UI_data->s_quit_block);
@@ -517,13 +523,28 @@ void* start_menu_think() {
 
     level = get_level_data();
     if (gf2d_mouse_button_released(0)) {
-        if (gf2d_mouse_in_rect(UI_data->start_block)) {
+        if (gf2d_mouse_in_rect(UI_data->new_start_block)) {
             gfc_sound_play( get_sound_data()->confirm, 0, 1, -1, -1 );
             if (!level->assets_made)
                 entity_assets_init();
             if (!level->asteroids_made)
                 asteroid_init();
             
+            if (level->assets_made && level->asteroids_made) {
+                gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), GFC_COLOR_BLACK);
+                level->game_start = 1;
+                level->enemy_start = 0;
+                return player_spawn();
+            }
+        }
+        else if (gf2d_mouse_in_rect(UI_data->continue_block)) {
+            level->continue_from_save = 1;
+            gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+            if (!level->assets_made)
+                entity_assets_init();
+            if (!level->asteroids_made)
+                asteroid_init();
+
             if (level->assets_made && level->asteroids_made) {
                 gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), GFC_COLOR_BLACK);
                 level->game_start = 1;
@@ -564,6 +585,7 @@ void pause_menu_think(void* l) {
         if (gf2d_mouse_in_rect(UI_data->quit_block)) {
             entity_despawn_all();
             entity_assets_close();
+            game_save();
             data->enemy_count = 0;
             data->enemy_killed = 0;
             data->game_start = 0;
@@ -575,6 +597,7 @@ void pause_menu_think(void* l) {
 void wave_start(void* l) {
     GFC_Vector2D text_loc;
     LevelData* data;
+    char buffer[8];
 
     data = (LevelData*) l;
     if (!data) return;
@@ -586,7 +609,8 @@ void wave_start(void* l) {
         gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
     }
     else {
-        gf2d_font_draw_line_tag("WAVE START", FT_H1, GFC_COLOR_WHITE, TEXT_LOCATION);
+        sprintf(buffer, "WAVE #%d", get_level_data()->wave_count + 1);
+        gf2d_font_draw_line_tag(buffer, FT_H1, GFC_COLOR_WHITE, TEXT_LOCATION);
 
         text_loc = TEXT_LOCATION;
         text_loc.y += 100.0f;

@@ -6,6 +6,8 @@
 #define ASTEROID_MAX 20
 
 typedef struct {
+	// world state
+	Uint8			assets_made;
 	Uint8			game_start;
 	Uint8			enemy_start;
 	Uint8			_done;
@@ -22,14 +24,21 @@ typedef struct {
 	Uint8           paused;             // is the player pausing the game
 	Uint8           wave_end;
 
+	// level visuals
 	Model*			asteroid;
 	GFC_List*		asteroid_list;
 	Uint8			asteroids_made;
 
-	Uint8			assets_made;
+	Uint8			continue_from_save;
+
+	// def files
+	SJson*			player_init;
+	const char*		player_save;
 }LevelData;
 
 void level_init();
+void level_init_from_save();
+void game_save();
 void asteroid_init();
 void asteroid_free();
 void level_visuals();

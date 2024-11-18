@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "gf2d_mouse.h"
+#include "gfc_config_def.h"
 #include "player.h"
 #include "enemy.h"
 #include "ui.h"
@@ -10,6 +11,7 @@ static LevelData* level;
 void level_init() {
     level = gfc_allocate_array(sizeof(LevelData), 1);
     
+    level->assets_made = 0;
     level->game_start = 0;
     level->enemy_start = 0;
     level->_done = 0;
@@ -28,8 +30,36 @@ void level_init() {
     level->asteroid = gf3d_model_load("models/trench/asteroid.model");
     level->asteroid_list = gfc_list_new_size(ASTEROID_MAX);
 
-    level->assets_made = 0;
+    level->continue_from_save = 0;  // initially zero, must check at start_menu_think
+
+    level->player_init = sj_load("def/player_init.json");
+    level->player_save = "def/player_save_base.json";
+
     atexit(level_free);
+}
+
+void game_save() {
+    PlayerData* p_data;
+    LevelData* level;
+    SJson* save, *value, *data_entry;
+    char buffer[4];
+
+    level = get_level_data();
+    //if (level->wave_count == 0)
+    //    return;
+
+    save = sj_load(level->player_save);
+    value = sj_object_get_value(save, "level_data");
+    data_entry = sj_object_get_value(value, "enemy_killed");
+
+    data_entry->v.string = sj_value_to_json_string(sj_new_int(level->enemy_killed));
+
+
+    p_data = get_player_data();
+
+
+    sj_save(save, "def/player_save.json");
+    sj_free(save);
 }
 
 void asteroid_init() {
@@ -65,6 +95,7 @@ void asteroid_free(){
 void level_free() {
     gf3d_model_free(level->asteroid);
     gfc_list_delete(level->asteroid_list);
+    sj_free(level->player_init);
     free(level);
 }
 

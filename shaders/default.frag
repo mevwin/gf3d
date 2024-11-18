@@ -48,6 +48,8 @@ layout(location = 2) in vec3 position;
 
 layout(location = 0) out vec4 outColor;
 
+vec3 ApplyLight(Light light, vec3 surfaceColor, vec3 normal, vec3 surfacePos, vec3 surfaceToCamera);
+
 void main()
 {   
     int i;
@@ -78,5 +80,11 @@ void main()
         }
     }
     outColor.xyz += lightTotals.xyz;
+}
+
+vec3 ApplyLight(Light light, vec3 surfaceColor, vec3 normal, vec3 surfacePos, vec3 surfaceToCamera){
+    vec3 surfaceToLight;
+    float attenuation = 1.0;
+    if (light.position)
 }
 

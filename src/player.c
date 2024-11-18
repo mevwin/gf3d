@@ -1,5 +1,5 @@
 #include "simple_logger.h"
-#include "gfc_config_def.h"
+#include "simple_json_object.h"
 #include "gfc_input.h"
 #include "gfc_audio.h"
 #include "gf2d_mouse.h"
@@ -51,37 +51,45 @@ Entity* player_spawn() {
 }
 
 void player_data_init(PlayerData* data) {
-    SJson *value;
-    
+    LevelData* level;
+    SJson* value;
+
     if (!data) return;
-
-    gfc_config_def_load("def/player_init.json");
-
-    value = gfc_config_def_get_value("def/player_init.json", "player", "upspeed");
-
+    
+    level = get_level_data();
+    value = sj_object_get_value(level->player_init, "data");
 
     // movement speed
-    sj_get_float_value(value, &data->upspeed);
-    data->rigspeed = 1.3f;
+    sj_object_get_value_as_float(value, "upspeed_def", &data->upspeed_def);
+    data->upspeed = data->upspeed_def;
+    sj_object_get_value_as_float(value, "rigspeed_def", &data->rigspeed_def);
+    data->rigspeed = data->rigspeed_def;
+
+    sj_object_get_value_as_float(value, "upspeed_slow", &data->upspeed_slow);
+    sj_object_get_value_as_float(value, "rigspeed_slow", &data->rigspeed_slow);
 
     // default player health/resources
-    data->maxHealth = 1200.0f;
-    data->currHealth = 1200.0f;
+    sj_object_get_value_as_float(value, "maxHealth", &data->maxHealth);
+    data->currHealth = data->maxHealth;
+    
+    // hard code shield stats
     data->maxShield = 0;
     data->currShield = 0;
-    data->maxScrap = 50;
+
+    sj_object_get_value_as_int(value, "maxScrap", &data->maxScrap);
     data->currScrap = 0;
-    data->vortex_max = 40.0f;
-    data->vortex_dur = data->vortex_max; 
+
+    sj_object_get_value_as_float(value, "vortex_max", &data->vortex_max);
+    data->vortex_dur = data->vortex_max;
 
     // default player attack
-    data->currMode = SINGLE_SHOT;
-    data->base_damage = 200.0f;
-    data->proj_speed = 8.0f;
-    data->vortex_damage = 0.0f;
+    data->currMode = SINGLE_SHOT;   //hard-coded
+    sj_object_get_value_as_float(value, "base_damage", &data->base_damage);
+    data->proj_speed = 8.0f;        //hard-coded
+    data->vortex_damage = 0.0f;     //hard-coded
 
     data->single_shot_bonus = 0;
-    data->charge_shot_mult = 3.0f;
+    sj_object_get_value_as_float(value, "charge_shot_mult", &data->charge_shot_mult);
     data->missile_bonus = data->base_damage * 2.0f;
     data->max_missile = 5;
     data->nuke_cost = data->maxScrap;
@@ -115,6 +123,20 @@ void player_data_init(PlayerData* data) {
     
     // debug init
     data->player_no_attack = 0;
+}
+
+void player_data_init_from_save(PlayerData* data) {
+    LevelData* level;
+    SJson* save;
+
+    if (!data) return;
+
+    player_data_init(data);
+
+    level = get_level_data();
+    save = sj_object_get_value(level->player_init, "data");
+
+
 }
 
 void player_think(Entity* self) {
@@ -264,12 +286,12 @@ void player_update(Entity* self) {
     // reduce player movement when shooting
     if (!data->mid_roll) {
         if (gf2d_mouse_button_pressed(0) || gf2d_mouse_button_held(0)) {
-            data->upspeed = 1.0f;
-            data->rigspeed = 1.0f;
+            data->upspeed = data->rigspeed_slow;
+            data->rigspeed = data->rigspeed_slow;
         }
         else {
-            data->upspeed = 1.3f;
-            data->rigspeed = 1.3f;
+            data->upspeed = data->upspeed_def;
+            data->rigspeed = data->rigspeed_def;
         }
     }
 

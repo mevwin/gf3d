@@ -1,36 +1,4 @@
-{
-    "actor":
-    {
-        "sprite": "images/ui/arrow_buttons_up.png",
-        "frameWidth": 64,
-        "frameHeight": 40,
-        "framesPerLine": 1,
-        "center":[32,20],
-        "scale": [1,1],
-        "color": [20,200,255,255],
-        "actionList":
-        [
-            {
-                "action": "idle",
-                "startFrame": 0,
-                "endFrame": 0,
-                "frameRate": 0,
-                "type": "loop"
-            },
-            {
-                "action": "high",
-                "startFrame": 1,
-                "endFrame": 1,
-                "frameRate": 0,
-                "type": "loop"
-            },
-            {
-                "action": "press",
-                "startFrame": 2,
-                "endFrame": 2,
-                "frameRate": 0,
-                "type": "loop"
-            }
-        ]
-    }
-}
+{"player_data":{"maxHealth":0,"currHealth":0,"maxShield":0,"currShield":0,"maxScrap":0,"currScrap":0,"base_damage":0,"single_shot_bonus":0,"charge_shot_mult":1,"nuke_cost":0
+    },"level_data":{"enemy_killed":"1","wave_count":0
+    },"upgrades":{"shields_check":0,"more_scrap_check":0,"missiles_check":0,"single_shot_check":0,"charge_shot_check":0,"nuke_check":0
+    }}

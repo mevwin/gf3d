@@ -320,6 +320,8 @@ void enemy_free(Entity* self) {
 	if (!self) return;
 
 	data = self->data;
+	if (!data) return;
+
 	level = get_level_data();
 
 	if (data->enemy_type == FENCERS)
@@ -329,7 +331,9 @@ void enemy_free(Entity* self) {
 
 	free(data);
 	level->enemy_count--;
-	level->enemy_killed++;
+
+	if (data->enemy_dead)
+		level->enemy_killed++;
 	//slog("enemy_killed: %d", enemy_killed);
 }
 

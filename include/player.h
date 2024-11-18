@@ -16,8 +16,12 @@ typedef enum {
 
 typedef struct {
     // player values
-    float           upspeed;            // vertical speed
-    float           rigspeed;           // horizontal speed
+    float           upspeed;            // current vertical speed
+    float           upspeed_def;        // default vertical speed
+    float           upspeed_slow;       // slowed vertical speed
+    float           rigspeed;           // current horizontal speed
+    float           rigspeed_def;       // default vertical speed
+    float           rigspeed_slow;      // current vertical speed
 
     float           maxHealth;          // player's maximum health, must change when more shields are added
     float           currHealth;         // player's current health
@@ -26,8 +30,8 @@ typedef struct {
     float           total_health_bar;   // maxHealth + maxShield
     int             maxScrap;           // maximum amount of ship parts a player can hold
     int             currScrap;          // player's currrent amount of ship parts
-    float           vortex_dur;
-    float           vortex_max;
+    float           vortex_dur;         // player's current vortex duration
+    float           vortex_max;         // max vortex duration
 
     Uint8           currMode;          // current attack mode
     float           base_damage;        // defaults to SINGLE_SHOT dmg
@@ -78,12 +82,24 @@ typedef struct {
 
     // debug
     Uint8           freelook;           // debug camera
-    Uint8           player_no_attack;   // flag to make enemies docile
-
+    Uint8           player_no_attack;   // flag to make enemies docile 
 }PlayerData;
 
 Entity* player_spawn();
+
+/**
+* @brief initialize player data
+* @note some values need to be hard-coded
+*/
 void player_data_init(PlayerData* data);
+
+/**
+* @brief initialize player data from a json file
+* @note hard-code values as needed
+*/
+void player_data_init_from_save(PlayerData* data);
+
+
 void player_think(Entity* self);
 void player_update(Entity* self);
 void player_free(Entity*  self);

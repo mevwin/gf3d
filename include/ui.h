@@ -64,7 +64,8 @@ typedef struct {
     Uint8           audio_flag;
 
     /*start menu*/
-    GFC_Rect        start_block;
+    GFC_Rect        new_start_block;
+    GFC_Rect        continue_block;
     GFC_Rect        s_quit_block;
 
     /*player death screen / pause menu*/
