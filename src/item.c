@@ -88,7 +88,7 @@ void item_think(Entity* self) {
     if (level->wave_end) 
         item_activate(self, data->type);
 
-    if (level->in_shop || level->paused || !data->active || get_player_data()->player_dead) return;
+    if (!data->active) return;
 
     self->position.x -= data->rigspeed;
     self->position.y += data->forspeed;
@@ -113,7 +113,7 @@ void item_update(Entity* self) {
     player_data = get_player_data();
     level = get_level_data();
 
-    if (level->in_shop || level->paused || !data->active || player_data->player_dead) return;
+    if (!data->active) return;
 
     if (self->position.y > 90.0f || player_data->player_dead)
         entity_free(self);

@@ -7,8 +7,8 @@
 #include "ui.h"
 #include "player.h"
 #include "enemy.h"
+#include "world.h"
 #include "level.h"
-#include "projectile.h"
 #include "item.h"
 
 #define RES (gf3d_vgraphics_get_resolution())
@@ -121,14 +121,14 @@ void UI_free() {
     free(UI_data);
 }
 
-void shop_hud_draw(void* d) {
+void shop_hud_draw() {
     GFC_Rect upgrade_bar;
     GFC_Vector2D bar_position, scale;
     float x_start, y_start, upgrade_bar_length, x1, x2, upgrade_cost, upgrade_length;
     float scrap, maxscrap, currScrap;
     PlayerData* data;
 
-    data = (PlayerData*) d;
+    data = get_player_data();
 
     if (!data) return;
 
@@ -250,18 +250,15 @@ void shop_hud_draw(void* d) {
     gf2d_draw_rect_filled(upgrade_bar, GFC_COLOR_LIGHTCYAN);
 }
 
-void shop_think(void* d) {
+void shop_think() {
     LevelData* level;
     PlayerData* data;
 
-    data = (PlayerData*) d;
+    data = get_player_data();
     if (!data) return;
 
     level = get_level_data();
     if (!level->wave_end) return;
-
-    if (gf2d_mouse_button_released(2))
-        level->in_shop = 0;
 
     if (gf2d_mouse_button_released(0)) {
         if (gf2d_mouse_in_rect(UI_data->shields_block)) {
@@ -393,7 +390,6 @@ void player_hud(void* d) {
     if (!data) return;
 
     level = get_level_data();
-    if (data->player_dead || level->in_shop || level->wave_end) return;
 
     // progress calculations
     currHealth = (float) (data->currHealth / data->total_health_bar);
@@ -528,46 +524,30 @@ void start_menu() {
     gf2d_font_draw_text_wrap_tag("QUIT", FT_H2, GFC_COLOR_WHITE, UI_data->s_quit_block);
 }
 
-void* start_menu_think() {
-    LevelData* level;
+void start_menu_think() {
+    WorldData* world;
 
-    level = get_level_data();
+    world = get_world_data();
     if (gf2d_mouse_button_released(0)) {
         if (gf2d_mouse_in_rect(UI_data->new_start_block)) {
             gfc_sound_play( get_sound_data()->confirm, 0, 1, -1, -1 );
-            if (!level->assets_made)
+            if (!world->entity_assets_made)
                 entity_assets_init();
-            if (!level->asteroids_made)
-                asteroid_init();
+            //if (!level->asteroids_made)
+                //asteroid_init();
             
-            if (level->assets_made && level->asteroids_made) {
+            if (world->entity_assets_made) {
                 gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), GFC_COLOR_BLACK);
-                level->game_start = 1;
-                level->enemy_start = 0;
-                return player_spawn();
+                world->enemy_start = 0;
+                world->player_spawned = 1;
             }
         }
         else if (gf2d_mouse_in_rect(UI_data->continue_block)) {
-            level->continue_from_save = 1;
-            gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
-            game_data_init_from_save();
 
-            if (!level->assets_made)
-                entity_assets_init();
-            if (!level->asteroids_made)
-                asteroid_init();
-
-            if (level->assets_made && level->asteroids_made) {
-                gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), GFC_COLOR_BLACK);
-                level->game_start = 1;
-                level->enemy_start = 0;
-                return player_spawn();
-            }
         }
         else if (gf2d_mouse_in_rect(UI_data->s_quit_block)) {
-            level->_done = 1;
+            world->_done = 1;
         } 
-        return NULL;
     }
 }
 
@@ -583,42 +563,39 @@ void pause_menu() {
     gf2d_font_draw_text_wrap_tag("QUIT", FT_H2, GFC_COLOR_WHITE, UI_data->quit_block);
 }
 
-void pause_menu_think(void* l) {
-    LevelData* data;
+void pause_menu_think(void* w) {
+    WorldData* world;
 
-    data = (LevelData*) l;
-    if (!data) return;
+    world = (WorldData*) w;
+    if (!world) return;
 
     if (gf2d_mouse_button_released(0)) {
         if (gf2d_mouse_in_rect(UI_data->resume_block)) {
-            data->paused = 0;
+            world->current_state = IN_GAME;
             gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
         }
-        if (gf2d_mouse_in_rect(UI_data->quit_block)) {
-            game_save();
-            new_level_reset();
+        else if (gf2d_mouse_in_rect(UI_data->quit_block)) {
+            //game_save();
+            level_reset();
             entity_despawn_all();
             entity_assets_close();
-            data->enemy_count = 0;
-            data->enemy_killed = 0;
-            data->game_start = 0;
+            world->current_state = START_MENU;
+            world->player_spawned = 0;
             gfc_sound_play(get_sound_data()->cancel, 0, 1, -1, -1);
         }
     }
 }
 
-void wave_start(void* l) {
+void wave_start() {
     GFC_Vector2D text_loc;
-    LevelData* data;
+    WorldData* world;
     char buffer[8];
 
-    data = (LevelData*) l;
-    if (!data) return;
-
     if (gf2d_mouse_button_released(2)) {
-        data->enemy_start = 1;
-        data->fencer_flag = 0;
-        data->wave_end = 0;
+        world = get_world_data();
+        //world->enemy_start = 1;
+        world->current_state = IN_GAME;
+
         gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
     }
     else {
@@ -631,15 +608,15 @@ void wave_start(void* l) {
     }
 }
 
-void wave_completed(void* p, void* l) {
+void wave_completed() {
     GFC_Vector2D text_loc;
-    PlayerData* data; 
+    PlayerData* player; 
     LevelData* level;
 
-    data = (PlayerData*) p;
-    level = (LevelData*) l;
+    player = get_player_data();
+    level = get_level_data();
 
-    if (!p || !l) return;
+    if (!player || !level) return;
 
     gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(65, 65, 65, 0.4f));
     gf2d_font_draw_line_tag("WAVE COMPLETE", FT_H1, GFC_COLOR_WHITE, TEXT_LOCATION);
@@ -648,25 +625,14 @@ void wave_completed(void* p, void* l) {
     text_loc.y += 100.0f;
     gf2d_font_draw_line_tag("Press Right Click to Continue", FT_H2, GFC_COLOR_WHITE, text_loc);
 
-    if (data->nuke_flag)
-        data->nuke_flag = 0;
+    if (player->nuke_flag)
+        player->nuke_flag = 0;
 
     // play victory theme
     if (!level->wave_end) {
         gfc_sound_play(get_sound_data()->victory, 0, 0.3f, -1, -1);
     }
     level->wave_end = 1;
-
-    if (gf2d_mouse_button_released(2)) {
-        player_upgrade(data);
-        shop_reset();
-        level->wave_count++;
-        level->in_shop = 1;
-        level->enemy_start = 0;
-        level->enemy_count = 0;
-        level->fencer_flag = 0;
-        level->enemy_killed = 0;
-    }
 }
 
 void player_death_screen() {
@@ -694,7 +660,6 @@ void enemy_hud(void* e, GFC_Vector3D position) {
     
     player_data = get_player_data();
     level = get_level_data();
-    if (player_data->player_dead || level->in_shop || data->enemy_dead) return;
 
     health = data->currHealth;
     maxhealth = data->maxHealth;

@@ -84,12 +84,12 @@ void UI_init();
 
 void UI_free();
 
-void shop_hud_draw(void* d);
+void shop_hud_draw();
 
 /**
 * @brief where upgrades are actually given to player
 */
-void shop_think(void* d);
+void shop_think();
 
 /**
 * @brief reset shop progress
@@ -99,13 +99,13 @@ void shop_reset();
 void player_hud(void* d);
 
 void start_menu();
-void* start_menu_think();
+void start_menu_think();
 
 void pause_menu();
-void pause_menu_think(void* l);
+void pause_menu_think(void* w);
 
-void wave_start(void* l);
-void wave_completed(void* p, void* l);
+void wave_start();
+void wave_completed();
 
 void player_death_screen();
 

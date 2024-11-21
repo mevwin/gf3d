@@ -8,6 +8,7 @@
 #include "reticle.h"
 #include "item.h"
 #include "level.h"
+#include "world.h"
 
 #define SHOT_DELAY 0.15f
 #define SHOT_DELAY_TRIGGER 0.3f
@@ -282,7 +283,6 @@ void proj_update_player(Entity* self) {
     if (!data) return;
 
     level = get_level_data();
-    if (level->in_shop || level->paused) return;
 
     // updates hurtbox if not vortex or super_nuke
     if (data->type != VORTEX && data->type != SUPER_NUKE)
@@ -341,7 +341,6 @@ void proj_update_enemy(Entity* self) {
     if (!data) return;
 
     level = get_level_data();
-    if (level->in_shop || level->paused) return;
 
     update_hurtbox(self);
 
@@ -414,7 +413,7 @@ void proj_think_basic(Entity* self) {
     if (!data) return;
 
     level = get_level_data();
-    if (level->in_shop || level->paused || data->vortexed) return;
+    if (data->vortexed) return;
 
     if (data->owner_type == PLAYER)
         self->position.y -= data->forspeed;
@@ -430,15 +429,12 @@ void proj_think_basic(Entity* self) {
 
 void proj_think_missile(Entity* self) {
     ProjData* data;
-    LevelData* level;
 
     if (!self) return;
 
     data = self->data;
     if (!data) return;
 
-    level = get_level_data();
-    if (level->in_shop || level->paused) return;
 
     if ((gf2d_mouse_button_held(2) || gf2d_mouse_button_pressed(2)) && 
         !data->missile_active) 
@@ -460,7 +456,6 @@ void proj_think_missile(Entity* self) {
 void proj_think_vortex(Entity* self) {
     PlayerData* p_data;
     ProjData* data;
-    LevelData* level;
     Entity* entityList, *proj;
     GFC_Vector3D player_pos;
     int i;
@@ -471,8 +466,6 @@ void proj_think_vortex(Entity* self) {
     p_data = get_player_data();
     if (!p_data) return;
 
-    level = get_level_data();
-    if (level->in_shop || level->paused) return;
 
     if (p_data->player_dead) 
         entity_free(self);
@@ -546,7 +539,6 @@ void proj_think_super_nuke(Entity* self) {
     if (!data) return;
 
     level = get_level_data();
-    if (level->in_shop || level->paused) return;
 
     p_data = get_player_data();
     if (p_data->player_dead) 
@@ -604,8 +596,6 @@ void fencer_think(Entity* self) {
     enemy_data = data->owner->data;
     level = get_level_data();
     time = CURRENT_TIME;
-
-    if (p_data->player_dead || level->paused || level->in_shop) return;
     
     if (!gfc_box_overlap(self->hurtbox.s.b, get_player_hurtbox().s.b)){
         p_data->damage_taken = data->damage;
@@ -633,8 +623,6 @@ void bomber_think(Entity* self) {
     p_data = get_player_data();
     enemy_data = data->owner->data;
     level = get_level_data();
-
-    if (p_data->player_dead || level->paused || level->in_shop) return;
 
     // update attack trajectory
     dist_x = enemy_data->player_pos->x - self->position.x;

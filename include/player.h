@@ -105,11 +105,12 @@ void player_update(Entity* self);
 void player_free(Entity*  self);
 void player_attack(Entity* self, PlayerData* data);
 void player_take_damage(Entity* self, PlayerData* data, float time);
-void player_die(Entity* self);
-void player_death(Entity* self);
-void player_respawn(Entity* self);
-void player_quit(Entity* self);
+void player_die();
+void player_death();
+void player_respawn();
+void player_quit();
 void player_upgrade(PlayerData* data);
+Entity* get_player();
 PlayerData* get_player_data();
 GFC_Primitive get_player_hurtbox();
 

@@ -3,7 +3,7 @@
 #include "simple_logger.h"
 #include "gfc_matrix.h"
 #include "entity.h"
-#include "level.h"
+#include "world.h"
 
 typedef struct{
     Entity  *entity_list;
@@ -82,7 +82,7 @@ void entity_assets_init() {
     models->health_pickup = gf3d_model_load("models/item/health_pickup.model");
     models->happy_trigger = gf3d_model_load("models/item/happy_trigger.model");
     models->invincibility = gf3d_model_load("models/item/invincibility.model");
-    get_level_data()->assets_made = 1;
+    get_world_data()->entity_assets_made = 1;
 }
 
 void entity_assets_close() {
@@ -111,7 +111,7 @@ void entity_assets_close() {
     gf3d_model_free(models->happy_trigger);
     gf3d_model_free(models->invincibility);
 
-    get_level_data()->assets_made = 0;
+    get_world_data()->entity_assets_made = 0;
 }
 
 void entity_draw(Entity *self){
@@ -278,7 +278,7 @@ void entity_despawn_all() {
 
     entityList = get_entityList();
     
-    asteroid_free();
+    //asteroid_free();
 
     // despawn all projectiles next
     for (i = 0; i < MAX_ENTITY; i++) {

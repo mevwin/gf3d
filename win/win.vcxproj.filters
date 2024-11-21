@@ -207,6 +207,9 @@
     <ClCompile Include="..\src\level.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\world.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\gf2d_actor.h">
@@ -402,6 +405,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\level.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\world.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

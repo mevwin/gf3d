@@ -30,7 +30,7 @@ EnemyData* enemy_data_init() {
 	if (type == EMPERS && !level->emper_flag)
 		level->emper_flag = 1;
 	else if (type == EMPERS && level->emper_flag)
-		type = (Enemy_Type)gfc_random_int(3);
+		type = (Enemy_Type) gfc_random_int(3);
 
 	data->enemy_type = type;
 
@@ -145,12 +145,6 @@ void enemy_think(Entity* self) {
 
 	player_data = get_player_data();
 	level = get_level_data();
-
-	// don't do anything if player is dead
-	if (player_data->player_dead || data->currHealth <= 0 || 
-		level->in_shop || level->paused ||
-		player_data->nuke_flag
-		) return;
 	
 	// TODO: remove this debug tool later
 	/*
@@ -180,7 +174,6 @@ void enemy_think(Entity* self) {
 void enemy_update(Entity* self) {
 	EnemyData* data;
 	PlayerData* player_data;
-	LevelData* level;
 	float dist_x, dist_y, z_angle, y_angle;
 	int rand;
 
@@ -190,10 +183,6 @@ void enemy_update(Entity* self) {
 	if (!data) return;
 
 	player_data = get_player_data();
-	level = get_level_data();
-
-	if (level->in_shop || level->paused || !player_data)
-		return;
 
 	// dont do anything or find new player
 	if (player_data->player_dead) {
@@ -290,9 +279,6 @@ void emper_think(Entity* self) {
 
 	player_data = get_player_data();
 	level = get_level_data();
-
-	if (level->in_shop || level->paused || player_data->player_dead)
-		return;
 
 	time = CURRENT_TIME;
 	if (data->emper_attack_time - time <= 2.0f)

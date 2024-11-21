@@ -1,5 +1,4 @@
 #include "simple_logger.h"
-#include "simple_json_object.h"
 #include "gfc_input.h"
 #include "gfc_audio.h"
 #include "gf2d_mouse.h"
@@ -9,7 +8,7 @@
 #include "projectile.h"
 #include "reticle.h"
 #include "item.h"
-#include "level.h"
+#include "world.h"
 
 #define PLAYER_SPAWN gfc_vector3d(0, 0 ,0);
 #define DAMAGE_TIMING 0.5f
@@ -36,8 +35,8 @@ Entity* player_spawn() {
     if (!data) return NULL;
 
     player_data_init(data);
-    if (get_level_data()->continue_from_save)
-        player_data_init_from_save(data);
+    //if (get_world_data()->continue_from_save)
+        //player_data_init_from_save(data);
         
     position = PLAYER_SPAWN;
     self->position = position;
@@ -53,13 +52,13 @@ Entity* player_spawn() {
 }
 
 void player_data_init(PlayerData* data) {
-    LevelData* level;
+    WorldData* world;
     SJson* value;
 
     if (!data) return;
     
-    level = get_level_data();
-    value = sj_object_get_value(level->player_init, "data");
+    world = get_world_data();
+    value = sj_object_get_value(world->player_init, "data");
 
     // movement speed
     sj_object_get_value_as_float(value, "upspeed_def", &data->upspeed_def);
@@ -128,14 +127,12 @@ void player_data_init(PlayerData* data) {
 }
 
 void player_data_init_from_save(PlayerData* data) {
-    LevelData* level;
     SJson* save, *data_entry;
 
     if (!data) return;
 
     player_data_init(data);
 
-    level = get_level_data();
     save = sj_load("def/player_save.json");
     data_entry = sj_object_get_value(save, "player_data");
 
@@ -155,7 +152,6 @@ void player_data_init_from_save(PlayerData* data) {
 void player_think(Entity* self) {
     PlayerData* data;
     ReticleData* rec_data;
-    LevelData* level;
     float time;
 
     if (!self) return;
@@ -163,11 +159,8 @@ void player_think(Entity* self) {
     data = self->data;
     if (!data) return;
 
-    // don't do anything if player is dead or in_shop or game is pause
-    level = get_level_data();
     time = CURRENT_TIME;
-    if (data->player_dead || level->in_shop || level->paused || level->wave_end) return;
-    
+ 
     if (data->emp_time > time && data->active_item != INVINCIBILITY) return;
 
     // movement checks
@@ -177,7 +170,6 @@ void player_think(Entity* self) {
         barrel_roll(self, data);
 
     /* player attack checks */
-    time = CURRENT_TIME;
     rec_data = data->reticle->data;
 
         // CHARGE_SHOT
@@ -243,16 +235,12 @@ void player_think(Entity* self) {
 
 void player_update(Entity* self) {
     PlayerData* data;
-    LevelData* level;
     float time;
 
     if (!self) return;
 
     data = self->data;
     if (!data) return;
-
-    level = get_level_data();
-    if (level->in_shop || level->paused || data->player_dead || level->wave_end) return;
 
     // update camera
     player_cam(self, data);
@@ -395,7 +383,7 @@ void player_take_damage(Entity* self, PlayerData* data, float time) {
     data->damage_taken = 0;
 }
 
-void player_die(Entity* self) {
+void player_die() {
     PlayerData* data;
 
     if (!self) return;
@@ -409,7 +397,7 @@ void player_die(Entity* self) {
     /* TODO: add player death animation maybe */
 }
 
-void player_death(Entity* self) {
+void player_death() {
     PlayerData* data;
 
     data = self->data;
@@ -422,7 +410,7 @@ void player_death(Entity* self) {
     entity_free(data->reticle);
 }
 
-void player_respawn(Entity* self) {
+void player_respawn() {
     PlayerData* data;
     GFC_Vector3D reticle_pos;
 
@@ -438,7 +426,7 @@ void player_respawn(Entity* self) {
     data->reticle = reticle_spawn(reticle_pos);
 }
 
-void player_quit(Entity* self) {
+void player_quit() {
     if (!self) return;
 
     entity_free(self);
@@ -453,6 +441,10 @@ void player_upgrade( PlayerData* data) {
 
     data->base_damage += data->single_shot_bonus;
     data->single_shot_bonus = 0;
+}
+
+Entity* get_player() {
+    return self;
 }
 
 PlayerData* get_player_data() {

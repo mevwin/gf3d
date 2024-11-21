@@ -1,6 +1,6 @@
 #include "simple_logger.h"
 #include "gf2d_mouse.h"
-#include "gfc_config_def.h"
+#include "gfc_input.h"
 #include "player.h"
 #include "enemy.h"
 #include "ui.h"
@@ -11,10 +11,6 @@ static LevelData* level;
 void level_init() {
     level = gfc_allocate_array(sizeof(LevelData), 1);
     
-    level->assets_made = 0;
-    level->game_start = 0;
-    level->enemy_start = 0;
-    level->_done = 0;
     
     level->last_powerup = 0;
     level->enemy_count = 0;
@@ -23,17 +19,12 @@ void level_init() {
     level->fencer_flag = 0;
     
     level->wave_count = 1;
-    level->in_shop = 0;
-    level->paused = 0;
-    level->wave_end = 0;
 
-    level->asteroid = gf3d_model_load("models/trench/asteroid.model");
-    level->asteroid_list = gfc_list_new_size(ASTEROID_MAX);
+    //level->asteroid = gf3d_model_load("models/trench/asteroid.model");
+    //level->asteroid_list = gfc_list_new_size(ASTEROID_MAX);
 
-    level->continue_from_save = 0;  // initially zero, must check at start_menu_think
 
-    level->player_init = sj_load("def/player_init.json");
-    level->player_save = "def/player_save_base.json";
+    
 
     atexit(level_free);
 }
@@ -65,6 +56,7 @@ void game_data_init_from_save() {
     sj_free(save);
 }
 
+/*
 void game_save() {
     PlayerData* p_data;
     UIData* ui;
@@ -158,13 +150,9 @@ void game_save() {
     sj_save(save, "def/player_save.json");
     sj_free(save);
 }
+*/
 
-void new_level_reset() {
-    level->assets_made = 0;
-    level->game_start = 0;
-    level->enemy_start = 0;
-    level->_done = 0;
-
+void level_reset() {
     level->last_powerup = 0;
     level->enemy_count = 0;
     level->enemy_killed = 0;
@@ -172,13 +160,9 @@ void new_level_reset() {
     level->fencer_flag = 0;
 
     level->wave_count = 1;
-    level->in_shop = 0;
-    level->paused = 0;
-    level->wave_end = 0;
-
-    level->continue_from_save = 0;
 }
 
+/*
 void asteroid_init() {
     int i, x_start, y_start, z_start;
     float neg;
@@ -208,14 +192,16 @@ void asteroid_free(){
     gfc_list_foreach(level->asteroid_list, (void (*) (void*)) entity_free);
     level->asteroids_made = 0;
 }
+*/
 
 void level_free() {
-    gf3d_model_free(level->asteroid);
-    gfc_list_delete(level->asteroid_list);
-    sj_free(level->player_init);
+    //gf3d_model_free(level->asteroid);
+    //gfc_list_delete(level->asteroid_list);
+
     free(level);
 }
 
+/*
 void level_visuals() {
     int i;
     Entity* curr;
@@ -239,84 +225,10 @@ void level_visuals() {
             curr->position.y = -700;
     }
 }
+*/
 
-void level_update(void* p, void* player_data) {
-    Entity* player = (Entity*) p;
-    PlayerData* p_data = (PlayerData*) player_data;
-
-    if (!player || !p_data) return;
-
-    entity_think_all();
-    entity_update_all();
-    entity_draw_all();
-    level_visuals();
-
-    if (gfc_input_command_pressed("shop")) {
-        if (!level->in_shop) {
-            if (level->paused)
-                level->paused = 0;
-
-            level->in_shop = 1;
-        }
-        else
-            level->in_shop = 0;
-    }
-
-    if (gfc_input_command_pressed("escape")) {
-        if (!level->paused) {
-            if (level->in_shop)
-                level->in_shop = 0;
-
-            level->paused = 1;
-        }
-        else
-            level->paused = 0;
-    }
-
-    if (level->in_shop) { // shop menu
-        shop_hud_draw(p_data);
-        shop_think(p_data);
-        gf2d_mouse_draw();
-    }
-    else if (level->paused) { // pause menu
-        pause_menu();
-        pause_menu_think(level);
-        gf2d_mouse_draw();
-    }
-    else if (p_data->player_dead) { // death screen
-        player_death_screen();
-        gf2d_mouse_draw();
-        entity_reset();
-
-        // player respawn
-        if (gf2d_mouse_button_released(2)) {
-            shop_reset(); // reset upgrade checks if player has died
-            player_respawn(player);
-            level->enemy_count = 0;
-            level->enemy_killed = 0;
-            level->enemy_start = 0;
-            level->fencer_flag = 0;
-            level->wave_count = 0;
-        }
-    }
-    else { // game in play
-        enemy_hud_all();
-        player_hud(player->data);
-
-        if (!level->enemy_start)
-            wave_start(level);
-
-        // game condition
-        if (level->enemy_count < ENEMY_MIN_LIMIT && level->enemy_killed < ENEMY_GOAL && level->enemy_start)
-            enemy_spawn(&(player->position));
-
-        if (level->enemy_killed >= ENEMY_GOAL) {
-            level->enemy_killed = ENEMY_GOAL;
-            enemy_reset();
-            p_data->active_item = 1;
-            wave_completed(p_data, level);
-        }
-    }
+void level_update() {
+    //level_visuals();
 }
 
 LevelData* get_level_data() {

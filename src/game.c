@@ -25,11 +25,10 @@
 #include "gf3d_texture.h"
 #include "gf3d_draw.h"
 
-#include "entity.h"
-#include "player.h"
-#include "enemy.h"
-#include "ui.h"
+#include "world.h";
 #include "level.h"
+#include "ui.h"
+#include "player.h";
 
 extern int __DEBUG;
 
@@ -55,11 +54,9 @@ void draw_origin()
 int main(int argc,char *argv[])
 {
     //local variables
-    Model *sky, *trench;
-    GFC_Matrix4 skyMat, trenchMat;
-    Entity* player;
-    PlayerData* player_data;
-    LevelData* level;
+    Model *sky;
+    GFC_Matrix4 skyMat;
+    WorldData* world;
 
     //initializtion    
     parse_arguments(argc,argv);
@@ -90,10 +87,8 @@ int main(int argc,char *argv[])
     //game setup
     gf2d_mouse_load("actors/mouse.actor");
     sky = gf3d_model_load("models/sky.model");
-    //trench = gf3d_model_load("models/trench/trench.model");
 
     gfc_matrix4_identity(skyMat);
-    //gfc_matrix4_identity(trenchMat);
     
     gf3d_camera_set_scale(gfc_vector3d(1,1,1));
     gf3d_camera_set_position(gfc_vector3d(15,-15,10));
@@ -105,15 +100,14 @@ int main(int argc,char *argv[])
 
     // game init initialization
     UI_init();
+    world_init();
     level_init();
     game_sound_data_init();
 
-    level = get_level_data();
-    player = NULL;
-    player_data = NULL;
+    world = get_world_data();
 
     // main game loop, constant series of updates  
-    while(!level->_done)
+    while(!world->_done)
     {
         gfc_input_update(); //look here for SDL stuff
         gf2d_mouse_update();
@@ -127,28 +121,12 @@ int main(int argc,char *argv[])
         gf3d_vgraphics_render_start(); // combines all draw commands, then submits
                 //3D draws
                 gf3d_model_draw_sky(sky,skyMat,GFC_COLOR_WHITE);
-                //gf3d_model_draw(trench, trenchMat, GFC_COLOR_WHITE, NULL, 0);
                 //draw_origin();
-                
-                // game start
-                if (!level->game_start){
-                    start_menu();
-                    player = (Entity*) start_menu_think();
-                    gf2d_mouse_draw();
-                }
-
-                // game updates
-                if (level->game_start) {
-                    if (!player) {
-                        slog("player failed to spawn");
-                        break;
-                    }
-                    player_data = player->data;
-                    level_update(player, player_data);
-                }
+               
+                world_update();
 
         gf3d_vgraphics_render_end();
-        if (gfc_input_command_down("exit")) level->_done = 1; // exit condition
+        if (gfc_input_command_down("exit")) world->_done = 1; // exit condition
 
         game_frame_delay();
     }    
