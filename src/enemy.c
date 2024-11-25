@@ -6,10 +6,11 @@
 #include "item.h"
 #include "level.h"
 
-#define EMPER_CHARGE_TIME 5.0f;
-#define ENEMY_HURTBOX (gfc_box(400, -150, 200, 1, 1, 1))	// make temporary dummy hitbox not accessible to player when enemy is dead
+#define EMPER_CHARGE_TIME 5.0f
+#define ENEMY_HURTBOX gfc_box(400, -150, 200, 1, 1, 1) // make temporary dummy hitbox not accessible to player when enemy is dead
 
-EnemyData* enemy_data_init() {
+// spawn random enemy
+EnemyData* enemy_data_init_random() {
 	EnemyData* data;
 	Enemy_Type type;
 	LevelData* level;
@@ -81,6 +82,20 @@ EnemyData* enemy_data_init() {
 	return data;
 }
 
+
+EnemyData* enemy_data_init_from_config() {
+	EnemyData* data;
+	Enemy_Type type;
+	LevelData* level;
+
+	data = gfc_allocate_array(sizeof(EnemyData), 1);
+	if (!data) return NULL;
+
+	level = get_level_data();
+
+
+}
+
 void enemy_spawn(GFC_Vector3D* player_pos) {
 	Entity* self;
 	EnemyData* data;
@@ -91,7 +106,7 @@ void enemy_spawn(GFC_Vector3D* player_pos) {
 	self = entity_new();
 	if (!self) return NULL;
 
-	data = enemy_data_init();
+	data = enemy_data_init_random();
 	if (data) self->data = data;
 
 	if (!data) return;

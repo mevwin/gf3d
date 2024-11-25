@@ -1,6 +1,8 @@
 #include "simple_logger.h"
 #include "gf2d_mouse.h"
 #include "gfc_input.h"
+#include "gfc_audio.h"
+#include "world.h"
 #include "player.h"
 #include "enemy.h"
 #include "ui.h"
@@ -11,21 +13,22 @@ static LevelData* level;
 void level_init() {
     level = gfc_allocate_array(sizeof(LevelData), 1);
     
-    
     level->last_powerup = 0;
     level->enemy_count = 0;
     level->enemy_killed = 0;
+    level->enemy_killed_total = 0;
     level->emper_flag = 0;
     level->fencer_flag = 0;
     
+    level->wave_end = 0;
     level->wave_count = 1;
 
     //level->asteroid = gf3d_model_load("models/trench/asteroid.model");
     //level->asteroid_list = gfc_list_new_size(ASTEROID_MAX);
 
-
+    //TODO: create level from config
     
-
+    get_world_data()->level_assets_made = 1;
     atexit(level_free);
 }
 
@@ -152,7 +155,20 @@ void game_save() {
 }
 */
 
-void level_reset() {
+void new_wave_level_reset() {
+    level->last_powerup = 0;
+    level->enemy_killed_total += level->enemy_killed;
+    level->enemy_killed = 0;
+    level->enemy_count = 0;
+    level->emper_flag = 0;
+    level->fencer_flag = 0;
+
+    get_player_data()->currMode = SINGLE_SHOT;
+    get_player_data()->next_shot = CURRENT_TIME + 1;
+}
+
+void full_level_reset() {
+    level->enemy_killed_total;
     level->last_powerup = 0;
     level->enemy_count = 0;
     level->enemy_killed = 0;
@@ -228,7 +244,29 @@ void level_visuals() {
 */
 
 void level_update() {
+    WorldData* world;
+
     //level_visuals();
+    
+    world = get_world_data();
+
+    if (level->enemy_killed < 0)
+        level->enemy_killed = 0;
+
+    if (level->enemy_killed == 1) {
+        enemy_reset();
+        new_wave_level_reset();
+
+        level->wave_count++;
+        level->wave_end = 1;
+        
+        world->enemy_start = 0;
+
+
+        // play victory theme
+        gfc_sound_play(get_sound_data()->victory, 0, 0.3f, -1, -1);
+        world->current_state = WAVE_COMPLETED;
+    }
 }
 
 LevelData* get_level_data() {

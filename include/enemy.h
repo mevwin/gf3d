@@ -53,7 +53,6 @@ typedef struct {
 
 }EnemyData;
 
-EnemyData* enemy_data_init();
 void enemy_spawn(GFC_Vector3D* player_pos);
 void enemy_think(Entity* self);
 void enemy_update(Entity* self);

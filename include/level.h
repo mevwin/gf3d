@@ -2,7 +2,7 @@
 #define __LEVEL_H__
 
 #define ENEMY_MIN_LIMIT 5 // minimum limit amount of enemies on-screen
-#define ENEMY_GOAL 20.0f
+#define ENEMY_GOAL 20
 #define ASTEROID_MAX 20
 
 
@@ -16,12 +16,12 @@ typedef struct {
 	// game stats
 	float			last_powerup;		// time stamp of last active powerup
 	Uint32			enemy_count;
-	Uint32			enemy_killed;
+	int				enemy_killed;
+	Uint32			enemy_killed_total;
 	Uint8			emper_flag;
 	Uint8			fencer_flag;
 	GFC_Vector3D	fencer_spawn;		// position of fencer attack region
 	Uint32			wave_count;
-	Uint8			wave_start;
 	Uint8			wave_end;
 
 	// level visuals
@@ -31,7 +31,10 @@ typedef struct {
 
 void level_init();
 
-void level_reset();
+void level_load();
+
+void new_wave_level_reset();
+void full_level_reset();
 void asteroid_init();
 void asteroid_free();
 void level_visuals();

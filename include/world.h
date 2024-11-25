@@ -19,8 +19,10 @@ typedef enum GameState_E{
 	SHOP,
 	WAVE_START,
 	WAVE_COMPLETED,
+	NEXT_MAP,
 	GAME_OVER,
-	IN_GAME				// NONE means game in progress
+	IN_GAME,
+	NO_OPTION				// option for nothing
 }GameState;
 
 typedef struct WorldData_S {
@@ -31,6 +33,7 @@ typedef struct WorldData_S {
 	Uint8			enemy_start;
 	Uint8			_done;
 	GameState		current_state;
+	GameState		last_state;
 
 	// def files
 	SJson*			player_init;
@@ -44,7 +47,6 @@ void world_close();
 /**
 * @brief check inputs that access menus
 */
-void world_check_for_menu_input();
 void world_update();
 void game_data_init_from_save();
 void game_save();

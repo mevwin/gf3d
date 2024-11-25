@@ -12,7 +12,7 @@
 
 #define SHOT_DELAY 0.15f
 #define SHOT_DELAY_TRIGGER 0.3f
-#define SUPER_NUKE_DMG 20.0f
+#define SUPER_NUKE_DMG 30.0f
 #define ENEMY_FENCER_BOX(p) (gfc_box(p.x - 24.0f, p.y - 13.0f, p.z - 17.0f, 48.0f, 26.0f, 34.0f))
 
 void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float curr_time, Uint8 vortexed) {

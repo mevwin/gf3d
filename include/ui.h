@@ -15,7 +15,7 @@ typedef enum {
 }Upgrade_Type;
 */
 
-typedef struct {
+typedef struct UIData_S{
     /*shop UI*/
         // upgrade button locations
     GFC_Rect        shields_block;
@@ -54,16 +54,13 @@ typedef struct {
     Uint8           charge_shot_count;
 
     /* player UI */
+    Sprite*         player_hud;
     Sprite*         player_health;
     Sprite*         player_shield;
     Sprite*         player_scrap;
     Sprite*         player_vortex;
     Sprite*         progress_bar;
     Sprite*         enemy_health;
-
-    Sprite*         player_health_back;
-    Sprite*         vortex_back;
-    Sprite*         progress_back;
     Sprite*         enemy_health_back;
 
     float           nuke_alpha;
