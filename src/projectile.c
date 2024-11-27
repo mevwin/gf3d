@@ -46,7 +46,7 @@ void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float cu
         time < player_data->next_shot ||
         player_data->nuke_flag
         ) {
-       //slog("%d", player_data->missile_count);
+        //slog("%f : %f, %d", time, player_data->next_shot, (time < player_data->next_shot) );
         entity_free(self);
         return;
     }

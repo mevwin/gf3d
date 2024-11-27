@@ -28,154 +28,32 @@ void level_init() {
 
     //TODO: create level from config
     
-    get_world_data()->level_assets_made = 1;
+    //get_world_data()->level_assets_made = 1;
     atexit(level_free);
 }
 
-void game_data_init_from_save() {
-    PlayerData* p_data;
-    UIData* ui;
-    SJson* save, *value;
-
-    ui = get_UI_data();
-    save = sj_load("def/player_save.json");
-
-    value = sj_object_get_value(save, "level_data");
-    sj_object_get_value_as_uint32(value, "wave_count", &level->wave_count);
-
-    value = sj_object_get_value(save, "upgrades");
-    sj_object_get_value_as_uint8(value, "shields_check", &ui->shields_check);
-    sj_object_get_value_as_uint8(value, "more_scrap_check", &ui->more_scrap_check);
-    sj_object_get_value_as_uint8(value, "missiles_check", &ui->missiles_check);
-    sj_object_get_value_as_uint8(value, "single_shot_check", &ui->single_shot_check);
-    sj_object_get_value_as_uint8(value, "charge_shot_check", &ui->charge_shot_check);
-    sj_object_get_value_as_uint8(value, "nuke_check", &ui->nuke_check);
-    sj_object_get_value_as_uint8(value, "shields_count", &ui->shields_count);
-    sj_object_get_value_as_uint8(value, "more_scrap_count", &ui->more_scrap_count);
-    sj_object_get_value_as_uint8(value, "missiles_count", &ui->missiles_count);
-    sj_object_get_value_as_uint8(value, "single_shot_count", &ui->single_shot_count);
-    sj_object_get_value_as_uint8(value, "harge_shot_count", &ui->missiles_count);
-
-    sj_free(save);
-}
-
-/*
-void game_save() {
-    PlayerData* p_data;
-    UIData* ui;
-    SJson* save, *value, *data_entry;
-    char buffer[4];
-    Uint32 wave_check;
-
-    p_data = get_player_data();
-    level;
-    ui = get_UI_data();
-
-    if (p_data->player_dead)
-        return;
-
-    save = sj_load(level->player_save);
-
-    // level save
-    value = sj_object_get_value(save, "level_data");
-
-    data_entry = sj_object_get_value(value, "wave_count");
-    sj_object_get_value_as_uint32(value, "wave_count", &wave_check);
-    if (level->wave_count == wave_check)    // don't save if currently on starting wave from save
-        return;
-
-    data_entry->v.string = sj_value_to_json_string(sj_new_uint32(level->wave_count));
-
-    // player save
-    value = sj_object_get_value(save, "player_data");
-    data_entry = sj_object_get_value(value, "maxHealth");
-    data_entry->v.string = sj_value_to_json_string(sj_new_float(p_data->maxHealth));
-
-    data_entry = sj_object_get_value(value, "currHealth");
-    data_entry->v.string = sj_value_to_json_string(sj_new_float(p_data->currHealth));
-
-    data_entry = sj_object_get_value(value, "maxShield");
-    data_entry->v.string = sj_value_to_json_string(sj_new_float(p_data->maxShield));
-
-    data_entry = sj_object_get_value(value, "currShield");
-    data_entry->v.string = sj_value_to_json_string(sj_new_float(p_data->currShield));
-
-    data_entry = sj_object_get_value(value, "maxScrap");
-    data_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->maxScrap));
-
-    data_entry = sj_object_get_value(value, "currScrap");
-    data_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->currScrap));
-
-    data_entry = sj_object_get_value(value, "single_shot_bonus");
-    data_entry->v.string = sj_value_to_json_string(sj_new_float(p_data->single_shot_bonus));
-
-    data_entry = sj_object_get_value(value, "charge_shot_mult");
-    data_entry->v.string = sj_value_to_json_string(sj_new_float(p_data->charge_shot_mult));
-
-    data_entry = sj_object_get_value(value, "nuke_cost");
-    data_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->nuke_cost));
-
-    // upgrades save
-    value = sj_object_get_value(save, "upgrades");
-    data_entry = sj_object_get_value(value, "shields_check");
-    data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->shields_check));
-
-    data_entry = sj_object_get_value(value, "more_scrap_check");
-    data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->more_scrap_check));
-
-    data_entry = sj_object_get_value(value, "missiles_check");
-    data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->missiles_check));
-
-    data_entry = sj_object_get_value(value, "single_shot_check");
-    data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->single_shot_check));
-
-    data_entry = sj_object_get_value(value, "charge_shot_check");
-    data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->charge_shot_check));
-
-    data_entry = sj_object_get_value(value, "nuke_check");
-    data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->nuke_check));
-
-    data_entry = sj_object_get_value(value, "shields_count");
-    data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->shields_count));
-
-    data_entry = sj_object_get_value(value, "more_scrap_count");
-    data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->more_scrap_count));
-
-    data_entry = sj_object_get_value(value, "missiles_count");
-    data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->missiles_count));
-    
-    data_entry = sj_object_get_value(value, "single_shot_count");
-    data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->single_shot_count));
-
-    data_entry = sj_object_get_value(value, "charge_shot_count");
-    data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->charge_shot_count));
-
-    sj_save(save, "def/player_save.json");
-    sj_free(save);
-}
-*/
-
-void new_wave_level_reset() {
+void new_wave_level_reset(){
     level->last_powerup = 0;
+    level->enemy_count = 0;
     level->enemy_killed_total += level->enemy_killed;
     level->enemy_killed = 0;
-    level->enemy_count = 0;
     level->emper_flag = 0;
     level->fencer_flag = 0;
 
-    get_player_data()->currMode = SINGLE_SHOT;
-    get_player_data()->next_shot = CURRENT_TIME + 1;
+    level->wave_count++;
+    level->wave_end = 1;
 }
 
 void full_level_reset() {
-    level->enemy_killed_total;
     level->last_powerup = 0;
     level->enemy_count = 0;
     level->enemy_killed = 0;
+    level->enemy_killed_total = 0;
     level->emper_flag = 0;
     level->fencer_flag = 0;
 
     level->wave_count = 1;
+    level->wave_end = 0;
 }
 
 /*
@@ -247,24 +125,15 @@ void level_update() {
     WorldData* world;
 
     //level_visuals();
-    
+
     world = get_world_data();
 
-    if (level->enemy_killed < 0)
-        level->enemy_killed = 0;
-
-    if (level->enemy_killed == 1) {
+    if (level->enemy_killed == 5) {
         enemy_reset();
         new_wave_level_reset();
+        player_upgrade();
+        shop_reset();
 
-        level->wave_count++;
-        level->wave_end = 1;
-        
-        world->enemy_start = 0;
-
-
-        // play victory theme
-        gfc_sound_play(get_sound_data()->victory, 0, 0.3f, -1, -1);
         world->current_state = WAVE_COMPLETED;
     }
 }

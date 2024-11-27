@@ -25,11 +25,11 @@ typedef struct {
     Texture*    charge_shot;
     Texture*    damaged;
     Texture*    dead;
-
     Model*      single_proj;
     Model*      charge_proj;
     Model*      super_nuke;
     Model*      reticle;
+    // 9
 
     Model*      peas;
     Model*      peas_shot;
@@ -40,11 +40,14 @@ typedef struct {
     Model*      emper;
     Texture*    emper_spawn;
     Model*      bomber;
+    // 9
 
     Model*      scrap;
     Model*      health_pickup;
     Model*      happy_trigger;
     Model*      invincibility;
+    // 4
+
 }Entity_Models;
 
 typedef struct Entity_S{
@@ -80,7 +83,9 @@ void entity_system_init(Uint32 maxEnts);
  */
 void entity_system_close();
 
-void entity_assets_init();
+void player_assets_init();
+void enemy_assets_init();
+void item_assets_init();
 
 void entity_assets_close();
 

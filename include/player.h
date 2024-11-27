@@ -109,7 +109,7 @@ void player_die();
 void player_death();
 void player_respawn();
 void player_quit();
-void player_upgrade(PlayerData* data);
+void player_upgrade();
 Entity* get_player();
 PlayerData* get_player_data();
 GFC_Primitive get_player_hurtbox();

@@ -15,7 +15,7 @@
 typedef struct {
 	// game stats
 	float			last_powerup;		// time stamp of last active powerup
-	Uint32			enemy_count;
+	Uint8			enemy_count;
 	int				enemy_killed;
 	Uint32			enemy_killed_total;
 	Uint8			emper_flag;
@@ -23,6 +23,7 @@ typedef struct {
 	GFC_Vector3D	fencer_spawn;		// position of fencer attack region
 	Uint32			wave_count;
 	Uint8			wave_end;
+	float			game_start;
 
 	// level visuals
 	Uint8			level_type;

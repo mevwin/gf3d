@@ -78,15 +78,9 @@ void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
 
 void item_think(Entity* self) {
     ItemData* data; 
-    LevelData* level;
 
     data = self->data;
     if (!data) return;
-
-    level = get_level_data();
-
-    if (level->wave_end) 
-        item_activate(self, data->type);
 
     if (!data->active) return;
 
@@ -114,6 +108,13 @@ void item_update(Entity* self) {
     level = get_level_data();
 
     if (!data->active) return;
+
+    if (level->wave_end) {
+        if (data->type == SCRAP || data->type == HEALTH_PICKUP)
+            item_activate(self, data->type);
+        else
+            entity_free(self);
+    }
 
     if (self->position.y > 90.0f || player_data->player_dead)
         entity_free(self);

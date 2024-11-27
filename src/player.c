@@ -35,8 +35,8 @@ Entity* player_spawn() {
     if (!data) return NULL;
 
     player_data_init(data);
-    //if (get_world_data()->continue_from_save)
-        //player_data_init_from_save(data);
+    if (get_world_data()->continue_from_save)
+        player_data_init_from_save(data);
         
     position = PLAYER_SPAWN;
     self->position = position;
@@ -133,7 +133,7 @@ void player_data_init_from_save(PlayerData* data) {
 
     player_data_init(data);
 
-    save = sj_load("def/player_save.json");
+    save = sj_load("def/player_save.def");
     data_entry = sj_object_get_value(save, "player_data");
 
     sj_object_get_value_as_float(data_entry, "maxHealth", &data->maxHealth);
@@ -250,7 +250,7 @@ void player_update(Entity* self) {
 
         // CHARGE_SHOT texture
     if (time >= data->next_charged_shot && 
-        time < data->next_charged_shot + 0.03f && 
+        time < (data->next_charged_shot + 0.03f) &&
         !data->took_damage &&
         !data->vortex_flag &&
         !data->currMode != MISSILE
@@ -432,7 +432,10 @@ void player_quit() {
     entity_free(self);
 }
 
-void player_upgrade( PlayerData* data) {
+void player_upgrade() {
+    PlayerData* data;
+
+    data = self->data;
     if (!data) return;
 
     data->currHealth += data->maxShield;

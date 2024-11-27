@@ -3,6 +3,14 @@
 
 #include "gfc_shape.h"
 #include "gf2d_sprite.h"
+#include "gf3d_vgraphics.h"
+
+#define RES (gf3d_vgraphics_get_resolution())
+#define UPGRADE_BLOCK_WIDTH 200.0f
+#define UPGRADE_BLOCK_HEIGHT 100.0f
+#define UPGRADE_BLOCK(x, y) (gfc_rect(x, y, UPGRADE_BLOCK_WIDTH, UPGRADE_BLOCK_HEIGHT))
+//#define MENU_BLOCK(x, y) (gfc_rect(x, y, UPGRADE_BLOCK_WIDTH, UPGRADE_BLOCK_HEIGHT))
+#define TEXT_LOCATION (gfc_vector2d((RES.x / 2.0f) - 90.0f, (RES.y / 2.0) - 200.0f))
 
 /*
 typedef enum {
@@ -96,10 +104,8 @@ void shop_reset();
 void player_hud(void* d);
 
 void start_menu();
-void start_menu_think();
 
 void pause_menu();
-void pause_menu_think(void* w);
 
 void wave_start();
 void wave_completed();

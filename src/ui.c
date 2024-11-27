@@ -1,5 +1,4 @@
 #include "simple_logger.h"
-#include "gf3d_vgraphics.h"
 #include "gfc_audio.h"
 #include "gf2d_font.h"
 #include "gf2d_draw.h"
@@ -10,13 +9,6 @@
 #include "world.h"
 #include "level.h"
 #include "item.h"
-
-#define RES (gf3d_vgraphics_get_resolution())
-#define UPGRADE_BLOCK_WIDTH 200.0f
-#define UPGRADE_BLOCK_HEIGHT 100.0f
-#define UPGRADE_BLOCK(x, y) (gfc_rect(x, y, UPGRADE_BLOCK_WIDTH, UPGRADE_BLOCK_HEIGHT))
-//#define MENU_BLOCK(x, y) (gfc_rect(x, y, UPGRADE_BLOCK_WIDTH, UPGRADE_BLOCK_HEIGHT))
-#define TEXT_LOCATION (gfc_vector2d((RES.x / 2.0f) - 90.0f, (RES.y / 2.0) - 200.0f))
 
 static UIData* UI_data;
 
@@ -252,7 +244,7 @@ void shop_think() {
     if (!data) return;
 
     level = get_level_data();
-    if (!level->wave_end) return; // only allow 
+    if (!level->wave_end) return; // only allow buying during the end of the wave
 
     if (gf2d_mouse_button_released(0)) {
         if (gf2d_mouse_in_rect(UI_data->shields_block)) {
@@ -510,35 +502,6 @@ void start_menu() {
     gf2d_font_draw_text_wrap_tag("QUIT", FT_H2, GFC_COLOR_WHITE, UI_data->s_quit_block);
 }
 
-void start_menu_think() {
-    WorldData* world;
-
-    world = get_world_data();
-    if (gf2d_mouse_button_released(0)) {
-        if (gf2d_mouse_in_rect(UI_data->new_start_block)) {
-            gfc_sound_play( get_sound_data()->confirm, 0, 1, -1, -1 );
-            
-            if (!world->entity_assets_made)
-                entity_assets_init();
-            //if (!world->level_assets_made) {
-                //level_init();
-           // }
-            
-            if (world->entity_assets_made) {
-                gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), GFC_COLOR_BLACK);
-                world->enemy_start = 0;
-                world->player_spawned = 1;
-            }
-        }
-        else if (gf2d_mouse_in_rect(UI_data->continue_block)) {
-            // TODO: add continue here
-        }
-        else if (gf2d_mouse_in_rect(UI_data->s_quit_block)) {
-            world->_done = 1;
-        } 
-    }
-}
-
 void pause_menu() {
     gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(65, 65, 65, 0.4f));
 
@@ -549,28 +512,6 @@ void pause_menu() {
 
     gf2d_draw_rect_filled(UI_data->quit_block, GFC_COLOR_GREY);
     gf2d_font_draw_text_wrap_tag("QUIT", FT_H2, GFC_COLOR_WHITE, UI_data->quit_block);
-}
-
-void pause_menu_think(void* w) {
-    WorldData* world;
-
-    world = (WorldData*) w;
-    if (!world) return;
-
-    if (gf2d_mouse_button_released(0)) {
-        if (gf2d_mouse_in_rect(UI_data->resume_block)) {
-            world->current_state = IN_GAME;
-            gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
-        }
-        else if (gf2d_mouse_in_rect(UI_data->quit_block)) {
-            full_level_reset();
-            entity_despawn_all();
-            entity_assets_close();
-            world->current_state = START_MENU;
-            world->player_spawned = 0;
-            gfc_sound_play(get_sound_data()->cancel, 0, 1, -1, -1);
-        }
-    }
 }
 
 void wave_start() {
@@ -698,5 +639,7 @@ void enemy_hud_all() {
 }
 
 UIData* get_UI_data() {
+    if (!UI_data) return NULL;
+
     return UI_data;
 }

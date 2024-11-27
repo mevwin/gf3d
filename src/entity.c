@@ -32,7 +32,7 @@ void entity_system_init(Uint32 maxEnts){
         return;
     }
     entity_manager.entityMax = maxEnts; // at this point, big ass entity list is made
-    
+
     models = gfc_allocate_array(sizeof(Entity_Models), 1);
     if (!models) {
         slog("failed to allocate resources for models struct");
@@ -53,39 +53,201 @@ void entity_system_close(){
     free(entity_manager.entity_list);
     memset(&entity_manager, 0, sizeof(EntityManager));
 
+    entity_assets_close();
     free(models);
 }
 
-void entity_assets_init() {
-    // initialize all entity models and textures
+// initialize all entity models and textures
+void player_assets_init(){
+    int i;
+
+    i = 0;
+
+    // player
     models->player = gf3d_model_load("models/player_ship/player_ship_single.model");
+    if (!models->player)
+        slog("no player model");
+    else
+        i++;
+
     models->single_shot = gf3d_texture_load("models/player_ship/color_77.png");
+    if (!models->single_shot)
+        slog("no player single shot texture");
+    else
+        i++;
+
+
     models->charge_shot = gf3d_texture_load("models/player_ship/color_44.png");
+    if (!models->charge_shot)
+        slog("no player charge shot texture");
+    else
+        i++;
+
     models->damaged = gf3d_texture_load("models/player_ship/color_EE.png");
+    if (!models->damaged)
+        slog("no player damaged texture");
+    else
+        i++;
+
     models->dead = gf3d_texture_load("models/player_ship/color_AA.png");
+    if (!models->dead)
+        slog("no player dead texture");
+    else
+        i++;
+
     models->single_proj = gf3d_model_load("models/projectiles/single_shot.model");
+    if (!models->single_proj)
+        slog("no player single shot model");
+    else
+        i++;
+
     models->charge_proj = gf3d_model_load("models/projectiles/charge_shot.model");
+    if (!models->charge_proj)
+        slog("no player charge shot model");
+    else
+        i++;
+
     models->super_nuke = gf3d_model_load("models/projectiles/super_nuke.model");
+    if (!models->super_nuke)
+        slog("no player super nuke model");
+    else
+        i++;
+
     models->reticle = gf3d_model_load("models/reticle/reticle.model");
+    if (!models->reticle)
+        slog("no player reticle model");
+    else
+        i++;
 
+    if (i == 9)
+        get_world_data()->player_assets_made = 1;
+    else {
+        slog("not every player asset has been init");
+        free(models);
+        get_world_data()->_done = 1;
+        return;
+    }
+}
+
+void enemy_assets_init() {
+    Uint8 i;
+
+    i = 0;
+
+    // enemy
     models->peas = gf3d_model_load("models/enemy/peas.model");
-    models->peas_shot = gf3d_model_load("models/projectiles/single_shot_enem.model");
-    models->chargers = gf3d_model_load("models/enemy/chargers.model");
-    models->chargers_shot = gf3d_model_load("models/projectiles/charge_shot_enem.model");
-    models->fencer = gf3d_model_load("models/enemy/fencer.model");
-    models->fencer_attack = gf3d_model_load("models/projectiles/fencer_attack.model");
-    models->emper = gf3d_model_load("models/enemy/emper.model");
-    models->emper_spawn = gf3d_texture_load("models/enemy/color_55.png");
-    models->bomber = gf3d_model_load("models/enemy/bomber.model");
+    if (!models->peas)
+        slog("no enemy peas model");
+    else
+        i++;
 
+    models->peas_shot = gf3d_model_load("models/projectiles/single_shot_enem.model");
+    if (!models->peas_shot)
+        slog("no enemy peas shot model");
+    else
+        i++;
+
+    models->chargers = gf3d_model_load("models/enemy/chargers.model");
+    if (!models->chargers)
+        slog("no enemy chargers model");
+    else
+        i++;
+
+    models->chargers_shot = gf3d_model_load("models/projectiles/charge_shot_enem.model");
+    if (!models->chargers_shot)
+        slog("no enemy chargers shot model");
+    else
+        i++;
+
+    models->fencer = gf3d_model_load("models/enemy/fencer.model");
+    if (!models->fencer)
+        slog("no enemy fencer model");
+    else
+        i++;
+
+    models->fencer_attack = gf3d_model_load("models/projectiles/fencer_attack.model");
+    if (!models->fencer_attack)
+        slog("no enemy fencer attack model");
+    else
+        i++;
+
+    models->emper = gf3d_model_load("models/enemy/emper.model");
+    if (!models->emper)
+        slog("no enemy emper model");
+    else
+        i++;
+
+    models->emper_spawn = gf3d_texture_load("models/enemy/color_55.png");
+    if (!models->emper_spawn)
+        slog("no enemy emper spawn texture");
+    else
+        i++;
+
+    models->bomber = gf3d_model_load("models/enemy/bomber.model");
+    if (!models->bomber)
+        slog("no enemy bomber model");
+    else
+        i++;
+
+    if (i == 9)
+        get_world_data()->enemy_assets_made = 1;
+    else {
+        slog("not every enemy asset has been init");
+        free(models);
+        get_world_data()->_done = 1;
+        return;
+    }
+}
+
+void item_assets_init() {
+    Uint8 i;
+
+    i = 0;
+
+    // item
     models->scrap = gf3d_model_load("models/item/enemy_scrap.model");
+    if (!models->scrap)
+        slog("no item scrap model");
+    else
+        i++;
+    
     models->health_pickup = gf3d_model_load("models/item/health_pickup.model");
+    if (!models->health_pickup)
+        slog("no item health pickup model");
+    else
+        i++;
+    
     models->happy_trigger = gf3d_model_load("models/item/happy_trigger.model");
+    if (!models->happy_trigger)
+        slog("no item happy trigger model");
+    else
+        i++;
+    
     models->invincibility = gf3d_model_load("models/item/invincibility.model");
-    get_world_data()->entity_assets_made = 1;
+    if (!models->invincibility)
+        slog("no item invicibility model");
+    else
+        i++;
+    
+    if (i == 4)
+        get_world_data()->item_assets_made = 1;
+    else {
+        slog("not every item asset has been init");
+        free(models);
+        get_world_data()->_done = 1;
+        return;
+    }
 }
 
 void entity_assets_close() {
+    WorldData* world;
+
+    world = get_world_data();
+
+    world->player_assets_made = 0;
+    world->enemy_assets_made = 0;
+    world->item_assets_made = 0;
+
     gf3d_model_free(models->player);
     gf3d_texture_free(models->single_shot);
     gf3d_texture_free(models->charge_shot);
@@ -111,7 +273,6 @@ void entity_assets_close() {
     gf3d_model_free(models->happy_trigger);
     gf3d_model_free(models->invincibility);
 
-    get_world_data()->entity_assets_made = 0;
 }
 
 void entity_draw(Entity *self){
@@ -307,7 +468,7 @@ void entity_reset() {
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
-        if (target->entity_type == PLAYER || target->entity_type == ENEMY || target->entity_type == ASTEROID)
+        if (target->entity_type == RETICLE || target->entity_type == PLAYER || target->entity_type == ENEMY || target->entity_type == ASTEROID)
             continue;
 
         entity_free(target);

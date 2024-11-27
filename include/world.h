@@ -15,6 +15,7 @@
 
 typedef enum GameState_E{
 	START_MENU,
+	LOADING_SCREEN,
 	PAUSE_MENU,
 	SHOP,
 	WAVE_START,
@@ -26,12 +27,15 @@ typedef enum GameState_E{
 }GameState;
 
 typedef struct WorldData_S {
-	// world state checks
-	Uint8			entity_assets_made;
+	// world state 
+	Uint8			player_assets_made;
+	Uint8			enemy_assets_made;
+	Uint8			item_assets_made;
 	Uint8			level_assets_made;
 	Uint8			player_spawned;
 	Uint8			enemy_start;
 	Uint8			_done;
+	Uint8			continue_from_save;
 	GameState		current_state;
 	GameState		last_state;
 

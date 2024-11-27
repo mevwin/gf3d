@@ -330,11 +330,12 @@ void enemy_free(Entity* self) {
 	else if (data->enemy_type == EMPERS)
 		level->emper_flag = 0;
 
+	if (data->enemy_dead)
+		level->enemy_killed++;
+
 	free(data);
 	level->enemy_count--;
 
-	if (data->enemy_dead)
-		level->enemy_killed++;
 	//slog("enemy_killed: %d", enemy_killed);
 }
 

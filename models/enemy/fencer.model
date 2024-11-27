@@ -1,6 +1,6 @@
 {
   "model": {
-    "obj": "models/enemy/fencer.obj",
+    "obj": "models/enemy/enemy_ship.obj",
     "texture": "models/enemy/MasterPaletteIMG.png"
   }
 }
