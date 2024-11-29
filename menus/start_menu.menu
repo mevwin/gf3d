@@ -1,0 +1,15 @@
+{
+    "option_pos":
+    {
+        "block_x": 492, 
+        "new_game_y": 233,
+        "continue_y": 384,
+        "previous_y": 535,
+        "quit_y": 688
+    },
+    "menu_block":
+    {
+        "width": 300,
+        "height": 120
+    }
+}

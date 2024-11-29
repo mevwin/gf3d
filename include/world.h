@@ -47,13 +47,7 @@ typedef struct WorldData_S {
 
 void world_init();
 void world_close();
-
-/**
-* @brief check inputs that access menus
-*/
 void world_update();
-void game_data_init_from_save();
-void game_save();
 WorldData* get_world_data();
 
 #endif

@@ -1,3 +1,4 @@
+#include "simple_logger.h"
 #include "gf2d_mouse.h"
 #include "gfc_input.h"
 #include "gfc_audio.h"
@@ -13,6 +14,8 @@ static Entity* player;
 void world_check_for_menu_input();
 void start_menu_input_check(UIData* ui_data);
 void pause_menu_input_check(UIData* ui_data);
+void game_data_init_from_save();
+void game_save();
 
 void world_init() {
 	world = gfc_allocate_array(sizeof(WorldData), 1);
@@ -158,6 +161,9 @@ void start_menu_input_check(UIData* ui_data) {
 				world->player_spawned = 1;
 
 			}
+		}
+		else if (gf2d_mouse_in_rect(ui_data->previous_block)){
+			//TODO: add this deliverable
 		}
 		else if (gf2d_mouse_in_rect(ui_data->s_quit_block)) {
 			world->_done = 1;

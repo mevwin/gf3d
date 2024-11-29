@@ -388,9 +388,7 @@ void bomber_die(Entity* self, EnemyData* data, GFC_Vector3D position){
 	self->hurtbox.s.b = ENEMY_HURTBOX;
 	self->no_draw = 1;
 
-	player_pos.x = data->player_pos->x;
-	player_pos.y = data->player_pos->y;
-	player_pos.z = data->player_pos->z;
+	gfc_vector3d_copy_ptr(player_pos, data->player_pos);
 	gfc_vector3d_copy(spawn_pos, position);
 
 	spawn_pos.x -= 5.0f;

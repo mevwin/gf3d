@@ -1,0 +1,18 @@
+{
+    "bar_start_positions":
+    {
+        "bar_x": 138, 
+        "health_y": 20,
+        "scrap_y": 56,
+        "vortex_y": 94,
+        "level_progress_x": 0,
+        "level_progress_y": 850
+    },
+    "bar_dimensions":
+    {
+        "player_bars_w": 344,
+        "player_bars_h": 26,
+        "level_progress_w": 1280,
+        "level_progress_h": 50
+    }
+}

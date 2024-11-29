@@ -2,6 +2,7 @@
 #include "gfc_audio.h"
 #include "gf2d_font.h"
 #include "gf2d_draw.h"
+#include "simple_json_array.h"
 #include "gf2d_mouse.h"
 #include "ui.h"
 #include "player.h"
@@ -13,7 +14,8 @@
 static UIData* UI_data;
 
 void UI_init() {
-    float x_start, y_start;
+    SJson* position_data, *dimen_data;
+    float x_start, y_start, width, height;
 
     UI_data = gfc_allocate_array(sizeof(UIData), 1);
     if (!UI_data) return;
@@ -58,25 +60,39 @@ void UI_init() {
     UI_data->nuke_block = UPGRADE_BLOCK(x_start, y_start);
 
     /*player UI*/
+    UI_data->player_hud_data = sj_load("menus/player_hud.menu");
     UI_data->player_hud = gf2d_sprite_load_image("images/UI/player_hud/player_hud.png");
-    UI_data->player_health = gf2d_sprite_load_image("images/UI/health.png");
-    UI_data->player_shield = gf2d_sprite_load_image("images/UI/shield.png");
-    UI_data->player_scrap = gf2d_sprite_load_image("images/UI/scrap.png");
-    UI_data->player_vortex = gf2d_sprite_load_image("images/UI/vortex.png");
+    UI_data->player_health = gf2d_sprite_load_image("images/UI/player_hud/player_health.png");
+    UI_data->player_shield = gf2d_sprite_load_image("images/UI/player_hud/player_shield.png");
+    UI_data->player_scrap = gf2d_sprite_load_image("images/UI/player_hud/player_scrap.png");
+    UI_data->player_vortex = gf2d_sprite_load_image("images/UI/player_hud/player_vortex.png");
+
     UI_data->progress_bar = gf2d_sprite_load_image("images/UI/progress.png");
     UI_data->enemy_health = gf2d_sprite_load_image("images/UI/enemy_health.png");
     UI_data->enemy_health_back = gf2d_sprite_load_image("images/UI/enemy_health_back.png");
 
     /*start menu*/
-    x_start = (RES.x / 2.0f) - 100.0f;
-    y_start = (RES.y / 2.0f) - 60.0f;
-    UI_data->new_start_block = UPGRADE_BLOCK(x_start, y_start);
+    UI_data->start_menu = gf2d_sprite_load_image("images/UI/start_menu/start_menu.png");
+    UI_data->start_menu_data = sj_load("menus/start_menu.menu");
 
-    y_start += 130.0;
-    UI_data->continue_block = UPGRADE_BLOCK(x_start, y_start);
+    position_data = sj_object_get_value(UI_data->start_menu_data, "option_pos");
+    sj_object_get_value_as_float(position_data, "block_x", &x_start);
 
-    y_start += 130.0;
-    UI_data->s_quit_block = UPGRADE_BLOCK(x_start, y_start);
+    dimen_data = sj_object_get_value(UI_data->start_menu_data, "menu_block");
+    sj_object_get_value_as_float(dimen_data, "width", &width);
+    sj_object_get_value_as_float(dimen_data, "height", &height);
+
+    sj_object_get_value_as_float(position_data, "new_game_y", &y_start);
+    UI_data->new_start_block = gfc_rect(x_start, y_start, width, height);
+
+    sj_object_get_value_as_float(position_data, "continue_y", &y_start);
+    UI_data->continue_block = gfc_rect(x_start, y_start, width, height);
+
+    sj_object_get_value_as_float(position_data, "previous_y", &y_start);
+    UI_data->previous_block = gfc_rect(x_start, y_start, width, height);
+
+    sj_object_get_value_as_float(position_data, "quit_y", &y_start);
+    UI_data->s_quit_block = gfc_rect(x_start, y_start, width, height);
 
     /*player death screen / pause menu*/
     x_start = (RES.x / 2.0f) - 100.0f;
@@ -89,13 +105,14 @@ void UI_init() {
     UI_data->nuke_alpha = 0.0f;
     UI_data->emper_alpha = 0.0f;
 
-    UI_data->audio_flag = 1;
-
     atexit(UI_free);
 }
 
 void UI_free() {
+    sj_free(UI_data->player_hud_data);
+    sj_free(UI_data->start_menu_data);
     gf2d_sprite_free(UI_data->player_hud);
+    gf2d_sprite_free(UI_data->start_menu);
     gf2d_sprite_free(UI_data->player_health);
     gf2d_sprite_free(UI_data->player_shield);
     gf2d_sprite_free(UI_data->player_scrap);
@@ -366,9 +383,10 @@ void shop_reset() {
 
 void player_hud(void* d) {
     GFC_Vector2D bar_position, scale;
-    float start, scrap, maxscrap, nuke_cost;
+    SJson* position_data, *dimen_data;
+    float scrap, maxscrap, nuke_cost, x, y, bar_length;
     float currHealth, currShield, currScrap, currVortex, currNuke;
-    float enemy_kill, currEnem;
+    //float enemy_kill, currEnem;
     LevelData* level;
     PlayerData* data;
 
@@ -377,7 +395,7 @@ void player_hud(void* d) {
 
     level = get_level_data();
 
-    // progress calculations
+    // progress calculations (calculates percentages of each bar)
     currHealth = (float) (data->currHealth / data->total_health_bar);
     currShield = (float) (data->currShield / data->total_health_bar);
 
@@ -394,41 +412,55 @@ void player_hud(void* d) {
        // currEnem = 0;
 
     gf2d_sprite_draw_image(UI_data->player_hud, gfc_vector2d(0, 0));
+    position_data = sj_object_get_value(UI_data->player_hud_data, "bar_start_positions");
+    dimen_data = sj_object_get_value(UI_data->player_hud_data, "bar_dimensions");
+
+    sj_object_get_value_as_float(position_data, "bar_x", &x);
 
     // health bar draws
-    bar_position = gfc_vector2d(134, 17);
-
         // current health
-    scale = gfc_vector2d(currHealth, 0.96f);
-    gf2d_sprite_draw(UI_data->player_health, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
+    sj_object_get_value_as_float(position_data, "health_y", &y);
+    bar_position = gfc_vector2d(x, y);
+
+
+    scale = gfc_vector2d(currHealth, 1.0f);
+    gf2d_sprite_draw(UI_data->player_health, bar_position, &scale, 
+                    NULL, NULL, NULL, NULL, NULL, NULL);
 
         // current shield
+    sj_object_get_value_as_float(dimen_data, "player_bars_w", &bar_length);
+
     if (currShield > 0) {
-        bar_position.x += (UI_data->player_health->frameWidth * currHealth);
-        scale = gfc_vector2d(currShield, 1);
-        gf2d_sprite_draw(UI_data->player_shield, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
+        bar_position.x += (bar_length * currHealth);
+        scale = gfc_vector2d(currShield, 1.0f);
+        gf2d_sprite_draw(UI_data->player_shield, bar_position, &scale, 
+                    NULL, NULL, NULL, NULL, NULL, NULL);
     }
 
     // scrap bar draws
         // current scrap
-    bar_position = gfc_vector2d(134, 52);
-    scale = gfc_vector2d(currScrap, 0.96f);
-    gf2d_sprite_draw(UI_data->player_scrap, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
+    sj_object_get_value_as_float(position_data, "scrap_y", &y);
+    bar_position = gfc_vector2d(x, y);
+    scale = gfc_vector2d(currScrap, 1.0f);
+    gf2d_sprite_draw(UI_data->player_scrap, bar_position, &scale, 
+                    NULL, NULL, NULL, NULL, NULL, NULL);
 
         // super nuke cost draw
     if (data->currScrap >= data->maxScrap) {
         nuke_cost = (float) data->nuke_cost;
-        currNuke = (float) (UI_data->player_scrap->frameWidth * (data->nuke_cost / maxscrap));
+        currNuke = (float) (bar_length * (data->nuke_cost / maxscrap));
         gf2d_draw_rect_filled(
             gfc_rect(bar_position.x, bar_position.y, currNuke, UI_data->player_scrap->frameHeight),
             gfc_color(255, 0, 0, 0.3f));
     }
 
     // vortex bar draws
-    bar_position = gfc_vector2d(134, 88);
-    scale = gfc_vector2d(currVortex, 0.96f);
+    sj_object_get_value_as_float(position_data, "vortex_y", &y);
+    bar_position = gfc_vector2d(x, y);
+    scale = gfc_vector2d(currVortex, 1.0f);
 
-    gf2d_sprite_draw(UI_data->player_vortex, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
+    gf2d_sprite_draw(UI_data->player_vortex, bar_position, &scale, 
+                    NULL, NULL, NULL, NULL, NULL, NULL);
 
     // wave progress bar draws
     /*
@@ -486,20 +518,7 @@ void player_hud(void* d) {
 }
 
 void start_menu() {
-    GFC_Vector2D game_start_tag;
-
-    game_start_tag = TEXT_LOCATION;
-    gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(65, 65, 65, 0.4f));
-    gf2d_font_draw_line_tag("GAME START", FT_H1, GFC_COLOR_WHITE, game_start_tag);
-
-    gf2d_draw_rect_filled(UI_data->new_start_block, GFC_COLOR_GREY);
-    gf2d_font_draw_text_wrap_tag("NEW START", FT_H2, GFC_COLOR_WHITE, UI_data->new_start_block);
-
-    gf2d_draw_rect_filled(UI_data->continue_block, GFC_COLOR_GREY);
-    gf2d_font_draw_text_wrap_tag("CONTINUE", FT_H2, GFC_COLOR_WHITE, UI_data->continue_block);
-
-    gf2d_draw_rect_filled(UI_data->s_quit_block, GFC_COLOR_GREY);
-    gf2d_font_draw_text_wrap_tag("QUIT", FT_H2, GFC_COLOR_WHITE, UI_data->s_quit_block);
+    gf2d_sprite_draw_image(UI_data->start_menu, gfc_vector2d(0, 0));
 }
 
 void pause_menu() {

@@ -62,22 +62,26 @@ typedef struct UIData_S{
     Uint8           charge_shot_count;
 
     /* player UI */
+    SJson*          player_hud_data;
     Sprite*         player_hud;
     Sprite*         player_health;
     Sprite*         player_shield;
     Sprite*         player_scrap;
     Sprite*         player_vortex;
     Sprite*         progress_bar;
+
     Sprite*         enemy_health;
     Sprite*         enemy_health_back;
 
     float           nuke_alpha;
     float           emper_alpha;
-    Uint8           audio_flag;
 
     /*start menu*/
+    SJson*          start_menu_data;
+    Sprite*         start_menu;
     GFC_Rect        new_start_block;
     GFC_Rect        continue_block;
+    GFC_Rect        previous_block;
     GFC_Rect        s_quit_block;
 
     /*player death screen / pause menu*/
