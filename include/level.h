@@ -11,13 +11,25 @@
 * Notes here (TODO)
 */
 
+typedef enum ObjType_E {
+	KILL_ENEMY,
+	SURVIVE,
+	COLLECT,
+	BOSS
+}ObjType;
+
+typedef enum LevelType_E {
+	ASTEROID_BELT,
+	LAVA_WORLD,
+	ICE_CAVERN,
+	BLACK_HOLE
+}LevelType;
 
 typedef struct {
 	// game stats
 	float			last_powerup;		// time stamp of last active powerup
-	Uint8			enemy_count;
-	int				enemy_killed;
-	Uint32			enemy_killed_total;
+	Uint8			enemy_count;		// enemies currently on-screen
+
 	Uint8			emper_flag;
 	Uint8			fencer_flag;
 	GFC_Vector3D	fencer_spawn;		// position of fencer attack region
@@ -25,8 +37,24 @@ typedef struct {
 	Uint8			wave_end;
 	float			game_start;
 
-	// level visuals
-	Uint8			level_type;
+	// level/objective type
+	ObjType			obj_type;
+	LevelType		level_type;
+
+		// objective 1: kill x enemies
+	int				enemy_killed;
+	int				enemy_goal;
+	Uint32			enemy_killed_total;
+
+		// objective 2: survive for x minutes
+	float			survival_time;
+	float			goal_timestamp;
+
+		// objective 3: collect x items
+	// TODO
+
+		// objective 4: mini-boss
+	// TODO
 
 }LevelData;
 

@@ -16,12 +16,15 @@ void level_init() {
     level->last_powerup = 0;
     level->enemy_count = 0;
     level->enemy_killed = 0;
+    level->enemy_goal = 5;
     level->enemy_killed_total = 0;
     level->emper_flag = 0;
     level->fencer_flag = 0;
-    
+
     level->wave_end = 0;
     level->wave_count = 1;
+
+    level->obj_type = KILL_ENEMY;
 
     //level->asteroid = gf3d_model_load("models/trench/asteroid.model");
     //level->asteroid_list = gfc_list_new_size(ASTEROID_MAX);
@@ -30,6 +33,10 @@ void level_init() {
     
     //get_world_data()->level_assets_made = 1;
     atexit(level_free);
+}
+
+void level_load() {
+
 }
 
 void new_wave_level_reset(){
@@ -127,14 +134,21 @@ void level_update() {
     //level_visuals();
 
     world = get_world_data();
+    
+    switch (level->obj_type) {
+        case KILL_ENEMY:
+            if (level->enemy_killed == level->enemy_goal) {
+                enemy_reset();
+                new_wave_level_reset();
+                player_upgrade();
+                shop_reset();
 
-    if (level->enemy_killed == 5) {
-        enemy_reset();
-        new_wave_level_reset();
-        player_upgrade();
-        shop_reset();
+                world->current_state = WAVE_COMPLETED;
+            }
+            break;
+        case SURVIVE:
 
-        world->current_state = WAVE_COMPLETED;
+            break;
     }
 }
 

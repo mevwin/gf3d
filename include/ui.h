@@ -54,7 +54,7 @@ typedef struct UIData_S{
     Uint8           charge_shot_max;
     Uint8           nuke_max; 
 
-        // player upgrade count
+    // player upgrade count (for "previous runs")
     Uint8           shields_count;
     Uint8           more_scrap_count;
     Uint8           missiles_count;
@@ -84,7 +84,9 @@ typedef struct UIData_S{
     GFC_Rect        previous_block;
     GFC_Rect        s_quit_block;
 
-    /*player death screen / pause menu*/
+    /*pause menu*/
+    SJson*          pause_menu_data;
+    Sprite*         pause_menu;
     GFC_Rect        resume_block;
     GFC_Rect        quit_block;
 }UIData;

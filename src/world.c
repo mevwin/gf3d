@@ -139,11 +139,13 @@ void start_menu_input_check(UIData* ui_data) {
 		if (gf2d_mouse_in_rect(ui_data->new_start_block)) {
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 
+			level_load();
 			player_assets_init();
 			world->current_state = LOADING_SCREEN;
 
 			if (world->player_assets_made) {
 				gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), GFC_COLOR_BLACK);
+			
 				world->enemy_start = 0;
 				world->player_spawned = 1;	
 			}
@@ -151,15 +153,16 @@ void start_menu_input_check(UIData* ui_data) {
 		else if (gf2d_mouse_in_rect(ui_data->continue_block)) {
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 
+			level_load();
 			player_assets_init();
 			world->current_state = LOADING_SCREEN;
 
 			if (world->player_assets_made) {
 				gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), GFC_COLOR_BLACK);
+				
 				world->enemy_start = 0;
 				world->continue_from_save = 1;
 				world->player_spawned = 1;
-
 			}
 		}
 		else if (gf2d_mouse_in_rect(ui_data->previous_block)){

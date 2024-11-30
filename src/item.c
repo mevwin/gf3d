@@ -109,13 +109,6 @@ void item_update(Entity* self) {
 
     if (!data->active) return;
 
-    if (level->wave_end) {
-        if (data->type == SCRAP || data->type == HEALTH_PICKUP)
-            item_activate(self, data->type);
-        else
-            entity_free(self);
-    }
-
     if (self->position.y > 90.0f || player_data->player_dead)
         entity_free(self);
 

@@ -11,7 +11,7 @@
     "bar_dimensions":
     {
         "player_bars_w": 344,
-        "player_bars_h": 26,
+        "player_bars_h": 25,
         "level_progress_w": 1280,
         "level_progress_h": 50
     }

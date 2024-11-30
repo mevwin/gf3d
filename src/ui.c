@@ -2,7 +2,6 @@
 #include "gfc_audio.h"
 #include "gf2d_font.h"
 #include "gf2d_draw.h"
-#include "simple_json_array.h"
 #include "gf2d_mouse.h"
 #include "ui.h"
 #include "player.h"
@@ -62,6 +61,7 @@ void UI_init() {
     /*player UI*/
     UI_data->player_hud_data = sj_load("menus/player_hud.menu");
     UI_data->player_hud = gf2d_sprite_load_image("images/UI/player_hud/player_hud.png");
+    
     UI_data->player_health = gf2d_sprite_load_image("images/UI/player_hud/player_health.png");
     UI_data->player_shield = gf2d_sprite_load_image("images/UI/player_hud/player_shield.png");
     UI_data->player_scrap = gf2d_sprite_load_image("images/UI/player_hud/player_scrap.png");
@@ -94,13 +94,25 @@ void UI_init() {
     sj_object_get_value_as_float(position_data, "quit_y", &y_start);
     UI_data->s_quit_block = gfc_rect(x_start, y_start, width, height);
 
-    /*player death screen / pause menu*/
-    x_start = (RES.x / 2.0f) - 100.0f;
-    y_start = (RES.y / 2.0f) - 60.0f;
-    UI_data->resume_block = UPGRADE_BLOCK(x_start, y_start);
+    /*pause menu*/
+    UI_data->pause_menu = gf2d_sprite_load_image("images/UI/pause_menu/pause_menu.png");
+    UI_data->pause_menu_data = sj_load("menus/pause_menu.menu");
 
-    y_start += 130.0f;
-    UI_data->quit_block = UPGRADE_BLOCK(x_start, y_start);
+        // menu blocks
+    position_data = sj_object_get_value(UI_data->pause_menu_data, "option_pos");
+    sj_object_get_value_as_float(position_data, "block_x", &x_start);
+
+    dimen_data = sj_object_get_value(UI_data->pause_menu_data, "menu_block");
+    sj_object_get_value_as_float(dimen_data, "width", &width);
+    sj_object_get_value_as_float(dimen_data, "height", &height);
+
+    sj_object_get_value_as_float(position_data, "resume_y", &y_start);
+    UI_data->resume_block = gfc_rect(x_start, y_start, width, height);
+
+    sj_object_get_value_as_float(position_data, "quit_y", &y_start);
+    UI_data->quit_block = gfc_rect(x_start, y_start, width, height);
+
+        // perks and item progress are calculated in pause_menu()
 
     UI_data->nuke_alpha = 0.0f;
     UI_data->emper_alpha = 0.0f;
@@ -111,8 +123,10 @@ void UI_init() {
 void UI_free() {
     sj_free(UI_data->player_hud_data);
     sj_free(UI_data->start_menu_data);
+    sj_free(UI_data->pause_menu_data);
     gf2d_sprite_free(UI_data->player_hud);
     gf2d_sprite_free(UI_data->start_menu);
+    gf2d_sprite_free(UI_data->pause_menu);
     gf2d_sprite_free(UI_data->player_health);
     gf2d_sprite_free(UI_data->player_shield);
     gf2d_sprite_free(UI_data->player_scrap);
@@ -522,15 +536,101 @@ void start_menu() {
 }
 
 void pause_menu() {
+    SJson* data_entry;
+    float x, y, width, height;
+    float progress, goal;
+    char buffer[50];
+    LevelData* level;
+    PlayerData* p_data;
+
+    level = get_level_data();
+    p_data = get_player_data();
+
     gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(65, 65, 65, 0.4f));
+    gf2d_sprite_draw_image(UI_data->pause_menu, gfc_vector2d(0, 0));
 
-    gf2d_font_draw_line_tag("GAME PAUSED", FT_H1, GFC_COLOR_WHITE, TEXT_LOCATION);
+    // progress bar draw
+    data_entry = sj_object_get_value(UI_data->pause_menu_data, "progress_bar");
+    sj_object_get_value_as_float(data_entry, "x_offset", &x);
+    sj_object_get_value_as_float(data_entry, "y_offset", &y);
+    sj_object_get_value_as_float(data_entry, "width", &width);
+    sj_object_get_value_as_float(data_entry, "height", &height);
 
-    gf2d_draw_rect_filled(UI_data->resume_block, GFC_COLOR_GREY);
-    gf2d_font_draw_text_wrap_tag("RESUME", FT_H2, GFC_COLOR_WHITE, UI_data->resume_block);
+        // check objective type
+    if (level->obj_type == KILL_ENEMY) {   
+        progress = (float) level->enemy_killed;
+        goal = (float) level->enemy_goal;
 
-    gf2d_draw_rect_filled(UI_data->quit_block, GFC_COLOR_GREY);
-    gf2d_font_draw_text_wrap_tag("QUIT", FT_H2, GFC_COLOR_WHITE, UI_data->quit_block);
+        width *= (progress / goal);
+        gf2d_draw_rect_filled(gfc_rect(x, y, width, height), GFC_COLOR_LIGHTBLUE);
+
+        sj_object_get_value_as_float(data_entry, "text_x_offset", &x);
+        sj_object_get_value_as_float(data_entry, "text_y_offset", &y);
+        sprintf(buffer, "Kill %i Enemies", level->enemy_goal);
+        gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, gfc_vector2d(x, y));
+ 
+    }
+
+    // upgrade progress draws
+    data_entry = sj_object_get_value(UI_data->pause_menu_data, "item_progress_bar");
+    sj_object_get_value_as_float(data_entry, "width", &width);
+    sj_object_get_value_as_float(data_entry, "height", &height);
+
+        // shields
+    sj_object_get_value_as_float(data_entry, "column_1", &x);
+    sj_object_get_value_as_float(data_entry, "row_1", &y);
+    progress = (float) UI_data->shields_check;
+    goal = (float) UI_data->shields_max;
+
+    width *= (progress / goal);
+    gf2d_draw_rect_filled(gfc_rect(x, y, width, height), GFC_COLOR_LIGHTBLUE);
+
+        // scrap up
+    sj_object_get_value_as_float(data_entry, "column_2", &x);
+    sj_object_get_value_as_float(data_entry, "row_1_b", &y);
+    progress = (float) UI_data->more_scrap_check;
+    goal = (float) UI_data->more_scrap_max;
+
+    width *= (progress / goal);
+    gf2d_draw_rect_filled(gfc_rect(x, y, width, height), GFC_COLOR_LIGHTBLUE);
+
+        // missiles up
+    sj_object_get_value_as_float(data_entry, "column_3", &x);
+    sj_object_get_value_as_float(data_entry, "row_1_b", &y);
+    progress = (float) UI_data->missiles_check;
+    goal = (float) UI_data->missiles_max;
+
+    width *= (progress / goal);
+    gf2d_draw_rect_filled(gfc_rect(x, y, width, height), GFC_COLOR_LIGHTBLUE);
+
+        // single shot dmg up
+    sj_object_get_value_as_float(data_entry, "column_1", &x);
+    sj_object_get_value_as_float(data_entry, "row_2", &y);
+    progress = (float) UI_data->single_shot_check;
+    goal = (float) UI_data->single_shot_max;
+
+    width *= (progress / goal);
+    gf2d_draw_rect_filled(gfc_rect(x, y, width, height), GFC_COLOR_LIGHTBLUE);
+
+        // charge shot dmg up
+    sj_object_get_value_as_float(data_entry, "column_2", &x);
+    sj_object_get_value_as_float(data_entry, "row_2", &y);
+    progress = (float) UI_data->charge_shot_check;
+    goal = (float) UI_data->charge_shot_max;
+
+    width *= (progress / goal);
+    gf2d_draw_rect_filled(gfc_rect(x, y, width, height), GFC_COLOR_LIGHTBLUE);
+
+        // nuke cost down
+    sj_object_get_value_as_float(data_entry, "column_3", &x);
+    sj_object_get_value_as_float(data_entry, "row_2", &y);
+    progress = (float) UI_data->nuke_check;
+    goal = (float) UI_data->nuke_max;
+
+    width *= (progress / goal);
+    gf2d_draw_rect_filled(gfc_rect(x, y, width, height), GFC_COLOR_LIGHTBLUE);
+
+    // perks draws (TODO)
 }
 
 void wave_start() {
