@@ -6,7 +6,7 @@
 #define NEXT_CHARGE_SHOT 1.0f
 #define CHARGE_SHOT_DELAY 0.5f
 
-typedef enum {
+typedef enum Player_Atk_Type_E{
     SINGLE_SHOT,
     CHARGE_SHOT,
     VORTEX,	
@@ -14,7 +14,7 @@ typedef enum {
     SUPER_NUKE
 }Player_Atk_Type;
 
-typedef struct {
+typedef struct Player_Atk_Type_S{
     // player values
     float           upspeed;            // current vertical speed
     float           upspeed_def;        // default vertical speed

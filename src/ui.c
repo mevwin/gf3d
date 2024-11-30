@@ -114,6 +114,31 @@ void UI_init() {
 
         // perks and item progress are calculated in pause_menu()
 
+    /*wave start*/
+    UI_data->wave_start = gf2d_sprite_load_image("images/UI/wave_start/wave_start.png");
+    UI_data->wave_start_data = sj_load("menus/wave_start.menu");
+
+    position_data = sj_object_get_value(UI_data->wave_start_data, "wave_text");
+    sj_object_get_value_as_float(position_data, "x_offset", &x_start);
+    sj_object_get_value_as_float(position_data, "y_offset", &y_start);
+    UI_data->curr_wave_loc = gfc_vector2d(x_start, y_start);
+
+    /*wave completed*/
+    UI_data->wave_completed = gf2d_sprite_load_image("images/UI/wave_completed/wave_completed.png");
+    UI_data->wave_completed_data = sj_load("menus/wave_completed.menu");
+
+    position_data = sj_object_get_value(UI_data->wave_completed_data, "stage_blocks");
+    sj_object_get_value_as_float(position_data, "width", &width);
+    sj_object_get_value_as_float(position_data, "height", &height);
+    
+    sj_object_get_value_as_float(position_data, "y_offset", &y_start);
+
+    sj_object_get_value_as_float(position_data, "x_offset1", &x_start);
+    UI_data->stage_block1 = gfc_rect(x_start, y_start, width, height);
+
+    sj_object_get_value_as_float(position_data, "x_offset2", &x_start);
+    UI_data->stage_block2 = gfc_rect(x_start, y_start, width, height);
+
     UI_data->nuke_alpha = 0.0f;
     UI_data->emper_alpha = 0.0f;
 
@@ -124,9 +149,13 @@ void UI_free() {
     sj_free(UI_data->player_hud_data);
     sj_free(UI_data->start_menu_data);
     sj_free(UI_data->pause_menu_data);
+    sj_free(UI_data->wave_start_data);
+    sj_free(UI_data->wave_completed_data);
     gf2d_sprite_free(UI_data->player_hud);
     gf2d_sprite_free(UI_data->start_menu);
     gf2d_sprite_free(UI_data->pause_menu);
+    gf2d_sprite_free(UI_data->wave_start);
+    gf2d_sprite_free(UI_data->wave_completed);
     gf2d_sprite_free(UI_data->player_health);
     gf2d_sprite_free(UI_data->player_shield);
     gf2d_sprite_free(UI_data->player_scrap);
@@ -539,7 +568,6 @@ void pause_menu() {
     SJson* data_entry;
     float x, y, width, height;
     float progress, goal;
-    char buffer[50];
     LevelData* level;
     PlayerData* p_data;
 
@@ -557,19 +585,22 @@ void pause_menu() {
     sj_object_get_value_as_float(data_entry, "height", &height);
 
         // check objective type
-    if (level->obj_type == KILL_ENEMY) {   
-        progress = (float) level->enemy_killed;
-        goal = (float) level->enemy_goal;
+    switch (level->obj_type){   
+        case KILL_ENEMY:
+            progress = (float) level->enemy_killed;
+            goal = (float) level->enemy_goal;
+            break;
+        case SURVIVE:
 
-        width *= (progress / goal);
-        gf2d_draw_rect_filled(gfc_rect(x, y, width, height), GFC_COLOR_LIGHTBLUE);
-
-        sj_object_get_value_as_float(data_entry, "text_x_offset", &x);
-        sj_object_get_value_as_float(data_entry, "text_y_offset", &y);
-        sprintf(buffer, "Kill %i Enemies", level->enemy_goal);
-        gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, gfc_vector2d(x, y));
- 
+            break;
     }
+
+    width *= (progress / goal);
+    gf2d_draw_rect_filled(gfc_rect(x, y, width, height), GFC_COLOR_LIGHTBLUE);
+
+    sj_object_get_value_as_float(data_entry, "text_x_offset", &x);
+    sj_object_get_value_as_float(data_entry, "text_y_offset", &y);
+    gf2d_font_draw_line_tag(level->level_obj, FT_Large, GFC_COLOR_WHITE, gfc_vector2d(x, y));
 
     // upgrade progress draws
     data_entry = sj_object_get_value(UI_data->pause_menu_data, "item_progress_bar");
@@ -634,42 +665,44 @@ void pause_menu() {
 }
 
 void wave_start() {
-    GFC_Vector2D text_loc;
+    SJson* data_entry;
     LevelData* level;
-    char buffer[8];
+    float x, y;
+    char buffer[9];
 
     level = get_level_data();
 
     if (!level) return;
 
-    sprintf(buffer, "WAVE #%d", get_level_data()->wave_count);
-    gf2d_font_draw_line_tag(buffer, FT_H1, GFC_COLOR_WHITE, TEXT_LOCATION);
+    gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(65, 65, 65, 0.4f));
+    gf2d_sprite_draw_image(UI_data->wave_start, gfc_vector2d(0, 0));
 
-    text_loc = TEXT_LOCATION;
-    text_loc.y += 100.0f;
-    gf2d_font_draw_line_tag("Right Click to Start", FT_H1, GFC_COLOR_WHITE, text_loc);
- 
+    sprintf(buffer, "WAVE #%d", level->wave_count);
+    gf2d_font_draw_line_tag(buffer, FT_H1, GFC_COLOR_WHITE, UI_data->curr_wave_loc);
+
+    switch (level->obj_type) {
+        case KILL_ENEMY:
+            data_entry = sj_object_get_value(UI_data->wave_start_data, "kill_enemy_text");
+            sj_object_get_value_as_float(data_entry, "x_offset", &x);
+            sj_object_get_value_as_float(data_entry, "y_offset", &y);
+
+            break;
+    }
+
+    gf2d_font_draw_line_tag(level->level_obj, FT_H2, GFC_COLOR_WHITE, gfc_vector2d(x,y));
 }
 
-void wave_completed() {
-    GFC_Vector2D text_loc;
-    PlayerData* player; 
+void wave_completed() { 
     LevelData* level;
 
-    player = get_player_data();
     level = get_level_data();
 
-    if (!player || !level) return;
+    if (!level) return;
 
     gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(65, 65, 65, 0.4f));
-    gf2d_font_draw_line_tag("WAVE COMPLETE", FT_H1, GFC_COLOR_WHITE, TEXT_LOCATION);
+    gf2d_sprite_draw_image(UI_data->wave_completed, gfc_vector2d(0, 0));
 
-    text_loc = TEXT_LOCATION;
-    text_loc.y += 100.0f;
-    gf2d_font_draw_line_tag("Press Right Click to Continue", FT_H2, GFC_COLOR_WHITE, text_loc);
-
-    if (player->nuke_flag)
-        player->nuke_flag = 0;
+    // TODO: implement images and text for next stages
 }
 
 void player_death_screen() {

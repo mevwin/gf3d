@@ -12,7 +12,17 @@ static LevelData* level;
 
 void level_init() {
     level = gfc_allocate_array(sizeof(LevelData), 1);
+
+    //level->asteroid = gf3d_model_load("models/trench/asteroid.model");
+    //level->asteroid_list = gfc_list_new_size(ASTEROID_MAX);
+
+    //TODO: create level from config
     
+    //get_world_data()->level_assets_made = 1;
+    atexit(level_free);
+}
+
+void level_load() {
     level->last_powerup = 0;
     level->enemy_count = 0;
     level->enemy_killed = 0;
@@ -25,18 +35,15 @@ void level_init() {
     level->wave_count = 1;
 
     level->obj_type = KILL_ENEMY;
+    switch (level->obj_type) {
+        case KILL_ENEMY:
+            sprintf(level->level_obj, "Kill %i Enemies", level->enemy_goal);
 
-    //level->asteroid = gf3d_model_load("models/trench/asteroid.model");
-    //level->asteroid_list = gfc_list_new_size(ASTEROID_MAX);
+            break;
+        case SURVIVE:
 
-    //TODO: create level from config
-    
-    //get_world_data()->level_assets_made = 1;
-    atexit(level_free);
-}
-
-void level_load() {
-
+            break;
+    }
 }
 
 void new_wave_level_reset(){
@@ -49,6 +56,9 @@ void new_wave_level_reset(){
 
     level->wave_count++;
     level->wave_end = 1;
+
+    if (get_player_data()->nuke_flag)
+        get_player_data()->nuke_flag = 0;
 }
 
 void full_level_reset() {

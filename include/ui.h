@@ -89,6 +89,17 @@ typedef struct UIData_S{
     Sprite*         pause_menu;
     GFC_Rect        resume_block;
     GFC_Rect        quit_block;
+
+    /*wave start*/
+    SJson*          wave_start_data;
+    Sprite*         wave_start;
+    GFC_Vector2D    curr_wave_loc;
+
+    /*wave completed*/
+    SJson*          wave_completed_data;
+    Sprite*         wave_completed;
+    GFC_Rect        stage_block1;
+    GFC_Rect        stage_block2;
 }UIData;
 
 void UI_init();

@@ -25,7 +25,7 @@ typedef enum LevelType_E {
 	BLACK_HOLE
 }LevelType;
 
-typedef struct {
+typedef struct LevelData_S{
 	// game stats
 	float			last_powerup;		// time stamp of last active powerup
 	Uint8			enemy_count;		// enemies currently on-screen
@@ -38,8 +38,9 @@ typedef struct {
 	float			game_start;
 
 	// level/objective type
-	ObjType			obj_type;
 	LevelType		level_type;
+	ObjType			obj_type;
+	char			level_obj[50];
 
 		// objective 1: kill x enemies
 	int				enemy_killed;

@@ -13,7 +13,7 @@ static Entity* player;
 
 void world_check_for_menu_input();
 void start_menu_input_check(UIData* ui_data);
-void pause_menu_input_check(UIData* ui_data);
+void update_time_checks(float curr_time);
 void game_data_init_from_save();
 void game_save();
 
@@ -43,11 +43,13 @@ void world_close() {
 void world_check_for_menu_input() {
 	LevelData* level;
 	SoundData* sounds;
+	UIData* ui;
 
 	sounds = get_sound_data();
 	level = get_level_data();
+	ui = get_UI_data();
 
-	if (!level || !sounds) return;
+	if (!level || !sounds || !ui) return;
 
 	if (world->current_state == WAVE_START) {
 		level->wave_end = 0;
@@ -66,24 +68,37 @@ void world_check_for_menu_input() {
 			world->last_state = WAVE_START;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
-		else if (gfc_input_command_pressed("shop")) {
-			world->current_state = SHOP;
-			world->last_state = WAVE_START;
-			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
-		}
 	}
 	else if (world->current_state == PAUSE_MENU) {
 		if (gfc_input_command_pressed("escape")) {
 			if (level->wave_end)
 				world->current_state = SHOP;
-			else
+			else {
+				update_time_checks(CURRENT_TIME);
 				world->current_state = world->last_state;
+			}
 
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
-		else if (gfc_input_command_pressed("shop")) {
+		else if (gfc_input_command_pressed("shop") && level->wave_end) {
 			world->current_state = SHOP;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+		}
+		else if (gf2d_mouse_button_released(0)) {
+			if (gf2d_mouse_in_rect(ui->resume_block)) {
+				update_time_checks(CURRENT_TIME);
+				world->current_state = IN_GAME;
+				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+			}
+			else if (gf2d_mouse_in_rect(ui->quit_block)) {
+				game_save();
+				full_level_reset();
+				entity_despawn_all();
+				entity_assets_close();
+				world->current_state = START_MENU;
+				world->player_spawned = 0;
+				gfc_sound_play(get_sound_data()->cancel, 0, 1, -1, -1);
+			}
 		}
 	}
 	else if (world->current_state == SHOP) {
@@ -114,7 +129,16 @@ void world_check_for_menu_input() {
 			world->last_state = WAVE_COMPLETED;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
-		else if (gfc_input_command_pressed("shop")) {
+		else if (gf2d_mouse_button_released(2)) {
+			if (gf2d_mouse_in_rect(ui->stage_block1)) {
+				// TODO: add level changing here
+			}
+			else if (gf2d_mouse_in_rect(ui->stage_block2)) {
+				// TODO: add level changing here
+			}
+			else
+				return;
+
 			world->current_state = SHOP;
 			world->last_state = WAVE_START;	//always
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
@@ -122,6 +146,7 @@ void world_check_for_menu_input() {
 	}
 	else if (world->current_state == IN_GAME) {
 		if (gfc_input_command_pressed("escape")) {
+			world->pause_time = CURRENT_TIME;
 			world->current_state = PAUSE_MENU;
 			world->last_state = IN_GAME;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
@@ -174,20 +199,40 @@ void start_menu_input_check(UIData* ui_data) {
 	}
 }
 
-void pause_menu_input_check(UIData* ui_data) {
-	if (gf2d_mouse_button_released(0)) {
-		if (gf2d_mouse_in_rect(ui_data->resume_block)) {
-			world->current_state = IN_GAME;
-			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
-		}
-		else if (gf2d_mouse_in_rect(ui_data->quit_block)) {
-			game_save();
-			full_level_reset();
-			entity_despawn_all();
-			entity_assets_close();
-			world->current_state = START_MENU;
-			world->player_spawned = 0;
-			gfc_sound_play(get_sound_data()->cancel, 0, 1, -1, -1);
+/**
+* Time checks to update while game is paused:
+*	- player shot timings
+*	- emper countdown
+*/
+void update_time_checks(float curr_time) {
+	Entity* entityList, *enemy;
+	PlayerData* p_data;
+	EnemyData* emper;
+	int i;
+	float added_time;
+
+	p_data = get_player_data();
+	entityList = get_entityList();
+
+	added_time = curr_time - world->pause_time;
+
+	// update player timings
+	p_data->next_shot += added_time;
+	p_data->next_charged_shot += added_time;
+	p_data->charge_shot_delay += added_time;
+
+	if (get_level_data()->emper_flag) {
+		for (i = 0; i < entityList; i++) {
+			enemy = &entityList[i];
+			if (enemy->entity_type != ENEMY) continue;
+
+			emper = enemy->data;
+			if (emper->enemy_type != EMPERS) continue;
+
+			// update emper countdown
+			emper->emper_attack_time += added_time;
+
+			break;
 		}
 	}
 }
@@ -234,8 +279,8 @@ void world_update() {
 
 		case PAUSE_MENU:
 			pause_menu();
-			pause_menu_input_check(ui);
 			gf2d_mouse_draw();
+
 			break;
 
 		case SHOP:
@@ -255,6 +300,7 @@ void world_update() {
 
 		case WAVE_COMPLETED:
 			wave_completed();
+			gf2d_mouse_draw();
 			break;
 
 		case GAME_OVER:

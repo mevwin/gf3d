@@ -38,6 +38,7 @@ typedef struct WorldData_S {
 	Uint8			continue_from_save;
 	GameState		current_state;
 	GameState		last_state;
+	float			pause_time;
 
 	// def files
 	SJson*			player_init;

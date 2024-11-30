@@ -303,7 +303,6 @@ void emper_think(Entity* self) {
 
 	if (time >= data->emper_attack_time && !data->emper_attack_active) {
 		player_data->emp_time = CURRENT_TIME + 2.0f;
-		level->enemy_killed--;
 		gfc_sound_play(get_sound_data()->player_damaged, 0, 0.3f, -1, -1);
 		data->emper_attack_active = 1;
 	}
@@ -329,8 +328,6 @@ void enemy_free(Entity* self) {
 		level->fencer_flag = 0;
 	else if (data->enemy_type == EMPERS)
 		level->emper_flag = 0;
-
-	level->enemy_killed++;
 
 	free(data);
 	level->enemy_count--;
@@ -376,6 +373,7 @@ void enemy_die(Entity* self, EnemyData* data, int item_type) {
 	if (data->enemy_type == FENCERS)
 		get_level_data()->fencer_flag = 0;
 
+	get_level_data()->enemy_killed++;
 	data->enemy_dead = 1;
 }
 
