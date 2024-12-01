@@ -121,6 +121,8 @@ void entity_free(Entity* self);
  */
 Entity* get_entityList();
 
+int get_EntityNum();
+
 Entity_Models* get_models();
 
 void update_hurtbox(Entity* self);

@@ -25,19 +25,28 @@ typedef enum {
 
 typedef struct UIData_S{
     /*shop UI*/
-        // upgrade button locations
+    SJson*          shop_data;
+    Sprite*         shop;
+    GFC_Rect        next_wave_block;
+
+        // upgrades section
     GFC_Rect        shields_block;
     GFC_Rect        scrap_block;
     GFC_Rect        missiles_block;
     GFC_Rect        single_shot_block;
     GFC_Rect        charge_shot_block;
     GFC_Rect        nuke_block;
+    GFC_Rect        scrap_bar;
 
-        // shop background color
-    GFC_Color       shop_color;         // color for shop UI
-    float           shop_color_hue;     // shop 
+            // player upgrade max
+    Uint8           shields_max;
+    Uint8           more_scrap_max;
+    Uint8           missiles_max;
+    Uint8           single_shot_max;
+    Uint8           charge_shot_max;
+    Uint8           nuke_max;
 
-        // player upgrade checks
+            // player upgrade checks
     Uint8           shields_check;
     Uint8           more_scrap_check;
     Uint8           missiles_check;
@@ -46,22 +55,21 @@ typedef struct UIData_S{
     Uint8           nuke_check;
     Uint8           upgrade_cost;
 
-        // player upgrade max
-    Uint8           shields_max;
-    Uint8           more_scrap_max;
-    Uint8           missiles_max;
-    Uint8           single_shot_max;
-    Uint8           charge_shot_max;
-    Uint8           nuke_max; 
-
-    // player upgrade count (for "previous runs")
+            // player upgrade count (for "previous runs")
     Uint8           shields_count;
     Uint8           more_scrap_count;
     Uint8           missiles_count;
     Uint8           single_shot_count;
     Uint8           charge_shot_count;
 
-    /* player UI */
+        // perks section
+    GFC_Rect        curr_perk1;
+    GFC_Rect        curr_perk2;
+    GFC_Rect        new_perk1;
+    GFC_Rect        new_perk2;
+    GFC_Rect        new_perk3;
+
+    /*player UI*/
     SJson*          player_hud_data;
     Sprite*         player_hud;
     Sprite*         player_health;
@@ -100,6 +108,13 @@ typedef struct UIData_S{
     Sprite*         wave_completed;
     GFC_Rect        stage_block1;
     GFC_Rect        stage_block2;
+
+    /*game over*/
+    SJson*          game_over_data;
+    Sprite*         game_over;
+    GFC_Rect        respawn_block;
+    GFC_Rect        g_quit_block;
+
 }UIData;
 
 void UI_init();
@@ -122,7 +137,7 @@ void player_hud(void* d);
 
 void start_menu();
 
-void pause_menu();
+void pause_menu(Sprite* menu, SJson* data);
 
 void wave_start();
 void wave_completed();

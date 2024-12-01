@@ -3,7 +3,7 @@
 
 #include "entity.h"
 
-typedef enum {
+typedef enum ItemType_E{
 	SCRAP,
 	NONE,
 	HEALTH_PICKUP,
@@ -11,9 +11,9 @@ typedef enum {
 	// powerups
 	HAPPY_TRIGGER,
 	INVINCIBILITY
-}Item_Type;
+}ItemType;
 
-typedef struct {
+typedef struct ItemData_S{
 	int				type;			// type of item
 	Uint8			active;			// is currently moving to player
 

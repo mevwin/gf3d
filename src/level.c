@@ -7,6 +7,7 @@
 #include "enemy.h"
 #include "ui.h"
 #include "level.h"
+#include "item.h"
 
 static LevelData* level;
 
@@ -22,7 +23,7 @@ void level_init() {
     atexit(level_free);
 }
 
-void level_load() {
+void level_begin() {
     level->last_powerup = 0;
     level->enemy_count = 0;
     level->enemy_killed = 0;
@@ -31,8 +32,13 @@ void level_load() {
     level->emper_flag = 0;
     level->fencer_flag = 0;
 
+    level->wave_end_time = 0;
+    level->total_game_time = 0;
+
     level->wave_end = 0;
     level->wave_count = 1;
+
+    level->total_scrap = 0;
 
     level->obj_type = KILL_ENEMY;
     switch (level->obj_type) {
@@ -68,6 +74,11 @@ void full_level_reset() {
     level->enemy_killed_total = 0;
     level->emper_flag = 0;
     level->fencer_flag = 0;
+
+    level->wave_end_time = 0;
+    level->total_game_time = 0;
+
+    level->total_scrap = 0;
 
     level->wave_count = 1;
     level->wave_end = 0;
@@ -139,19 +150,39 @@ void level_visuals() {
 */
 
 void level_update() {
+    Entity* item, *entityList;
+    ItemData* i_data;
     WorldData* world;
+    int i;
 
     //level_visuals();
 
     world = get_world_data();
-    
+    entityList = get_entityList();
+
     switch (level->obj_type) {
         case KILL_ENEMY:
-            if (level->enemy_killed == level->enemy_goal) {
+            if (level->enemy_killed >= level->enemy_goal) {
                 enemy_reset();
                 new_wave_level_reset();
                 player_upgrade();
                 shop_reset();
+
+
+                for (i = 0; i < MAX_ENTITY; i++) {
+                    item = &entityList[i];
+                    if (item->entity_type != ITEM) continue;
+
+                    i_data = item->data;
+
+                    if (i_data->type == SCRAP || i_data->type == HEALTH_PICKUP)
+                        item_activate(item, i_data->type);
+                    else
+                        entity_free(item);
+                }
+
+                level->wave_end_time = CURRENT_TIME;
+                level->total_game_time += (level->wave_end_time - level->game_start);
 
                 world->current_state = WAVE_COMPLETED;
             }

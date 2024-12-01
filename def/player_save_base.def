@@ -14,7 +14,9 @@
     "level_data":
     {
         "wave_count":0,
-        "enemy_killed_total": 0
+        "enemy_killed_total": 0,
+        "total_game_time": 0,
+        "total_scrap": 0
     },
     "upgrades":
     {

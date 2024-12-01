@@ -15,9 +15,9 @@ void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
     ItemData* data;
     LevelData* level;
     float dist_x, dist_y, conver, time;
-    Item_Type item_t;
+    ItemType item_t;
 
-    item_t = (Item_Type) type;
+    item_t = (ItemType) type;
 
     // only allow powerups within the past 20 seconds
     level = get_level_data();
@@ -134,8 +134,10 @@ void item_activate(Entity* self, int type) {
 
     if (type == SCRAP) {
         extra_amount = 1 + gfc_random_int(3);
-        if ((player->currScrap + extra_amount) < player->maxScrap)
+        if ((player->currScrap + extra_amount) < player->maxScrap) {
             player->currScrap += extra_amount;
+            get_level_data()->total_scrap += extra_amount;
+        }
         else
             player->currScrap = player->maxScrap;
     }

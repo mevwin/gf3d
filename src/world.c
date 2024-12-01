@@ -59,6 +59,8 @@ void world_check_for_menu_input() {
 			if (level->enemy_count != 0)
 				level->enemy_count = 0;
 
+			level->game_start = CURRENT_TIME;
+
 			world->current_state = IN_GAME;
 
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
@@ -80,10 +82,6 @@ void world_check_for_menu_input() {
 
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
-		else if (gfc_input_command_pressed("shop") && level->wave_end) {
-			world->current_state = SHOP;
-			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
-		}
 		else if (gf2d_mouse_button_released(0)) {
 			if (gf2d_mouse_in_rect(ui->resume_block)) {
 				update_time_checks(CURRENT_TIME);
@@ -93,6 +91,7 @@ void world_check_for_menu_input() {
 			else if (gf2d_mouse_in_rect(ui->quit_block)) {
 				game_save();
 				full_level_reset();
+				shop_reset();
 				entity_despawn_all();
 				entity_assets_close();
 				world->current_state = START_MENU;
@@ -102,12 +101,8 @@ void world_check_for_menu_input() {
 		}
 	}
 	else if (world->current_state == SHOP) {
-		if (gfc_input_command_pressed("shop")) {
-			if (level->wave_end)
-				world->current_state = WAVE_START;
-			else
-				world->current_state = world->last_state;
-
+		if (gf2d_mouse_button_released(0) && gf2d_mouse_in_rect(ui->next_wave_block)) {
+			world->current_state = WAVE_START;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
 		else if (gfc_input_command_pressed("escape")) {
@@ -116,11 +111,24 @@ void world_check_for_menu_input() {
 		}
 	}
 	else if (world->current_state == GAME_OVER) {
-		// TODO: add player respawn function
 		if (gfc_input_command_pressed("escape")) {
 			world->current_state = PAUSE_MENU;
 			world->last_state = GAME_OVER;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+		}
+		else if (gf2d_mouse_button_released(0)) {
+			if (gf2d_mouse_in_rect(ui->respawn_block)) {
+				// TODO: add respawn function
+			}
+			else if (gf2d_mouse_in_rect(ui->g_quit_block)) {
+				full_level_reset();
+				shop_reset();
+				entity_despawn_all();
+				entity_assets_close();
+				world->current_state = START_MENU;
+				world->player_spawned = 0;
+				gfc_sound_play(get_sound_data()->cancel, 0, 1, -1, -1);
+			}
 		}
 	}
 	else if (world->current_state == WAVE_COMPLETED) {
@@ -140,7 +148,6 @@ void world_check_for_menu_input() {
 				return;
 
 			world->current_state = SHOP;
-			world->last_state = WAVE_START;	//always
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
 	}
@@ -148,11 +155,6 @@ void world_check_for_menu_input() {
 		if (gfc_input_command_pressed("escape")) {
 			world->pause_time = CURRENT_TIME;
 			world->current_state = PAUSE_MENU;
-			world->last_state = IN_GAME;
-			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
-		}
-		else if (gfc_input_command_pressed("shop")) {
-			world->current_state = SHOP;
 			world->last_state = IN_GAME;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
@@ -164,7 +166,7 @@ void start_menu_input_check(UIData* ui_data) {
 		if (gf2d_mouse_in_rect(ui_data->new_start_block)) {
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 
-			level_load();
+			level_begin();
 			player_assets_init();
 			world->current_state = LOADING_SCREEN;
 
@@ -178,7 +180,7 @@ void start_menu_input_check(UIData* ui_data) {
 		else if (gf2d_mouse_in_rect(ui_data->continue_block)) {
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 
-			level_load();
+			level_begin();
 			player_assets_init();
 			world->current_state = LOADING_SCREEN;
 
@@ -222,7 +224,7 @@ void update_time_checks(float curr_time) {
 	p_data->charge_shot_delay += added_time;
 
 	if (get_level_data()->emper_flag) {
-		for (i = 0; i < entityList; i++) {
+		for (i = 0; i < MAX_ENTITY; i++) {
 			enemy = &entityList[i];
 			if (enemy->entity_type != ENEMY) continue;
 
@@ -278,7 +280,7 @@ void world_update() {
 			break;
 
 		case PAUSE_MENU:
-			pause_menu();
+			pause_menu(ui->pause_menu, ui->pause_menu_data);
 			gf2d_mouse_draw();
 
 			break;
@@ -327,6 +329,7 @@ void world_update() {
 			// player death check
 			if (p_data->player_dead) {
 				entity_reset();
+				level->total_game_time += CURRENT_TIME - level->game_start;
 				world->current_state = GAME_OVER;
 			}
 
@@ -351,6 +354,8 @@ void game_data_init_from_save() {
 	value = sj_object_get_value(save, "level_data");
 	sj_object_get_value_as_uint32(value, "wave_count", &level->wave_count);
 	sj_object_get_value_as_uint32(value, "enemy_killed_total", &level->enemy_killed_total);
+	sj_object_get_value_as_float(value, "total_game_time", &level->total_game_time);
+	sj_object_get_value_as_uint32(value, "total_scrap", &level->total_scrap);
 
 	value = sj_object_get_value(save, "upgrades");
 	sj_object_get_value_as_uint8(value, "shields_check", &ui->shields_check);
@@ -397,6 +402,12 @@ void game_save() {
 	
 	data_entry = sj_object_get_value(value, "enemy_killed_total");
 	data_entry->v.string = sj_value_to_json_string(sj_new_uint32(level->enemy_killed_total));
+
+	data_entry = sj_object_get_value(value, "total_game_time");
+	data_entry->v.string = sj_value_to_json_string(sj_new_float(level->total_game_time));
+
+	data_entry = sj_object_get_value(value, "total_scrap");
+	data_entry->v.string = sj_value_to_json_string(sj_new_uint32(level->total_scrap));
 
 	// player save
 	value = sj_object_get_value(save, "player_data");

@@ -36,6 +36,10 @@ typedef struct LevelData_S{
 	Uint32			wave_count;
 	Uint8			wave_end;
 	float			game_start;
+	float			wave_end_time;
+	float			total_game_time;
+
+	Uint32			total_scrap;
 
 	// level/objective type
 	LevelType		level_type;
@@ -61,6 +65,7 @@ typedef struct LevelData_S{
 
 void level_init();
 
+void level_begin();
 void level_load();
 
 void new_wave_level_reset();

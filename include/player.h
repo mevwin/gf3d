@@ -14,7 +14,7 @@ typedef enum Player_Atk_Type_E{
     SUPER_NUKE
 }Player_Atk_Type;
 
-typedef struct Player_Atk_Type_S{
+typedef struct PlayerData_S{
     // player values
     float           upspeed;            // current vertical speed
     float           upspeed_def;        // default vertical speed
@@ -46,6 +46,9 @@ typedef struct Player_Atk_Type_S{
 
     Uint8           active_item;        // current item in use
     float           item_duration;
+
+    Uint8           perk1;
+    Uint8           perk2;
 
     // movement bounds (keeps player within camera view)
     int             x_bound;            // from origin to leftmost side

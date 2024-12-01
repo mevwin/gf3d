@@ -13,6 +13,7 @@ typedef struct{
 
 static EntityManager entity_manager = {0}; //C needs 0, C++ doesn't
 static Entity_Models* models;
+static int curr_entities;
 
 void entity_system_init(Uint32 maxEnts){
     //sanity check
@@ -38,6 +39,8 @@ void entity_system_init(Uint32 maxEnts){
         slog("failed to allocate resources for models struct");
         return;
     }
+
+    curr_entities = 0;
 
     atexit(entity_system_close);
 }
@@ -343,6 +346,8 @@ Entity *entity_new(){
         entity_manager.entity_list[i].scale = gfc_vector3d(1,1,1); // scale of zero means entity doesn't exist
         entity_manager.entity_list[i].no_draw = 0;
 
+        curr_entities++;
+
         return &entity_manager.entity_list[i];
     }
     slog("no more entity slots");
@@ -352,9 +357,10 @@ Entity *entity_new(){
 void entity_free(Entity *self){
     // check if pointer is null
     if (!self) return;
-    
-
+   
     if (self->free) self->free(self);
+
+    curr_entities--;
 
     // free up anything that may have been allocated FOR this
     memset(self, 0, sizeof(Entity));
@@ -362,6 +368,10 @@ void entity_free(Entity *self){
 
 Entity* get_entityList() {
     return entity_manager.entity_list;
+}
+
+int get_EntityNum() {
+    return curr_entities;
 }
 
 Entity_Models* get_models() {
