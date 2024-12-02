@@ -2,6 +2,7 @@
 #define __PLAYER_H__
 
 #include "entity.h"
+#include "perk.h"
 
 #define NEXT_CHARGE_SHOT 1.0f
 #define CHARGE_SHOT_DELAY 0.5f
@@ -47,8 +48,8 @@ typedef struct PlayerData_S{
     Uint8           active_item;        // current item in use
     float           item_duration;
 
-    Uint8           perk1;
-    Uint8           perk2;
+    Perk*           perk1;
+    Perk*           perk2;
 
     // movement bounds (keeps player within camera view)
     int             x_bound;            // from origin to leftmost side

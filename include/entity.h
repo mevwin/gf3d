@@ -121,8 +121,6 @@ void entity_free(Entity* self);
  */
 Entity* get_entityList();
 
-int get_EntityNum();
-
 Entity_Models* get_models();
 
 void update_hurtbox(Entity* self);
@@ -134,7 +132,7 @@ void update_hurtbox(Entity* self);
 void entity_despawn_all();
 
 /**
-* @brief despawn all entities except player and asteroids
+* @brief despawn all entities except player
 * @note used when player dies
 */
 void entity_reset();

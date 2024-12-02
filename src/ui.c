@@ -9,6 +9,7 @@
 #include "world.h"
 #include "level.h"
 #include "item.h"
+#include "perk.h"
 
 static UIData* UI_data;
 
@@ -370,7 +371,7 @@ void shop_hud_draw() {
     }
 
     // perks (TODO)
-
+    display_random_perks();
 }
 
 void shop_think() {

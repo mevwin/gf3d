@@ -9,6 +9,12 @@
 #include "level.h"
 #include "item.h"
 
+typedef struct Level_S {
+    Model*      terrain;
+    GFC_List*   hazard_list;
+    Uint8       hazard_count;
+}Level;
+
 static LevelData* level;
 
 void level_init() {
@@ -40,6 +46,7 @@ void level_begin() {
 
     level->total_scrap = 0;
 
+    // set level objective
     level->obj_type = KILL_ENEMY;
     switch (level->obj_type) {
         case KILL_ENEMY:

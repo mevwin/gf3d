@@ -9,6 +9,7 @@
 #include "reticle.h"
 #include "item.h"
 #include "world.h"
+#include "perk.h"
 
 #define PLAYER_SPAWN gfc_vector3d(0, 0 ,0);
 #define DAMAGE_TIMING 0.5f

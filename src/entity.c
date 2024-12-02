@@ -5,7 +5,7 @@
 #include "entity.h"
 #include "world.h"
 
-typedef struct{
+typedef struct EntityManager_S{
     Entity  *entity_list;
     Uint32  entityMax;
     //may need more things later
@@ -13,7 +13,6 @@ typedef struct{
 
 static EntityManager entity_manager = {0}; //C needs 0, C++ doesn't
 static Entity_Models* models;
-static int curr_entities;
 
 void entity_system_init(Uint32 maxEnts){
     //sanity check
@@ -39,8 +38,6 @@ void entity_system_init(Uint32 maxEnts){
         slog("failed to allocate resources for models struct");
         return;
     }
-
-    curr_entities = 0;
 
     atexit(entity_system_close);
 }
@@ -346,8 +343,6 @@ Entity *entity_new(){
         entity_manager.entity_list[i].scale = gfc_vector3d(1,1,1); // scale of zero means entity doesn't exist
         entity_manager.entity_list[i].no_draw = 0;
 
-        curr_entities++;
-
         return &entity_manager.entity_list[i];
     }
     slog("no more entity slots");
@@ -360,18 +355,12 @@ void entity_free(Entity *self){
    
     if (self->free) self->free(self);
 
-    curr_entities--;
-
     // free up anything that may have been allocated FOR this
     memset(self, 0, sizeof(Entity));
 }
 
 Entity* get_entityList() {
     return entity_manager.entity_list;
-}
-
-int get_EntityNum() {
-    return curr_entities;
 }
 
 Entity_Models* get_models() {
@@ -478,13 +467,13 @@ void entity_reset() {
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
-        if (target->entity_type == RETICLE || target->entity_type == PLAYER || target->entity_type == ENEMY || target->entity_type == ASTEROID)
+        if (target->entity_type == PLAYER || target->entity_type == ENEMY || target->entity_type == ASTEROID)
             continue;
 
         entity_free(target);
     }
 
-    // despawn everything except player and asteroid
+    // despawn everything except player and reticle
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 

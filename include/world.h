@@ -3,7 +3,6 @@
 
 #include <SDL_stdinc.h>
 #include "gfc_vector.h"
-#include "simple_json.h"
 
 /**
 * Purpose of this system is to manage the world state (not in just in gameplay)

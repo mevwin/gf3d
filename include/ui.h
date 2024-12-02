@@ -6,11 +6,6 @@
 #include "gf3d_vgraphics.h"
 
 #define RES (gf3d_vgraphics_get_resolution())
-#define UPGRADE_BLOCK_WIDTH 200.0f
-#define UPGRADE_BLOCK_HEIGHT 100.0f
-#define UPGRADE_BLOCK(x, y) (gfc_rect(x, y, UPGRADE_BLOCK_WIDTH, UPGRADE_BLOCK_HEIGHT))
-//#define MENU_BLOCK(x, y) (gfc_rect(x, y, UPGRADE_BLOCK_WIDTH, UPGRADE_BLOCK_HEIGHT))
-#define TEXT_LOCATION (gfc_vector2d((RES.x / 2.0f) - 90.0f, (RES.y / 2.0) - 200.0f))
 
 /*
 typedef enum {
@@ -38,6 +33,7 @@ typedef struct UIData_S{
     GFC_Rect        nuke_block;
     GFC_Rect        scrap_bar;
 
+        // shop data
             // player upgrade max
     Uint8           shields_max;
     Uint8           more_scrap_max;
@@ -144,7 +140,6 @@ void wave_completed();
 
 void player_death_screen();
 
-void enemy_hud(void* e, GFC_Vector3D position);
 void enemy_hud_all();
 
 UIData* get_UI_data();

@@ -44,7 +44,7 @@ typedef struct LevelData_S{
 	// level/objective type
 	LevelType		level_type;
 	ObjType			obj_type;
-	char			level_obj[50];
+	char			level_obj[30];
 
 		// objective 1: kill x enemies
 	int				enemy_killed;

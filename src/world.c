@@ -395,8 +395,10 @@ void game_save() {
 
 	data_entry = sj_object_get_value(value, "wave_count");
 	sj_object_get_value_as_uint32(value, "wave_count", &wave_check);
-	if (level->wave_count == wave_check)    // don't save if currently on starting wave from save
+	if (level->wave_count == wave_check || level->wave_count == 1) {    // don't save if currently on starting wave from save
+		slog("Game Not Saved");
 		return;
+	}
 
 	data_entry->v.string = sj_value_to_json_string(sj_new_uint32(level->wave_count));
 	
@@ -475,6 +477,8 @@ void game_save() {
 
 	sj_save(save, "def/player_save.def");
 	sj_free(save);
+
+	slog("Game Saved");
 }
 
 WorldData* get_world_data() {
