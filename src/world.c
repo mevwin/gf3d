@@ -44,6 +44,7 @@ void world_check_for_menu_input() {
 	LevelData* level;
 	SoundData* sounds;
 	UIData* ui;
+	int i;
 
 	sounds = get_sound_data();
 	level = get_level_data();
@@ -90,6 +91,7 @@ void world_check_for_menu_input() {
 			}
 			else if (gf2d_mouse_in_rect(ui->quit_block)) {
 				game_save();
+				perk_list_close();
 				full_level_reset();
 				shop_reset();
 				entity_despawn_all();
@@ -102,6 +104,7 @@ void world_check_for_menu_input() {
 	}
 	else if (world->current_state == SHOP) {
 		if (gf2d_mouse_button_released(0) && gf2d_mouse_in_rect(ui->next_wave_block)) {
+			//free_perk_list();
 			world->current_state = WAVE_START;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
@@ -121,6 +124,7 @@ void world_check_for_menu_input() {
 				// TODO: add respawn function
 			}
 			else if (gf2d_mouse_in_rect(ui->g_quit_block)) {
+				perk_list_close();
 				full_level_reset();
 				shop_reset();
 				entity_despawn_all();
@@ -146,6 +150,11 @@ void world_check_for_menu_input() {
 			}
 			else
 				return;
+
+			// create three new perks for shop display
+			for (i = 0; i < 3; i++) {
+				make_random_perk();
+			}
 
 			world->current_state = SHOP;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
@@ -266,6 +275,7 @@ void world_update() {
 				item_assets_init();
 
 			if (world->player_spawned && world->enemy_assets_made && world->item_assets_made) {
+				perk_list_init();
 				player = player_spawn();
 
 				if (world->continue_from_save) {
@@ -484,11 +494,3 @@ void game_save() {
 WorldData* get_world_data() {
 	return world;
 }
-
-/**
-* procedural content generator
-*	- provide a palette/framework for the content
-*	- at what time frame should you spawn things?
-*	- provide different cases/scenarios for certain things
-*	- weigh the choices based on the world state
-*/

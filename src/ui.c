@@ -3,6 +3,7 @@
 #include "gf2d_font.h"
 #include "gf2d_draw.h"
 #include "gf2d_mouse.h"
+#include "gfc_config.h"
 #include "ui.h"
 #include "player.h"
 #include "enemy.h"
@@ -13,9 +14,15 @@
 
 static UIData* UI_data;
 
+void display_new_perk(Perk* perk, Uint8 slot);
+void display_player_perk(Perk* perk);
+void buy_perk(Perk* perk);
+void sell_perk(Perk* perk);
+
 void UI_init() {
     SJson* position_data, *dimen_data;
     float x_start, y_start, width, height;
+    GFC_Vector4D rect;
 
     UI_data = gfc_allocate_array(sizeof(UIData), 1);
     if (!UI_data) return;
@@ -25,12 +32,9 @@ void UI_init() {
     UI_data->shop_data = sj_load("menus/shop.menu");
         
         // next wave button
-    position_data = sj_object_get_value(UI_data->shop_data, "next_wave");
-    sj_object_get_value_as_float(position_data, "x_offset", &x_start);
-    sj_object_get_value_as_float(position_data, "y_offset", &y_start);
-    sj_object_get_value_as_float(position_data, "width", &width);
-    sj_object_get_value_as_float(position_data, "height", &height);
-    UI_data->next_wave_block = gfc_rect(x_start, y_start, width, height);
+    position_data = sj_object_get_value(UI_data->shop_data, "next_wave_rect");
+    sj_value_as_vector4d(position_data, &rect);
+    UI_data->next_wave_block = gfc_rect_from_vector4(rect);
 
         // upgrades section
     position_data = sj_object_get_value(UI_data->shop_data, "upgrades");
@@ -76,14 +80,10 @@ void UI_init() {
     UI_data->charge_shot_check = 0;
     UI_data->nuke_check = 0;
 
-    position_data = sj_object_get_value(UI_data->shop_data, "scrap_bar");
-    sj_object_get_value_as_float(position_data, "x_offset", &x_start);
-    sj_object_get_value_as_float(position_data, "y_offset", &y_start);
-    sj_object_get_value_as_float(position_data, "width", &width);
-    sj_object_get_value_as_float(position_data, "height", &height);
-    UI_data->scrap_bar = gfc_rect(x_start, y_start, width, height);
+    position_data = sj_object_get_value(UI_data->shop_data, "scrap_bar_rect");
+    sj_value_as_vector4d(position_data, &rect);
+    UI_data->scrap_bar = gfc_rect_from_vector4(rect);
 
-        // perks section
             // current perks
     position_data = sj_object_get_value(UI_data->shop_data, "curr_perks");
     sj_object_get_value_as_float(position_data, "y_offset", &y_start);
@@ -94,7 +94,7 @@ void UI_init() {
     UI_data->curr_perk1 = gfc_rect(x_start, y_start, width, height);
 
     sj_object_get_value_as_float(position_data, "p2x_offset", &x_start);
-    UI_data->curr_perk1 = gfc_rect(x_start, y_start, width, height);
+    UI_data->curr_perk2 = gfc_rect(x_start, y_start, width, height);
 
             // new perks
     position_data = sj_object_get_value(UI_data->shop_data, "new_perks");
@@ -103,14 +103,13 @@ void UI_init() {
     sj_object_get_value_as_float(position_data, "height", &height);
 
     sj_object_get_value_as_float(position_data, "p1y_offset", &y_start);
-    UI_data->curr_perk1 = gfc_rect(x_start, y_start, width, height);
+    UI_data->new_perk1 = gfc_rect(x_start, y_start, width, height);
 
     sj_object_get_value_as_float(position_data, "p2y_offset", &y_start);
-    UI_data->curr_perk1 = gfc_rect(x_start, y_start, width, height);
+    UI_data->new_perk2 = gfc_rect(x_start, y_start, width, height);
 
     sj_object_get_value_as_float(position_data, "p3y_offset", &y_start);
-    UI_data->curr_perk1 = gfc_rect(x_start, y_start, width, height);
-
+    UI_data->new_perk3 = gfc_rect(x_start, y_start, width, height);
 
     /*player UI*/
     UI_data->player_hud_data = sj_load("menus/player_hud.menu");
@@ -175,10 +174,8 @@ void UI_init() {
     UI_data->wave_start = gf2d_sprite_load_image("images/UI/wave_start/wave_start.png");
     UI_data->wave_start_data = sj_load("menus/wave_start.menu");
 
-    position_data = sj_object_get_value(UI_data->wave_start_data, "wave_text");
-    sj_object_get_value_as_float(position_data, "x_offset", &x_start);
-    sj_object_get_value_as_float(position_data, "y_offset", &y_start);
-    UI_data->curr_wave_loc = gfc_vector2d(x_start, y_start);
+    position_data = sj_object_get_value(UI_data->wave_start_data, "wave_text_offset");
+    sj_value_as_vector2d(position_data, &UI_data->curr_wave_loc);
 
 
     /*wave completed*/
@@ -245,6 +242,7 @@ void UI_free() {
     gf2d_sprite_free(UI_data->enemy_health);
     gf2d_sprite_free(UI_data->enemy_health_back);
 
+
     free(UI_data);
 }
 
@@ -254,9 +252,14 @@ void shop_hud_draw() {
     LevelData* level;
     PlayerData* p_data;
     GFC_Rect dummy, dummy2;
+    Perk* perk;
+    GFC_List* perk_list;
+    int i, slot;
 
     level = get_level_data();
     p_data = get_player_data();
+
+    slot = 1;
 
     gf2d_sprite_draw_image(UI_data->shop, gfc_vector2d(0, 0));
 
@@ -370,8 +373,67 @@ void shop_hud_draw() {
         gf2d_draw_rect_filled(dummy, GFC_COLOR_LIGHTBLUE);
     }
 
-    // perks (TODO)
-    display_random_perks();
+    // perks section
+        // new perks
+    /*
+    if (!UI_data->perk3_bought) {
+        perk = gfc_list_nth(UI_data->new_perk_list, 2);
+        gf2d_draw_rect_filled(UI_data->new_perk3, perk->color);
+    }
+
+    if (!UI_data->perk2_bought) {
+        perk = gfc_list_nth(UI_data->new_perk_list, 1);
+        gf2d_draw_rect_filled(UI_data->new_perk2, perk->color);
+    }
+
+    if (!UI_data->perk1_bought) {
+        perk = gfc_list_nth(UI_data->new_perk_list, 0);
+        gf2d_draw_rect_filled(UI_data->new_perk1, perk->color);
+    }
+    */
+    perk_list = get_perk_list();
+    
+    for (i = 0; i < perk_list->count; i++) {
+        perk = gfc_list_nth(perk_list, i);
+
+        if (perk->bought) //player perk
+            continue;
+        else { // new perk that can be bought 
+            display_new_perk(perk, slot);
+            slot++;
+        }
+    }
+
+
+}
+
+void display_new_perk(Perk* perk, Uint8 slot) {
+    switch (slot) {
+        case 1:
+            gf2d_draw_rect_filled(UI_data->new_perk1, perk->color);
+            break;
+        case 2:
+            gf2d_draw_rect_filled(UI_data->new_perk2, perk->color);
+            break;
+        case 3:
+            gf2d_draw_rect_filled(UI_data->new_perk3, perk->color);
+            break;
+        default:
+            slog("slot not found");
+            return;
+    }
+}
+
+void display_player_perk(Perk* perk){
+
+}
+
+void buy_perk(Perk* perk) {
+
+}
+
+void sell_perk(Perk* perk) {
+
 }
 
 void shop_think() {
@@ -477,12 +539,12 @@ void shop_think() {
             //else
                 //slog("not enough scrap");
         }
-        gfc_sound_play(
-            get_sound_data()->confirm,
-            0,
-            0.5,
-            -1,
-            -1);
+        else if (gf2d_mouse_in_rect(UI_data->new_perk1)) {
+
+        }
+
+
+        gfc_sound_play(get_sound_data()->confirm, 0, 0.5, -1, -1);
     }
 }
 
@@ -582,17 +644,8 @@ void player_hud(void* d) {
     gf2d_sprite_draw(UI_data->player_vortex, bar_position, &scale, 
                     NULL, NULL, NULL, NULL, NULL, NULL);
 
-    // wave progress bar draws
-    /*
-    start = RES.x - 600.0f;
-    bar_position = gfc_vector2d(start, 20);
-    scale = gfc_vector2d(currEnem, 1);
-    gf2d_sprite_draw_image(UI_data->progress_back, bar_position);
     
-    gf2d_sprite_draw(UI_data->progress_bar, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
-    gf2d_draw_rect(gfc_rect(bar_position.x, bar_position.y, UI_data->progress_bar->frameWidth, UI_data->progress_bar->frameHeight), GFC_COLOR_WHITE);
-    gf2d_font_draw_line_tag("WAVE PROGRESS", FT_H5, GFC_COLOR_WHITE, gfc_vector2d(start + 5, 23));
-
+    /*
     // power up notifs
     if (data->active_item == HAPPY_TRIGGER) 
         gf2d_font_draw_line_tag("HAPPY TRIGGER", FT_H4, GFC_COLOR_WHITE, gfc_vector2d(520, 300));
@@ -738,7 +791,7 @@ void pause_menu(Sprite* menu, SJson* data) {
 void wave_start() {
     SJson* data_entry;
     LevelData* level;
-    float x, y;
+    GFC_Vector2D obj_loc;
     char buffer[9];
 
     level = get_level_data();
@@ -753,14 +806,18 @@ void wave_start() {
 
     switch (level->obj_type) {
         case KILL_ENEMY:
-            data_entry = sj_object_get_value(UI_data->wave_start_data, "kill_enemy_text");
-            sj_object_get_value_as_float(data_entry, "x_offset", &x);
-            sj_object_get_value_as_float(data_entry, "y_offset", &y);
+            data_entry = sj_object_get_value(UI_data->wave_start_data, "kill_enemy_text_offset");
 
             break;
+        default:
+            data_entry = NULL;
     }
 
-    gf2d_font_draw_line_tag(level->level_obj, FT_H2, GFC_COLOR_WHITE, gfc_vector2d(x,y));
+    if (!data_entry)
+        return;
+
+    sj_value_as_vector2d(data_entry, &obj_loc);
+    gf2d_font_draw_line_tag(level->level_obj, FT_H2, GFC_COLOR_WHITE, obj_loc);
 }
 
 void wave_completed() { 

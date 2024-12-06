@@ -35,6 +35,7 @@ typedef struct LevelData_S{
 	GFC_Vector3D	fencer_spawn;		// position of fencer attack region
 	Uint32			wave_count;
 	Uint8			wave_end;
+	Uint8			obj_complete;
 	float			game_start;
 	float			wave_end_time;
 	float			total_game_time;

@@ -484,7 +484,7 @@ void entity_reset() {
 }
 
 void enemy_reset() {
-    Entity* entityList, * target;
+    Entity* entityList, *target;
     int i;
 
     entityList = get_entityList();
@@ -493,18 +493,14 @@ void enemy_reset() {
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
-        if (target->entity_type != PROJECTILE)
-            continue;
-
-        entity_free(target);
+        if (target->entity_type == PROJECTILE)
+            entity_free(target);
     }
 
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
-        if (target->entity_type != ENEMY)
-            continue;
-
-        entity_free(target);
+        if (target->entity_type == ENEMY)
+            entity_free(target);
     }
 }

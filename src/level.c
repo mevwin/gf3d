@@ -42,6 +42,7 @@ void level_begin() {
     level->total_game_time = 0;
 
     level->wave_end = 0;
+    level->obj_complete = 0;
     level->wave_count = 1;
 
     level->total_scrap = 0;
@@ -167,36 +168,43 @@ void level_update() {
     world = get_world_data();
     entityList = get_entityList();
 
+    // check if level objective has been accomplished
     switch (level->obj_type) {
         case KILL_ENEMY:
-            if (level->enemy_killed >= level->enemy_goal) {
-                enemy_reset();
-                new_wave_level_reset();
-                player_upgrade();
-                shop_reset();
-
-
-                for (i = 0; i < MAX_ENTITY; i++) {
-                    item = &entityList[i];
-                    if (item->entity_type != ITEM) continue;
-
-                    i_data = item->data;
-
-                    if (i_data->type == SCRAP || i_data->type == HEALTH_PICKUP)
-                        item_activate(item, i_data->type);
-                    else
-                        entity_free(item);
-                }
-
-                level->wave_end_time = CURRENT_TIME;
-                level->total_game_time += (level->wave_end_time - level->game_start);
-
-                world->current_state = WAVE_COMPLETED;
-            }
+            if (level->enemy_killed >= level->enemy_goal)
+                level->obj_complete = 1;
+            
             break;
         case SURVIVE:
-
+            // if (CURRENT_TIME >= level->goal_timestamo)
+            //  level->obj_complete = 1;
+      
             break;
+    }
+
+    if (level->obj_complete) {
+        enemy_reset();
+        new_wave_level_reset();
+        player_upgrade();
+        shop_reset();
+
+        for (i = 0; i < MAX_ENTITY; i++) {
+            item = &entityList[i];
+            if (item->entity_type != ITEM) continue;
+
+            i_data = item->data;
+
+            if (i_data->type == SCRAP || i_data->type == HEALTH_PICKUP)
+                item_activate(item, i_data->type);
+            else
+                entity_free(item);
+        }
+
+        level->wave_end_time = CURRENT_TIME;
+        level->total_game_time += (level->wave_end_time - level->game_start);
+
+        level->obj_complete = 0;
+        world->current_state = WAVE_COMPLETED;
     }
 }
 
@@ -205,3 +213,11 @@ LevelData* get_level_data() {
 
     return level;
 }
+
+/**
+* procedural content generator
+*	- provide a palette/framework for the content
+*	- at what time frame should you spawn things?
+*	- provide different cases/scenarios for certain things
+*	- weigh the choices based on the world state
+*/
