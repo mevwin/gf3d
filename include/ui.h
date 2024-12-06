@@ -50,6 +50,8 @@ typedef struct UIData_S{
     Uint8           charge_shot_check;
     Uint8           nuke_check;
     Uint8           upgrade_cost;
+    Uint8           perk_cost;
+    Uint8           perk_sell_reduction;
 
             // player upgrade count (for "previous runs")
     Uint8           shields_count;
