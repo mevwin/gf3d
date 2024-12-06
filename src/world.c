@@ -104,7 +104,7 @@ void world_check_for_menu_input() {
 	}
 	else if (world->current_state == SHOP) {
 		if (gf2d_mouse_button_released(0) && gf2d_mouse_in_rect(ui->next_wave_block)) {
-			//free_perk_list();
+			empty_perk_list();
 			world->current_state = WAVE_START;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}

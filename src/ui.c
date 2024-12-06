@@ -15,8 +15,8 @@
 static UIData* UI_data;
 
 void display_new_perk(Perk* perk, Uint8 slot);
-void display_player_perk(Perk* perk);
-void buy_perk(Perk* perk);
+void display_player_perks(PlayerData* p_data);
+void buy_perk(GFC_List* perk_list, Perk* perk);
 void sell_perk(Perk* perk);
 
 void UI_init() {
@@ -254,12 +254,11 @@ void shop_hud_draw() {
     GFC_Rect dummy, dummy2;
     Perk* perk;
     GFC_List* perk_list;
-    int i, slot;
+    int i, new_slot;
 
     level = get_level_data();
     p_data = get_player_data();
 
-    slot = 1;
 
     gf2d_sprite_draw_image(UI_data->shop, gfc_vector2d(0, 0));
 
@@ -374,61 +373,118 @@ void shop_hud_draw() {
     }
 
     // perks section
-        // new perks
-    /*
-    if (!UI_data->perk3_bought) {
-        perk = gfc_list_nth(UI_data->new_perk_list, 2);
-        gf2d_draw_rect_filled(UI_data->new_perk3, perk->color);
-    }
-
-    if (!UI_data->perk2_bought) {
-        perk = gfc_list_nth(UI_data->new_perk_list, 1);
-        gf2d_draw_rect_filled(UI_data->new_perk2, perk->color);
-    }
-
-    if (!UI_data->perk1_bought) {
-        perk = gfc_list_nth(UI_data->new_perk_list, 0);
-        gf2d_draw_rect_filled(UI_data->new_perk1, perk->color);
-    }
-    */
     perk_list = get_perk_list();
     
-    for (i = 0; i < perk_list->count; i++) {
+    // display new perks for player to buy
+    for (i = 0, new_slot = 1; i < perk_list->count; i++) {
         perk = gfc_list_nth(perk_list, i);
 
-        if (perk->bought) //player perk
+        if (!perk) continue;
+
+        if (perk->bought) { //player just bought perk or perk is null do not display
+            new_slot++;
             continue;
+        }
         else { // new perk that can be bought 
-            display_new_perk(perk, slot);
-            slot++;
+            display_new_perk(perk, new_slot);
+            new_slot++;
         }
     }
 
-
+    // display player perks
+    display_player_perks(p_data);
 }
 
 void display_new_perk(Perk* perk, Uint8 slot) {
+    GFC_Rect desc_block;
+
     switch (slot) {
         case 1:
             gf2d_draw_rect_filled(UI_data->new_perk1, perk->color);
+            gf2d_font_draw_text_wrap_tag(perk->name, FT_Large, GFC_COLOR_WHITE, UI_data->new_perk1);
+            
+            gfc_rect_copy(desc_block, UI_data->new_perk1);
+            desc_block.x += 4;
+            desc_block.y += 50;
+            desc_block.w -= 50;
+
+            gf2d_font_draw_text_wrap_tag(perk->desc, FT_H5, GFC_COLOR_WHITE, desc_block);
+
             break;
         case 2:
             gf2d_draw_rect_filled(UI_data->new_perk2, perk->color);
+            gf2d_font_draw_text_wrap_tag(perk->name, FT_Large, GFC_COLOR_WHITE, UI_data->new_perk2);
+            
+            gfc_rect_copy(desc_block, UI_data->new_perk2);
+            desc_block.x += 4;
+            desc_block.y += 50;
+            desc_block.w -= 50;
+
+            gf2d_font_draw_text_wrap_tag(perk->desc, FT_H5, GFC_COLOR_WHITE, desc_block);
+
             break;
         case 3:
             gf2d_draw_rect_filled(UI_data->new_perk3, perk->color);
+            gf2d_font_draw_text_wrap_tag(perk->name, FT_Large, GFC_COLOR_WHITE, UI_data->new_perk3);
+
+            gfc_rect_copy(desc_block, UI_data->new_perk3);
+            desc_block.x += 4;
+            desc_block.y += 50;
+            desc_block.w -= 50;
+
+            gf2d_font_draw_text_wrap_tag(perk->desc, FT_H5, GFC_COLOR_WHITE, desc_block);
+
             break;
         default:
-            slog("slot not found");
+            slog("slot not found: %i", slot);
             return;
     }
 }
 
-void display_player_perk(Perk* perk){
+void display_player_perks(PlayerData* p_data){
+    Perk* perk;
+    
+    if (!p_data) return;
+
+    perk = p_data->perk1;
+    if (perk->type != NO_PERK) {
+        gf2d_draw_rect_filled(UI_data->curr_perk1, perk->color);
+    }
+
+    perk = p_data->perk2;
+    if (perk->type != NO_PERK) {
+        gf2d_draw_rect_filled(UI_data->curr_perk2, perk->color);
+    }
 
 }
 
-void buy_perk(Perk* perk) {
+void buy_perk(GFC_List* perk_list, Perk* perk) {
+    PlayerData* p_data;
+    Perk* player_perk;
+
+    p_data = get_player_data();
+
+    if (!p_data || !perk_list || !perk) {
+        slog("failed to buy perk");
+    }
+
+    // remove from perk list and give it to player data struct
+    //gfc_list_delete_data(perk_list, perk);
+
+    // check if player has empty slots
+    player_perk = p_data->perk1;
+    if (player_perk->type == NO_PERK) {
+        p_data->perk1 = copy_perk_data(perk);
+        return;
+    }
+
+    player_perk = p_data->perk2;
+    if (player_perk->type == NO_PERK) {
+        p_data->perk2 = copy_perk_data(perk);
+        return;
+    }
+
+    // at this point, player has no open slots and must sell perks
 
 }
 
@@ -439,12 +495,15 @@ void sell_perk(Perk* perk) {
 void shop_think() {
     LevelData* level;
     PlayerData* data;
+    Perk* perk_list;
 
     data = get_player_data();
     if (!data) return;
 
     level = get_level_data();
     if (!level->wave_end) return; // only allow buying during the end of the wave
+
+    perk_list = get_perk_list();
 
     if (gf2d_mouse_button_released(0)) {
         if (gf2d_mouse_in_rect(UI_data->shields_block)) {
@@ -540,9 +599,14 @@ void shop_think() {
                 //slog("not enough scrap");
         }
         else if (gf2d_mouse_in_rect(UI_data->new_perk1)) {
-
+            buy_perk(perk_list, gfc_list_nth(perk_list, 0));
         }
-
+        else if (gf2d_mouse_in_rect(UI_data->new_perk2)) {
+            buy_perk(perk_list, gfc_list_nth(perk_list, 1));
+        }
+        else if (gf2d_mouse_in_rect(UI_data->new_perk3)) {
+            buy_perk(perk_list, gfc_list_nth(perk_list, 2));
+        }
 
         gfc_sound_play(get_sound_data()->confirm, 0, 0.5, -1, -1);
     }

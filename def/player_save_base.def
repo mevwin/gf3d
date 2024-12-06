@@ -10,8 +10,22 @@
         "single_shot_bonus": 0,
         "charge_shot_mult": 1,
         "nuke_cost":0,
-        "perk1": "NO_PERK",
-        "perk2": "NO_PERK"
+        "perk1": {
+            "type": "0",
+            "name": "null",
+            "desc": "null",
+            "color": [0, 0, 0, 0],
+            "num_effect": 0,
+            "uses": 0
+        },
+        "perk2": {
+            "type": "0",
+            "name": "null",
+            "desc": "null",
+            "color": [0, 0, 0, 0],
+            "num_effect": 0,
+            "uses": 0
+        }
     },
     "level_data":
     {

@@ -9,7 +9,6 @@
 #include "reticle.h"
 #include "item.h"
 #include "world.h"
-#include "perk.h"
 
 #define PLAYER_SPAWN gfc_vector3d(0, 0 ,0);
 #define DAMAGE_TIMING 0.5f
@@ -35,9 +34,11 @@ Entity* player_spawn() {
 
     if (!data) return NULL;
 
-    player_data_init(data);
+
     if (get_world_data()->continue_from_save)
         player_data_init_from_save(data);
+    else 
+        player_data_init(data);
         
     position = PLAYER_SPAWN;
     self->position = position;
@@ -98,6 +99,11 @@ void player_data_init(PlayerData* data) {
    
     data->active_item = NONE;
     data->item_duration = 0;
+
+    // create default perks (NO_PERKS)
+    // made to be updated later
+    data->perk1 = create_dummy_perk();
+    data->perk2 = create_dummy_perk();
 
     // default player bounds
     data->x_bound = 49; // left is positive, right is negative
@@ -338,6 +344,9 @@ void player_free(Entity* self){
     
     if (data->reticle)
         entity_free(data->reticle);
+
+    free(data->perk1);
+    free(data->perk2);
 
     free(data);
 }
