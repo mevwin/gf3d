@@ -11,7 +11,7 @@
         "charge_shot_mult": 1,
         "nuke_cost":0,
         "perk1": {
-            "type": "0",
+            "type": 0,
             "name": "null",
             "desc": "null",
             "color": [0, 0, 0, 0],
@@ -19,7 +19,7 @@
             "uses": 0
         },
         "perk2": {
-            "type": "0",
+            "type": 0,
             "name": "null",
             "desc": "null",
             "color": [0, 0, 0, 0],

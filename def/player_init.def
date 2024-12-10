@@ -11,8 +11,6 @@
         "vortex_max": 40.0,
         "base_damage": 200.0,
         "charge_shot_mult": 3.0
-        "perk1": "NO_PERK",
-        "perk2": "NO_PERK"
     }
 
 

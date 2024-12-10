@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "gfc_input.h"
+#include "gfc_config.h"
 #include "gfc_audio.h"
 #include "gf2d_mouse.h"
 #include "player.h"
@@ -138,7 +139,8 @@ void player_data_init(PlayerData* data) {
 }
 
 void player_data_init_from_save(PlayerData* data) {
-    SJson* save, *data_entry;
+    SJson* save, *data_entry, *perk_entry;
+    PerkType perk_type;
 
     if (!data) return;
 
@@ -156,6 +158,29 @@ void player_data_init_from_save(PlayerData* data) {
     sj_object_get_value_as_float(data_entry, "single_shot_bonus", &data->single_shot_bonus);
     sj_object_get_value_as_float(data_entry, "charge_shot_mult", &data->charge_shot_mult);
     sj_object_get_value_as_int(data_entry, "nuke_cost", &data->nuke_cost);
+
+    // load perks
+    perk_entry = sj_object_get_value(data_entry, "perk1");
+    sj_object_get_value_as_int(perk_entry, "type", &perk_type);
+    if (perk_type != NO_PERK) {
+        data->perk1->type = perk_type;
+        sj_object_get_value_as_int(perk_entry, "uses", &data->perk1->uses);
+        sj_object_get_value_as_int(perk_entry, "num_effect", &data->perk1->num_effect);
+        strcpy(data->perk1->name, sj_object_get_value_as_string(perk_entry, "name"));
+        strcpy(data->perk1->desc, sj_object_get_value_as_string(perk_entry, "desc"));
+        data->perk1->color = sj_object_get_color(perk_entry, "color");
+    }
+
+    perk_entry = sj_object_get_value(data_entry, "perk2");
+    sj_object_get_value_as_int(data_entry, "type", &perk_type);
+    if (perk_type != NO_PERK) {
+        data->perk2->type = perk_type;
+        sj_object_get_value_as_int(perk_entry, "uses", &data->perk2->uses);
+        sj_object_get_value_as_int(perk_entry, "num_effect", &data->perk2->num_effect);
+        strcpy(data->perk2->name, sj_object_get_value_as_string(perk_entry, "name"));
+        strcpy(data->perk2->desc, sj_object_get_value_as_string(perk_entry, "desc"));
+        data->perk2->color = sj_object_get_color(perk_entry, "color");
+    }
 
     sj_free(save);
 }

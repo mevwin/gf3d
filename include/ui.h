@@ -66,6 +66,7 @@ typedef struct UIData_S{
     GFC_Rect        new_perk1;
     GFC_Rect        new_perk2;
     GFC_Rect        new_perk3;
+    GFC_Rect        s_perk_desc;
 
     /*player UI*/
     SJson*          player_hud_data;

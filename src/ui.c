@@ -113,6 +113,10 @@ void UI_init() {
     sj_object_get_value_as_float(position_data, "p3y_offset", &y_start);
     UI_data->new_perk3 = gfc_rect(x_start, y_start, width, height);
 
+    dimen_data = sj_object_get_value(position_data, "desc_box");
+    sj_value_as_vector4d(dimen_data, &rect);
+    UI_data->s_perk_desc = gfc_rect_from_vector4(rect);
+
     /*player UI*/
     UI_data->player_hud_data = sj_load("menus/player_hud.menu");
     UI_data->player_hud = gf2d_sprite_load_image("images/UI/player_hud/player_hud.png");
@@ -498,6 +502,8 @@ void shop_hud_draw() {
 
         // display player perks
     display_player_perks(p_data);
+
+
 }
 
 void display_new_perk(Perk* perk, Uint8 slot) {
@@ -557,9 +563,19 @@ void display_player_perks(PlayerData* p_data){
 
     perk = p_data->perk1;
     if (perk->type != NO_PERK) {
-        if (world->current_state == SHOP)
+        if (world->current_state == SHOP) {
             gf2d_draw_rect_filled(UI_data->curr_perk1, perk->color);
 
+            if (gf2d_mouse_in_rect(UI_data->curr_perk1)) {
+                gf2d_draw_rect_filled(UI_data->s_perk_desc, perk->color);
+                gf2d_font_draw_text_wrap_tag(perk->name, FT_Large, GFC_COLOR_WHITE, UI_data->s_perk_desc);
+                gfc_rect_copy(desc_block, UI_data->s_perk_desc);
+                desc_block.x += 4;
+                desc_block.y += 50;
+
+                gf2d_font_draw_text_wrap_tag(perk->desc, FT_H5, GFC_COLOR_WHITE, desc_block);
+            }
+        }
         else if (world->current_state == PAUSE_MENU || world->current_state == GAME_OVER) {
             gf2d_draw_rect_filled(UI_data->p_perk1, perk->color);
 
@@ -578,9 +594,19 @@ void display_player_perks(PlayerData* p_data){
 
     perk = p_data->perk2;
     if (perk->type != NO_PERK) {
-        if (world->current_state == SHOP)
+        if (world->current_state == SHOP) {
             gf2d_draw_rect_filled(UI_data->curr_perk2, perk->color);
 
+            if (gf2d_mouse_in_rect(UI_data->curr_perk2)) {
+                gf2d_draw_rect_filled(UI_data->s_perk_desc, perk->color);
+                gf2d_font_draw_text_wrap_tag(perk->name, FT_Large, GFC_COLOR_WHITE, UI_data->s_perk_desc);
+                gfc_rect_copy(desc_block, UI_data->s_perk_desc);
+                desc_block.x += 4;
+                desc_block.y += 50;
+
+                gf2d_font_draw_text_wrap_tag(perk->desc, FT_H5, GFC_COLOR_WHITE, desc_block);
+            }
+        }
         else if (world->current_state == PAUSE_MENU || world->current_state == GAME_OVER) {
             gf2d_draw_rect_filled(UI_data->p_perk2, perk->color);
 

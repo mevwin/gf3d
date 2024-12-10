@@ -1,4 +1,5 @@
 #include "simple_logger.h"
+#include "simple_json_array.h"
 #include "gf2d_mouse.h"
 #include "gfc_input.h"
 #include "gfc_audio.h"
@@ -403,8 +404,7 @@ void game_save() {
 	PlayerData* p_data;
 	LevelData* level;
 	UIData* ui;
-	SJson* save, * value, * data_entry;
-	char buffer[4];
+	SJson* save, *value, *data_entry, *perk_entry, *color;
 	Uint32 wave_check;
 
 	p_data = get_player_data();
@@ -465,6 +465,63 @@ void game_save() {
 
 	data_entry = sj_object_get_value(value, "nuke_cost");
 	data_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->nuke_cost));
+
+		// perks
+	if (p_data->perk1->type != NO_PERK) {
+		data_entry = sj_object_get_value(value, "perk1");
+		perk_entry = sj_object_get_value(data_entry, "type");
+		perk_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->perk1->type));
+
+		perk_entry = sj_object_get_value(data_entry, "name");
+		perk_entry->v.string = sj_new_str(p_data->perk1->name)->v.string;
+
+		perk_entry = sj_object_get_value(data_entry, "desc");
+		perk_entry->v.string = sj_new_str(p_data->perk1->desc)->v.string;
+
+		perk_entry = sj_object_get_value(data_entry, "num_effect");
+		perk_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->perk1->type));
+
+		perk_entry = sj_object_get_value(data_entry, "uses");
+		perk_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->perk1->uses));
+
+		perk_entry = sj_object_get_value(data_entry, "color");
+		color = sj_array_new();
+
+		sj_array_append(color, sj_new_float(p_data->perk1->color.r));
+		sj_array_append(color, sj_new_float(p_data->perk1->color.g));
+		sj_array_append(color, sj_new_float(p_data->perk1->color.b));
+		sj_array_append(color, sj_new_float(p_data->perk1->color.a));
+
+		perk_entry->v.array = color->v.array;
+	}
+
+	if (p_data->perk2->type != NO_PERK) {
+		data_entry = sj_object_get_value(value, "perk2");
+		perk_entry = sj_object_get_value(data_entry, "type");
+		perk_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->perk2->type));
+
+		perk_entry = sj_object_get_value(data_entry, "name");
+		perk_entry->v.string = sj_new_str(p_data->perk2->name)->v.string;
+
+		perk_entry = sj_object_get_value(data_entry, "desc");
+		perk_entry->v.string = sj_new_str(p_data->perk2->desc)->v.string;
+
+		perk_entry = sj_object_get_value(data_entry, "num_effect");
+		perk_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->perk2->type));
+
+		perk_entry = sj_object_get_value(data_entry, "uses");
+		perk_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->perk2->uses));
+
+		perk_entry = sj_object_get_value(data_entry, "color");
+		color = sj_array_new();
+
+		sj_array_append(color, sj_new_float(p_data->perk2->color.r));
+		sj_array_append(color, sj_new_float(p_data->perk2->color.g));
+		sj_array_append(color, sj_new_float(p_data->perk2->color.b));
+		sj_array_append(color, sj_new_float(p_data->perk2->color.a));
+
+		perk_entry->v.array = color->v.array;
+	}
 
 	// upgrades save
 	value = sj_object_get_value(save, "upgrades");
