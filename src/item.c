@@ -6,7 +6,6 @@
 #include "level.h"
 
 #define ITEM_Z_OFFSET 15.0f
-#define POWERUP_DURATION 25.0f
 #define SCRAP_SPEED 1.0f
 #define POWERUP_SPEED 2.0f
 
@@ -150,11 +149,11 @@ void item_activate(Entity* self, int type) {
     }
     else if (type == HAPPY_TRIGGER) {
         player->active_item = HAPPY_TRIGGER;
-        player->item_duration = time + 5.0f;
+        player->item_duration = time + HAPPYTRIG_DUR;
     }
     else if (type == INVINCIBILITY) {
         player->active_item = INVINCIBILITY;
-        player->item_duration = time + 10.0f;
+        player->item_duration = time + INVINCIBILITY_DUR;
     }
 
     if (type != SCRAP)

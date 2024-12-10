@@ -12,12 +12,15 @@
 #include "item.h"
 #include "perk.h"
 
+#define NOTIF_TIME_MAX (3.0f)
+
 static UIData* UI_data;
 
 void display_new_perk(Perk* perk, Uint8 slot);
 void display_player_perks(PlayerData* p_data);
 void buy_perk(GFC_List* perk_list, Perk* perk);
 void sell_perk(PlayerData* p_data, Uint8 slot);
+void notif_window(NotifType notif_type);
 
 void UI_init() {
     SJson* position_data, *dimen_data;
@@ -158,6 +161,8 @@ void UI_init() {
     /*pause menu*/
     UI_data->pause_menu = gf2d_sprite_load_image("images/UI/pause_menu/pause_menu.png");
     UI_data->pause_menu_data = sj_load("menus/pause_menu.menu");
+    UI_data->item_progress_bar = gf2d_sprite_load_image("images/UI/pause_menu/item_progress_bar.png");
+    UI_data->p_progress_bar = gf2d_sprite_load_image("images/UI/pause_menu/game_progress_bar.png");
 
         // menu blocks
     position_data = sj_object_get_value(UI_data->pause_menu_data, "option_pos");
@@ -237,6 +242,11 @@ void UI_init() {
     UI_data->nuke_alpha = 0.0f;
     UI_data->emper_alpha = 0.0f;
 
+    /*notif*/
+    UI_data->notif_data = sj_load("def/notifications.def");
+    UI_data->notif_block = gf2d_sprite_load_image("images/UI/notifications/notif_bar.png");
+    UI_data->notif_dur = gf2d_sprite_load_image("images/UI/notifications/notif_duration.png");
+
     atexit(UI_free);
 }
 
@@ -248,6 +258,7 @@ void UI_free() {
     sj_free(UI_data->wave_completed_data);
     sj_free(UI_data->game_over_data);
     sj_free(UI_data->shop_data);
+    sj_free(UI_data->notif_data);
     gf2d_sprite_free(UI_data->player_hud);
     gf2d_sprite_free(UI_data->start_menu);
     gf2d_sprite_free(UI_data->pause_menu);
@@ -262,7 +273,10 @@ void UI_free() {
     gf2d_sprite_free(UI_data->progress_bar);
     gf2d_sprite_free(UI_data->enemy_health);
     gf2d_sprite_free(UI_data->enemy_health_back);
-
+    gf2d_sprite_free(UI_data->p_progress_bar);
+    gf2d_sprite_free(UI_data->item_progress_bar);
+    gf2d_sprite_free(UI_data->notif_block);
+    gf2d_sprite_free(UI_data->notif_dur);
 
     free(UI_data);
 }
@@ -483,7 +497,6 @@ void shop_hud_draw() {
     }
 
     // perks section
-
         // display new perks for player to buy
     for (i = 0, new_slot = 1; i < perk_list->count; i++) {
         perk = gfc_list_nth(perk_list, i);
@@ -503,6 +516,9 @@ void shop_hud_draw() {
         // display player perks
     display_player_perks(p_data);
 
+    // notifications
+    if (UI_data->notif_flag)
+        notif_window(UI_data->notif_type);
 
 }
 
@@ -638,17 +654,33 @@ void buy_perk(GFC_List* perk_list, Perk* perk) {
     //gfc_list_delete_data(perk_list, perk);
 
     // check if player has empty slots
-    player_perk = p_data->perk1;
-    if (player_perk->type == NO_PERK) {
-        p_data->perk1 = copy_perk_data(perk);
-        p_data->currScrap -= UI_data->perk_cost;
+    if (p_data->perk1->type == NO_PERK) {
+
+        // check if player has duplicate perk
+        if (p_data->perk2->type != perk->type) {
+            p_data->perk1 = copy_perk_data(perk);
+            p_data->currScrap -= UI_data->perk_cost;
+        }
+        else {
+            UI_data->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+            UI_data->notif_flag = 1;
+            UI_data->notif_type = DUPE_PERKS;
+        }
         return;
     }
 
-    player_perk = p_data->perk2;
-    if (player_perk->type == NO_PERK) {
-        p_data->perk2 = copy_perk_data(perk);
-        p_data->currScrap -= UI_data->perk_cost;
+    if (p_data->perk2->type == NO_PERK) {
+
+        // check if player has duplicate perk
+        if (p_data->perk1->type != perk->type) {
+            p_data->perk2 = copy_perk_data(perk);
+            p_data->currScrap -= UI_data->perk_cost;
+        }
+        else {
+            UI_data->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+            UI_data->notif_flag = 1;
+            UI_data->notif_type = DUPE_PERKS;
+        }
         return;
     }
 
@@ -663,42 +695,29 @@ void sell_perk(PlayerData* p_data, Uint8 slot) {
 
     switch (slot) {
         case 1:
-            perk = p_data->perk1;
-
-            if (perk->type == NO_PERK)
-                return;
-
-            perk->type = NO_PERK;
-            perk->type = 0;
-            perk->num_effect = 0;
-            sprintf(perk->name, "0");
-            sprintf(perk->desc, "0");
-            perk->color = gfc_color(0, 0, 0, 0);
-
-            p_data->currScrap += UI_data->perk_cost - UI_data->perk_sell_reduction;
-                
+            perk = p_data->perk1;    
             break;
 
         case 2:
             perk = p_data->perk2;
-
-            if (perk->type == NO_PERK)
-                return;
-
-            perk->type = NO_PERK;
-            perk->type = 0;
-            perk->num_effect = 0;
-            sprintf(perk->name, "0");
-            sprintf(perk->desc, "0");
-            perk->color = gfc_color(0, 0, 0, 0);
-
-            p_data->currScrap += UI_data->perk_cost - UI_data->perk_sell_reduction;
-
             break;
 
         default:
             slog("invalid slot");
+            return;
     }
+
+    if (perk->type == NO_PERK)
+        return;
+
+    perk->type = NO_PERK;
+    perk->type = 0;
+    perk->num_effect = 0;
+    sprintf(perk->name, "0");
+    sprintf(perk->desc, "0");
+    perk->color = gfc_color(0, 0, 0, 0);
+
+    p_data->currScrap += UI_data->perk_cost - UI_data->perk_sell_reduction;
     
     if (p_data->currScrap > p_data->maxScrap)
         p_data->currScrap = p_data->maxScrap;
@@ -734,8 +753,11 @@ void shop_think() {
                 UI_data->shields_count++;
                 //slog("more shields");
             }
-            //else
-                //slog("not enough scrap");
+            else {
+                UI_data->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+                UI_data->notif_flag = 1;
+                UI_data->notif_type = NO_SCRAP;
+            }
         }
         else if (gf2d_mouse_in_rect(UI_data->scrap_block)) {
             if (UI_data->more_scrap_check >= UI_data->more_scrap_max) {
@@ -750,8 +772,11 @@ void shop_think() {
                 UI_data->more_scrap_count++;
                 //slog("more scrap");
             }
-            //else
-                //slog("not enough scrap");
+            else {
+                UI_data->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+                UI_data->notif_flag = 1;
+                UI_data->notif_type = NO_SCRAP;
+            }
         }
         else if (gf2d_mouse_in_rect(UI_data->missiles_block)) {
             if (UI_data->missiles_check >= UI_data->missiles_max) {
@@ -765,8 +790,11 @@ void shop_think() {
                 UI_data->missiles_count++;
                 //slog("missile up");
             }
-            //else
-                //slog("not enough scrap");
+            else {
+                UI_data->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+                UI_data->notif_flag = 1;
+                UI_data->notif_type = NO_SCRAP;
+            }
         }
         else if (gf2d_mouse_in_rect(UI_data->single_shot_block)) {
             if (UI_data->single_shot_check >= UI_data->single_shot_max) {
@@ -780,8 +808,11 @@ void shop_think() {
                 UI_data->single_shot_count++;
                 //slog("more single");
             }
-            //else
-                //slog("not enough scrap");
+            else {
+                UI_data->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+                UI_data->notif_flag = 1;
+                UI_data->notif_type = NO_SCRAP;
+            }
         }
         else if (gf2d_mouse_in_rect(UI_data->charge_shot_block)) {
             if (UI_data->charge_shot_check >= UI_data->charge_shot_max) {
@@ -795,8 +826,11 @@ void shop_think() {
                 UI_data->charge_shot_count++;
                 //slog("more charge");
             }
-            //else
-                //slog("not enough scrap");
+            else {
+                UI_data->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+                UI_data->notif_flag = 1;
+                UI_data->notif_type = NO_SCRAP;
+            }
         }
         else if (gf2d_mouse_in_rect(UI_data->nuke_block)) {
             if (UI_data->nuke_check >= UI_data->nuke_max) {
@@ -809,23 +843,40 @@ void shop_think() {
                 UI_data->nuke_check++;
                 //slog("nuke down");
             }
-            //else
-                //slog("not enough scrap");
+            else {
+                UI_data->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+                UI_data->notif_flag = 1;
+                UI_data->notif_type = NO_SCRAP;
+            }
         }
         else if (gf2d_mouse_in_rect(UI_data->new_perk1)) {
             if (data->currScrap >= UI_data->perk_cost) {
                 buy_perk(perk_list, gfc_list_nth(perk_list, 0));
             }
-            // else return;
+            else {
+                UI_data->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+                UI_data->notif_flag = 1;
+                UI_data->notif_type = NO_SCRAP;
+            }
         }
         else if (gf2d_mouse_in_rect(UI_data->new_perk2)) {
             if (data->currScrap >= UI_data->perk_cost) {
                 buy_perk(perk_list, gfc_list_nth(perk_list, 1));
             }
+            else {
+                UI_data->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+                UI_data->notif_flag = 1;
+                UI_data->notif_type = NO_SCRAP;
+            }
         }
         else if (gf2d_mouse_in_rect(UI_data->new_perk3)) {
             if (data->currScrap >= UI_data->perk_cost) {
                 buy_perk(perk_list, gfc_list_nth(perk_list, 2));
+            }
+            else {
+                UI_data->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+                UI_data->notif_flag = 1;
+                UI_data->notif_type = NO_SCRAP;
             }
         }
         else if (gf2d_mouse_in_rect(UI_data->curr_perk1)) {
@@ -934,15 +985,13 @@ void player_hud(void* d) {
 
     gf2d_sprite_draw(UI_data->player_vortex, bar_position, &scale, 
                     NULL, NULL, NULL, NULL, NULL, NULL);
-
     
-    /*
     // power up notifs
-    if (data->active_item == HAPPY_TRIGGER) 
-        gf2d_font_draw_line_tag("HAPPY TRIGGER", FT_H4, GFC_COLOR_WHITE, gfc_vector2d(520, 300));
+    if (data->active_item == HAPPY_TRIGGER)
+        notif_window(HAPPYTRIG_POWERUP);
     else if (data->active_item == INVINCIBILITY)
-        gf2d_font_draw_line_tag("INVICIBILITY", FT_H4, GFC_COLOR_WHITE, gfc_vector2d(520, 300));
-    */
+        notif_window(INVINCE_POWERUP);
+
 
     // visual for super nuke
     if (data->nuke_flag) {
@@ -987,10 +1036,11 @@ void start_menu() {
 
 void pause_menu(Sprite* menu, SJson* data) {
     SJson* data_entry;
-    float x, y, width, height;
+    float x, y, width;
     float progress, goal;
     LevelData* level;
     PlayerData* p_data;
+    GFC_Vector2D scale, offset;
 
     level = get_level_data();
     p_data = get_player_data();
@@ -1000,10 +1050,7 @@ void pause_menu(Sprite* menu, SJson* data) {
 
     // progress bar draw
     data_entry = sj_object_get_value(data, "progress_bar");
-    sj_object_get_value_as_float(data_entry, "x_offset", &x);
-    sj_object_get_value_as_float(data_entry, "y_offset", &y);
-    sj_object_get_value_as_float(data_entry, "width", &width);
-    sj_object_get_value_as_float(data_entry, "height", &height);
+    sj_value_as_vector2d(sj_object_get_value(data_entry, "bar_offset"), &offset);
 
         // check objective type
     switch (level->obj_type){   
@@ -1016,65 +1063,83 @@ void pause_menu(Sprite* menu, SJson* data) {
             break;
     }
 
-    width *= (progress / goal);
-    gf2d_draw_rect_filled(gfc_rect(x, y, width, height), GFC_COLOR_LIGHTBLUE);
+    scale = gfc_vector2d(progress / goal, 1.0f);
 
-    sj_object_get_value_as_float(data_entry, "text_x_offset", &x);
-    sj_object_get_value_as_float(data_entry, "text_y_offset", &y);
-    gf2d_font_draw_line_tag(level->level_obj, FT_Large, GFC_COLOR_WHITE, gfc_vector2d(x, y));
+    gf2d_sprite_draw(UI_data->p_progress_bar, offset, &scale, 
+        NULL, NULL, NULL, NULL, NULL, NULL);
+
+        // lvl objective text
+    sj_value_as_vector2d(sj_object_get_value(data_entry, "text_offset"), &offset);
+    gf2d_font_draw_line_tag(level->level_obj, FT_Large, GFC_COLOR_WHITE, offset);
 
     // upgrade progress draws
     data_entry = sj_object_get_value(data, "item_progress_bar");
-    sj_object_get_value_as_float(data_entry, "width", &width);
-    sj_object_get_value_as_float(data_entry, "height", &height);
 
         // shields
-    sj_object_get_value_as_float(data_entry, "column_1", &x);
-    sj_object_get_value_as_float(data_entry, "row_1", &y);
+    sj_value_as_vector2d(sj_object_get_value(data_entry, "shields_offset"), &offset);
     progress = (float) UI_data->shields_check;
     goal = (float) UI_data->shields_max;
 
-    gf2d_draw_rect_filled(gfc_rect(x, y, width * (progress / goal), height), GFC_COLOR_LIGHTBLUE);
+    width = (progress / goal);
+    scale = gfc_vector2d(width, 1.0f);
+
+    gf2d_sprite_draw(UI_data->item_progress_bar, offset, &scale,
+        NULL, NULL, NULL, NULL, NULL, NULL);
 
         // scrap up
-    sj_object_get_value_as_float(data_entry, "column_2", &x);
-    sj_object_get_value_as_float(data_entry, "row_1_b", &y);
-    progress = (float) UI_data->more_scrap_check;
-    goal = (float) UI_data->more_scrap_max;
+    sj_value_as_vector2d(sj_object_get_value(data_entry, "scrapup_offset"), &offset);
+    progress = (float)UI_data->more_scrap_check;
+    goal = (float)UI_data->more_scrap_max;
 
-    gf2d_draw_rect_filled(gfc_rect(x, y, width * (progress / goal), height), GFC_COLOR_LIGHTBLUE);
+    width = (progress / goal);
+    scale = gfc_vector2d(width, 1.0f);
+
+    gf2d_sprite_draw(UI_data->item_progress_bar, offset, &scale,
+        NULL, NULL, NULL, NULL, NULL, NULL);
 
         // missiles up
-    sj_object_get_value_as_float(data_entry, "column_3", &x);
-    sj_object_get_value_as_float(data_entry, "row_1_b", &y);
-    progress = (float) UI_data->missiles_check;
-    goal = (float) UI_data->missiles_max;
+    sj_value_as_vector2d(sj_object_get_value(data_entry, "missiles_offset"), &offset);
+    progress = (float)UI_data->missiles_check;
+    goal = (float)UI_data->missiles_max;
 
-    gf2d_draw_rect_filled(gfc_rect(x, y, width * (progress / goal), height), GFC_COLOR_LIGHTBLUE);
+    width = (progress / goal);
+    scale = gfc_vector2d(width, 1.0f);
+
+    gf2d_sprite_draw(UI_data->item_progress_bar, offset, &scale,
+        NULL, NULL, NULL, NULL, NULL, NULL);
 
         // single shot dmg up
-    sj_object_get_value_as_float(data_entry, "column_1", &x);
-    sj_object_get_value_as_float(data_entry, "row_2", &y);
-    progress = (float) UI_data->single_shot_check;
-    goal = (float) UI_data->single_shot_max;
+    sj_value_as_vector2d(sj_object_get_value(data_entry, "singleshot_offset"), &offset);
+    progress = (float)UI_data->single_shot_check;
+    goal = (float)UI_data->single_shot_max;
 
-    gf2d_draw_rect_filled(gfc_rect(x, y, width * (progress / goal), height), GFC_COLOR_LIGHTBLUE);
+    width = (progress / goal);
+    scale = gfc_vector2d(width, 1.0f);
+
+    gf2d_sprite_draw(UI_data->item_progress_bar, offset, &scale,
+        NULL, NULL, NULL, NULL, NULL, NULL);
 
         // charge shot dmg up
-    sj_object_get_value_as_float(data_entry, "column_2", &x);
-    sj_object_get_value_as_float(data_entry, "row_2", &y);
-    progress = (float) UI_data->charge_shot_check;
-    goal = (float) UI_data->charge_shot_max;
+    sj_value_as_vector2d(sj_object_get_value(data_entry, "chargeshot_offset"), &offset);
+    progress = (float)UI_data->charge_shot_check;
+    goal = (float)UI_data->charge_shot_max;
 
-    gf2d_draw_rect_filled(gfc_rect(x, y, width * (progress / goal), height), GFC_COLOR_LIGHTBLUE);
+    width = (progress / goal);
+    scale = gfc_vector2d(width, 1.0f);
+
+    gf2d_sprite_draw(UI_data->item_progress_bar, offset, &scale,
+        NULL, NULL, NULL, NULL, NULL, NULL);
 
         // nuke cost down
-    sj_object_get_value_as_float(data_entry, "column_3", &x);
-    sj_object_get_value_as_float(data_entry, "row_2", &y);
-    progress = (float) UI_data->nuke_check;
-    goal = (float) UI_data->nuke_max;
+    sj_value_as_vector2d(sj_object_get_value(data_entry, "nukecost_offset"), &offset);
+    progress = (float)UI_data->nuke_check;
+    goal = (float)UI_data->nuke_max;
 
-    gf2d_draw_rect_filled(gfc_rect(x, y, width * (progress / goal), height), GFC_COLOR_LIGHTBLUE);
+    width = (progress / goal);
+    scale = gfc_vector2d(width, 1.0f);
+
+    gf2d_sprite_draw(UI_data->item_progress_bar, offset, &scale,
+        NULL, NULL, NULL, NULL, NULL, NULL);
 
     // perks draws (TODO)
     display_player_perks(p_data);
@@ -1171,9 +1236,7 @@ void enemy_hud(void* e, GFC_Vector3D position) {
     player_data = get_player_data();
     level = get_level_data();
 
-    health = data->currHealth;
-    maxhealth = data->maxHealth;
-    currHealth = (float)(health / maxhealth);
+    currHealth = data->currHealth / data->maxHealth;
 
     bar_position = gfc_3DPos_to_2DPos(position, data->x_bound, data->z_bound);
     scale = gfc_vector2d(currHealth, 1);
@@ -1228,6 +1291,59 @@ void enemy_hud_all() {
 
         enemy_hud(enemy->data, enemy->position);
     }
+}
+
+void notif_window(NotifType notif_type) {
+    SJson *notif, *data;
+    char buffer[30];
+    int index;
+    float width;
+    GFC_Rect rect_buf;
+    GFC_Color color;;
+    GFC_Vector2D scale, offset;
+
+    data = sj_object_get_value(UI_data->notif_data, "notifs");
+    index = (int) notif_type;
+
+    if (sj_is_array(data)) {
+        notif = sj_array_get_nth(data, index);
+
+        if (!notif) {
+            slog("nope");
+            return;
+        }
+
+        strcpy(buffer, sj_object_get_value_as_string(notif, "text"));
+
+        sj_value_as_vector2d(sj_object_get_value(notif, "notif_rect_offset"), &offset);
+        color = sj_object_get_color(notif, "color");
+
+        gf2d_sprite_draw_image(UI_data->notif_block, offset);
+        gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, offset);
+        
+        // duration meter
+        sj_value_as_vector2d(sj_object_get_value(notif, "notif_dur_offset"), &offset);
+
+        if (notif_type == HAPPYTRIG_POWERUP || notif_type == INVINCE_POWERUP)
+            width = notif_type == HAPPYTRIG_POWERUP ? 
+                (get_player_data()->item_duration - CURRENT_TIME) / HAPPYTRIG_DUR : 
+                (get_player_data()->item_duration - CURRENT_TIME) / INVINCIBILITY_DUR;
+        else if (notif_type == NO_SCRAP || notif_type == DUPE_PERKS)
+            width = (UI_data->notification_time - CURRENT_TIME) / NOTIF_TIME_MAX;
+        else
+            width = 0;
+
+        scale = gfc_vector2d(width, 1.0f);
+        if (width > 0) {
+            gf2d_sprite_draw(UI_data->notif_dur, offset, &scale,
+                NULL, NULL, NULL, NULL, NULL, NULL);
+        }
+        else
+            UI_data->notif_flag = 0;
+        
+    }
+    else
+        slog("not an array");
 }
 
 UIData* get_UI_data() {

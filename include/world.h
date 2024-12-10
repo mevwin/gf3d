@@ -14,12 +14,12 @@
 
 typedef enum GameState_E{
 	START_MENU,
+	PREVIOUS,
 	LOADING_SCREEN,
 	PAUSE_MENU,
 	SHOP,
 	WAVE_START,
 	WAVE_COMPLETED,
-	NEXT_MAP,
 	GAME_OVER,
 	IN_GAME,
 	NO_OPTION				// option for nothing

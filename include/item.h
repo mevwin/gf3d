@@ -3,6 +3,10 @@
 
 #include "entity.h"
 
+#define POWERUP_DURATION 25.0f //cooldown between powerups
+#define INVINCIBILITY_DUR 10.0f
+#define HAPPYTRIG_DUR 5.0f
+
 typedef enum ItemType_E{
 	SCRAP,
 	NONE,

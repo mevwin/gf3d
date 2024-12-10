@@ -15,6 +15,8 @@
 #define DAMAGE_TIMING 0.5f
 
 static Entity* self;
+
+// timing passive health regen
 static float then = 0;
 static float now = 0;
 
@@ -425,6 +427,12 @@ void player_take_damage(Entity* self, PlayerData* data, float time) {
 
     if (data->active_item == INVINCIBILITY)
         return;
+
+    // INVINCIBLE_ROLL PERK IMPLEMENTATION
+    if (data->mid_roll && (data->roll == RIGHT || data->roll == LEFT)) {
+        if (data->perk1->type == INVINCIBLE_ROLL || data->perk2->type == INVINCIBLE_ROLL)
+            return;
+    }
 
     // DMG_RESIST PERK IMPLEMENTATION
     perk = data->perk1;

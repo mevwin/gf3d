@@ -161,12 +161,11 @@ void barrel_roll(Entity* self, PlayerData* data){
 
         gfc_vector3d_add(self->position, self->position, updir);
 
-        // animation
         data->upspeed -= 0.1f;
        
         if (data->upspeed < 0) {
             data->mid_roll = 0;
-            data->upspeed = 1.2f;
+            data->upspeed = data->upspeed_def;
         }
     }
     else if (data->roll == RIGHT) {
@@ -183,7 +182,7 @@ void barrel_roll(Entity* self, PlayerData* data){
 
         if (data->rigspeed < 0) {
             data->mid_roll = 0;
-            data->rigspeed = 1.2f;
+            data->rigspeed = data->rigspeed_def;
         }
     }
     else if (data->roll == UP) {
@@ -192,12 +191,11 @@ void barrel_roll(Entity* self, PlayerData* data){
 
         gfc_vector3d_add(self->position, self->position, updir);
 
-        // animation
         data->upspeed -= 0.1f;
 
         if (data->upspeed < 0) {
             data->mid_roll = 0;
-            data->upspeed = 1.2f;
+            data->upspeed = data->upspeed_def;
         }
     }
     else if (data->roll == LEFT) {
@@ -213,7 +211,7 @@ void barrel_roll(Entity* self, PlayerData* data){
 
         if (data->rigspeed < 0) {
             data->mid_roll = 0;
-            data->rigspeed = 1.2f;
+            data->rigspeed = data->rigspeed_def;
         }
     }
 }

@@ -18,6 +18,14 @@ typedef enum {
 }Upgrade_Type;
 */
 
+// @note order must match with notifications.def
+typedef enum NotifType_S {
+    INVINCE_POWERUP,
+    HAPPYTRIG_POWERUP,
+    NO_SCRAP,
+    DUPE_PERKS
+}NotifType;
+
 typedef struct UIData_S{
     /*shop UI*/
     SJson*          shop_data;
@@ -96,8 +104,10 @@ typedef struct UIData_S{
     Sprite*         pause_menu;
     GFC_Rect        resume_block;
     GFC_Rect        quit_block;
+    Sprite*         item_progress_bar;
+    Sprite*         p_progress_bar;
 
-    // same thing for game over screen
+        // same thing for game over screen
     GFC_Rect        p_perk1;    
     GFC_Rect        p_perk2;
     GFC_Rect        p_perk_desc;
@@ -119,6 +129,13 @@ typedef struct UIData_S{
     GFC_Rect        respawn_block;
     GFC_Rect        g_quit_block;
 
+    /*notifications*/
+    SJson*          notif_data;
+    float           notification_time;      // timestamp to close notifcation popup
+    Uint8           notif_flag;
+    Uint8           notif_type;
+    Sprite*         notif_block;
+    Sprite*         notif_dur;
 }UIData;
 
 void UI_init();
