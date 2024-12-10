@@ -47,7 +47,7 @@ typedef struct WorldData_S {
 
 void world_init();
 void world_close();
-void world_update();
+void world_update(float fps);
 WorldData* get_world_data();
 
 #endif

@@ -2,6 +2,7 @@
 #include "gf2d_mouse.h"
 #include "gfc_input.h"
 #include "gfc_audio.h"
+#include "gf2d_font.h"
 #include "world.h"
 #include "ui.h"
 #include "level.h"
@@ -75,7 +76,7 @@ void world_check_for_menu_input() {
 	else if (world->current_state == PAUSE_MENU) {
 		if (gfc_input_command_pressed("escape")) {
 			if (level->wave_end)
-				world->current_state = SHOP;
+				world->current_state = world->last_state;
 			else {
 				update_time_checks(CURRENT_TIME);
 				world->current_state = world->last_state;
@@ -85,8 +86,12 @@ void world_check_for_menu_input() {
 		}
 		else if (gf2d_mouse_button_released(0)) {
 			if (gf2d_mouse_in_rect(ui->resume_block)) {
-				update_time_checks(CURRENT_TIME);
-				world->current_state = IN_GAME;
+				if (level->wave_end)
+					world->current_state = world->last_state;
+				else {
+					update_time_checks(CURRENT_TIME);
+					world->current_state = world->last_state;
+				}
 				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 			}
 			else if (gf2d_mouse_in_rect(ui->quit_block)) {
@@ -110,16 +115,12 @@ void world_check_for_menu_input() {
 		}
 		else if (gfc_input_command_pressed("escape")) {
 			world->current_state = PAUSE_MENU;
+			world->last_state = SHOP;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
 	}
 	else if (world->current_state == GAME_OVER) {
-		if (gfc_input_command_pressed("escape")) {
-			world->current_state = PAUSE_MENU;
-			world->last_state = GAME_OVER;
-			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
-		}
-		else if (gf2d_mouse_button_released(0)) {
+		if (gf2d_mouse_button_released(0)) {
 			if (gf2d_mouse_in_rect(ui->respawn_block)) {
 				// TODO: add respawn function
 			}
@@ -248,17 +249,22 @@ void update_time_checks(float curr_time) {
 	}
 }
 
-void world_update() {
+void world_update(float fps) {
 	PlayerData* p_data;
 	UIData* ui;
 	LevelData* level;
-	
+	char fps_string[30];
+
 	level = get_level_data();
 	ui = get_UI_data();
 
 	if (!level | !ui) return;
 
 	world_check_for_menu_input();
+
+	// fps check
+	//sprintf(fps_string, "fps: %f", fps);
+	//gf2d_font_draw_line_tag(fps_string, FT_H5, GFC_COLOR_WHITE, gfc_vector2d(0, RES.y - 50));
 
 	switch (world->current_state){
 		case START_MENU:
@@ -299,6 +305,13 @@ void world_update() {
 			shop_hud_draw();
 			shop_think();
 			gf2d_mouse_draw();
+
+			// reset perk updates
+			p_data = get_player_data();
+
+			p_data->perk1->updated = 0;
+			p_data->perk2->updated = 0;
+
 			break;
 
 		case WAVE_START:
@@ -313,6 +326,8 @@ void world_update() {
 		case WAVE_COMPLETED:
 			wave_completed();
 			gf2d_mouse_draw();
+
+			update_player_perks();
 			break;
 
 		case GAME_OVER:
@@ -331,6 +346,7 @@ void world_update() {
 			entity_think_all();
 			entity_update_all();
 			level_update();
+			update_player_perks();
 
 			// hud draws
 			enemy_hud_all();

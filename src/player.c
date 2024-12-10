@@ -14,6 +14,8 @@
 #define DAMAGE_TIMING 0.5f
 
 static Entity* self;
+static float then = 0;
+static float now = 0;
 
 Entity* player_spawn() {
     PlayerData* data;
@@ -131,6 +133,8 @@ void player_data_init(PlayerData* data) {
     
     // debug init
     data->player_no_attack = 0;
+
+    now = CURRENT_TIME;
 }
 
 void player_data_init_from_save(PlayerData* data) {
@@ -216,6 +220,11 @@ void player_think(Entity* self) {
         data->vortex_flag = 1;
 
         player_attack(self, data);
+
+        if (data->perk1->type == REFLECTOR_SHIELD)
+            data->perk1->uses--;
+        else if (data->perk2->type == REFLECTOR_SHIELD)
+            data->perk2->uses--;
     }
     else if (gfc_input_command_released("nuke") && !data->vortex_flag && data->currScrap >= data->nuke_cost) {
         data->currMode = SUPER_NUKE;
@@ -224,7 +233,7 @@ void player_think(Entity* self) {
         player_attack(self, data);
     }
 
-    // debug tools
+    /* debug tools */
     //if (gfc_input_command_pressed("freelook")) {
         //data->freelook = !data->freelook;
         //gf3d_camera_enable_free_look(data->freelook);
@@ -242,7 +251,9 @@ void player_think(Entity* self) {
 
 void player_update(Entity* self) {
     PlayerData* data;
+    Perk* perk;
     float time;
+    float health_rate;      // float container for PASSIVE_HEALS num_effect
 
     if (!self) return;
 
@@ -301,6 +312,20 @@ void player_update(Entity* self) {
             data->upspeed = data->upspeed_def;
             data->rigspeed = data->rigspeed_def;
         }
+    }
+
+    // PASSIVE_HEALS perk implementation
+    if (data->perk1->type == PASSIVE_HEALS)
+        health_rate = (data->perk1->num_effect / 100.0f) * data->maxHealth;
+    else if (data->perk2->type == PASSIVE_HEALS)
+        health_rate = (data->perk2->num_effect / 100.0f) * data->maxHealth;
+    else
+        health_rate = 0;
+
+
+    if (CURRENT_TIME - then >= 1 && data->currHealth + health_rate <= data->maxHealth) {
+        data->currHealth += health_rate;
+        then = CURRENT_TIME;
     }
 
     // shield restoration
@@ -368,26 +393,49 @@ void player_attack(Entity* self, PlayerData* data) {
 }
 
 void player_take_damage(Entity* self, PlayerData* data, float time) {
+    Perk* perk;
+    float dmg_percentage;      // float container for DMG_RESIST perk (1 means take the full dmg)
+    
     if (!data) return;
 
     if (data->active_item == INVINCIBILITY)
         return;
 
+    // DMG_RESIST PERK IMPLEMENTATION
+    perk = data->perk1;
+    if (perk->type == DMG_RESIST) 
+        dmg_percentage = 1.0f - (( (float) perk->num_effect) / 100.0f);
+    else { // first perk is not DMG_RESIST, check other perk
+        perk = data->perk2;
+        
+        if (perk->type == DMG_RESIST)
+            dmg_percentage = 1.0f - (((float)perk->num_effect) / 100.0f);
+        else
+            dmg_percentage = 1.0f;
+    }
+
     self->model->texture = get_models()->damaged;
     data->change_flag = 1;
     data->take_damage_timing = time + DAMAGE_TIMING;
+
+    data->damage_taken *= dmg_percentage;
 
     if (data->currShield > 0) {
         if (data->currShield - data->damage_taken <= 0) { // not enough shields
             data->currHealth += data->currShield;
             data->currShield = 0;
-            data->currHealth -= data->damage_taken;
+            data->currHealth -= data->damage_taken * dmg_percentage;
+
         }
         else // has enough shields
-            data->currShield -= data->damage_taken;
+            data->currShield -= data->damage_taken * dmg_percentage;
     }
     else // no shields
-        data->currHealth -= data->damage_taken;
+        data->currHealth -= data->damage_taken * dmg_percentage;
+
+    // debugging to check if dmg was actually cut
+    //if (dmg_percentage < 1.0f)
+        //slog("OG dmg: %f | New Dmg: %f", data->damage_taken, data->damage_taken * dmg_percentage);
 
     data->took_damage = 0;
     data->damage_taken = 0;

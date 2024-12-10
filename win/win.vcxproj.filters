@@ -359,9 +359,6 @@
     <ClInclude Include="..\gfc\simple_json\include\simple_json_error.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\gfc\simple_json\include\simple_json_list.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\gfc\simple_json\include\simple_json_object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -415,6 +412,9 @@
     </ClInclude>
     <ClInclude Include="..\include\perk.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfc\simple_json\include\simple_json_list.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

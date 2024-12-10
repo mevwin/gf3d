@@ -171,6 +171,21 @@ void UI_init() {
 
         // perks and item progress are calculated in pause_menu()
 
+    dimen_data = sj_object_get_value(UI_data->pause_menu_data, "perks_blocks");
+    sj_object_get_value_as_float(dimen_data, "width", &width);
+    sj_object_get_value_as_float(dimen_data, "height", &height);
+    sj_object_get_value_as_float(dimen_data, "block_y", &y_start);
+
+    sj_object_get_value_as_float(dimen_data, "perk_x1", &x_start);
+    UI_data->p_perk1 = gfc_rect(x_start, y_start, width, height);
+
+    sj_object_get_value_as_float(dimen_data, "perk_x2", &x_start);
+    UI_data->p_perk2 = gfc_rect(x_start, y_start, width, height);
+
+    position_data = sj_object_get_value(dimen_data, "desc_box");
+    sj_value_as_vector4d(position_data, &rect);
+    UI_data->p_perk_desc = gfc_rect_from_vector4(rect);
+
 
     /*wave start*/
     UI_data->wave_start = gf2d_sprite_load_image("images/UI/wave_start/wave_start.png");
@@ -308,57 +323,64 @@ void shop_hud_draw() {
     }
 
         // show perk cost on scrap bar
-    if (gf2d_mouse_in_rect(UI_data->new_perk1)) {
-        gfc_rect_copy(dummy2, UI_data->scrap_bar);
+    if (p_data->currScrap >= UI_data->perk_cost) {
+        if (gf2d_mouse_in_rect(UI_data->new_perk1)) {
+            gfc_rect_copy(dummy2, UI_data->scrap_bar);
 
-        perk = gfc_list_nth(perk_list, 0);
+            perk = gfc_list_nth(perk_list, 0);
 
-        if (!perk->bought) {
-            progress = (float)UI_data->perk_cost;
-            max = (float)p_data->maxScrap;
-            current = (float)(progress / max);
-            dummy2.x += (dummy.w - (dummy2.w * current));
-            dummy2.w *= current;
-            gf2d_draw_rect_filled(dummy2, GFC_COLOR_LIGHTRED);
+            if (!perk->bought) {
+                progress = (float)UI_data->perk_cost;
+                max = (float)p_data->maxScrap;
+                current = (float)(progress / max);
+                dummy2.x += (dummy.w - (dummy2.w * current));
+                dummy2.w *= current;
+                gf2d_draw_rect_filled(dummy2, GFC_COLOR_LIGHTRED);
+            }
         }
-    }
-    else if (gf2d_mouse_in_rect(UI_data->new_perk2)) {
-        gfc_rect_copy(dummy2, UI_data->scrap_bar);
+        else if (gf2d_mouse_in_rect(UI_data->new_perk2)) {
+            gfc_rect_copy(dummy2, UI_data->scrap_bar);
 
-        perk = gfc_list_nth(perk_list, 1);
+            perk = gfc_list_nth(perk_list, 1);
 
-        if (!perk->bought) {
-            progress = (float)UI_data->perk_cost;
-            max = (float)p_data->maxScrap;
-            current = (float)(progress / max);
-            dummy2.x += (dummy.w - (dummy2.w * current));
-            dummy2.w *= current;
-            gf2d_draw_rect_filled(dummy2, GFC_COLOR_LIGHTRED);
+            if (!perk->bought) {
+                progress = (float)UI_data->perk_cost;
+                max = (float)p_data->maxScrap;
+                current = (float)(progress / max);
+                dummy2.x += (dummy.w - (dummy2.w * current));
+                dummy2.w *= current;
+                gf2d_draw_rect_filled(dummy2, GFC_COLOR_LIGHTRED);
+            }
         }
-    }
-    else if (gf2d_mouse_in_rect(UI_data->new_perk3)) {
-        gfc_rect_copy(dummy2, UI_data->scrap_bar);
+        else if (gf2d_mouse_in_rect(UI_data->new_perk3)) {
+            gfc_rect_copy(dummy2, UI_data->scrap_bar);
 
-        perk = gfc_list_nth(perk_list, 2);
+            perk = gfc_list_nth(perk_list, 2);
 
-        if (!perk->bought) {
-            progress = (float)UI_data->perk_cost;
-            max = (float)p_data->maxScrap;
-            current = (float)(progress / max);
-            dummy2.x += (dummy.w - (dummy2.w * current));
-            dummy2.w *= current;
-            gf2d_draw_rect_filled(dummy2, GFC_COLOR_LIGHTRED);
+            if (!perk->bought) {
+                progress = (float)UI_data->perk_cost;
+                max = (float)p_data->maxScrap;
+                current = (float)(progress / max);
+                dummy2.x += (dummy.w - (dummy2.w * current));
+                dummy2.w *= current;
+                gf2d_draw_rect_filled(dummy2, GFC_COLOR_LIGHTRED);
+            }
         }
     }
 
         // show scrap return when selling a perk on the scrap bar
+        // TODO: fix bar clipping outside if new scrap value exceeds maxScarp
     if (gf2d_mouse_in_rect(UI_data->curr_perk1)) {
         perk = p_data->perk1;
 
         if (perk->type != NO_PERK) {
             gfc_rect_copy(dummy2, UI_data->scrap_bar);
 
-            progress = (float)(UI_data->perk_cost - UI_data->perk_sell_reduction);
+            if (p_data->currScrap + UI_data->perk_cost - UI_data->perk_sell_reduction <= p_data->maxScrap)
+                progress = (float) (UI_data->perk_cost - UI_data->perk_sell_reduction);
+            else // if new scrap exceeds maxScrap
+                progress = (float) (p_data->maxScrap - p_data->currScrap);
+
             max = (float) p_data->maxScrap;
             current = (float)(progress / max);
             dummy2.x += dummy.w;
@@ -371,6 +393,11 @@ void shop_hud_draw() {
 
         if (perk->type != NO_PERK) {
             gfc_rect_copy(dummy2, UI_data->scrap_bar);
+
+            if (p_data->currScrap + UI_data->perk_cost - UI_data->perk_sell_reduction <= p_data->maxScrap)
+                progress = (float)(UI_data->perk_cost - UI_data->perk_sell_reduction);
+            else // if new scrap exceeds maxScrap
+                progress = (float)(p_data->maxScrap - p_data->currScrap);
 
             progress = (float)(UI_data->perk_cost - UI_data->perk_sell_reduction);
             max = (float) p_data->maxScrap;
@@ -453,7 +480,7 @@ void shop_hud_draw() {
 
     // perks section
 
-    // display new perks for player to buy
+        // display new perks for player to buy
     for (i = 0, new_slot = 1; i < perk_list->count; i++) {
         perk = gfc_list_nth(perk_list, i);
 
@@ -469,7 +496,7 @@ void shop_hud_draw() {
         }
     }
 
-    // display player perks
+        // display player perks
     display_player_perks(p_data);
 }
 
@@ -521,19 +548,54 @@ void display_new_perk(Perk* perk, Uint8 slot) {
 
 void display_player_perks(PlayerData* p_data){
     Perk* perk;
+    WorldData* world;
+    GFC_Rect desc_block;
     
     if (!p_data) return;
 
+    world = get_world_data();
+
     perk = p_data->perk1;
     if (perk->type != NO_PERK) {
-        gf2d_draw_rect_filled(UI_data->curr_perk1, perk->color);
+        if (world->current_state == SHOP)
+            gf2d_draw_rect_filled(UI_data->curr_perk1, perk->color);
+
+        else if (world->current_state == PAUSE_MENU || world->current_state == GAME_OVER) {
+            gf2d_draw_rect_filled(UI_data->p_perk1, perk->color);
+
+            if (gf2d_mouse_in_rect(UI_data->p_perk1)) {
+                gf2d_draw_rect_filled(UI_data->p_perk_desc, perk->color);
+                gf2d_font_draw_text_wrap_tag(perk->name, FT_Large, GFC_COLOR_WHITE, UI_data->p_perk_desc);
+
+                gfc_rect_copy(desc_block, UI_data->p_perk_desc);
+                desc_block.x += 4;
+                desc_block.y += 50;
+
+                gf2d_font_draw_text_wrap_tag(perk->desc, FT_H5, GFC_COLOR_WHITE, desc_block);
+            }
+        }
     }
 
     perk = p_data->perk2;
     if (perk->type != NO_PERK) {
-        gf2d_draw_rect_filled(UI_data->curr_perk2, perk->color);
-    }
+        if (world->current_state == SHOP)
+            gf2d_draw_rect_filled(UI_data->curr_perk2, perk->color);
 
+        else if (world->current_state == PAUSE_MENU || world->current_state == GAME_OVER) {
+            gf2d_draw_rect_filled(UI_data->p_perk2, perk->color);
+
+            if (gf2d_mouse_in_rect(UI_data->p_perk2)) {
+                gf2d_draw_rect_filled(UI_data->p_perk_desc, perk->color);
+                gf2d_font_draw_text_wrap_tag(perk->name, FT_Large, GFC_COLOR_WHITE, UI_data->p_perk_desc);
+
+                gfc_rect_copy(desc_block, UI_data->p_perk_desc);
+                desc_block.x += 4;
+                desc_block.y += 50;
+
+                gf2d_font_draw_text_wrap_tag(perk->desc, FT_H5, GFC_COLOR_WHITE, desc_block);
+            }
+        }
+    }
 }
 
 void buy_perk(GFC_List* perk_list, Perk* perk) {
@@ -588,7 +650,7 @@ void sell_perk(PlayerData* p_data, Uint8 slot) {
             perk->color = gfc_color(0, 0, 0, 0);
 
             p_data->currScrap += UI_data->perk_cost - UI_data->perk_sell_reduction;
-
+                
             break;
 
         case 2:
@@ -612,6 +674,8 @@ void sell_perk(PlayerData* p_data, Uint8 slot) {
             slog("invalid slot");
     }
     
+    if (p_data->currScrap > p_data->maxScrap)
+        p_data->currScrap = p_data->maxScrap;
 
 }
 
@@ -987,6 +1051,7 @@ void pause_menu(Sprite* menu, SJson* data) {
     gf2d_draw_rect_filled(gfc_rect(x, y, width * (progress / goal), height), GFC_COLOR_LIGHTBLUE);
 
     // perks draws (TODO)
+    display_player_perks(p_data);
 }
 
 void wave_start() {

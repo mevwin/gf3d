@@ -96,6 +96,11 @@ typedef struct UIData_S{
     GFC_Rect        resume_block;
     GFC_Rect        quit_block;
 
+    // same thing for game over screen
+    GFC_Rect        p_perk1;    
+    GFC_Rect        p_perk2;
+    GFC_Rect        p_perk_desc;
+
     /*wave start*/
     SJson*          wave_start_data;
     Sprite*         wave_start;

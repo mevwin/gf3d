@@ -123,7 +123,7 @@ int main(int argc,char *argv[])
                 gf3d_model_draw_sky(sky,skyMat,GFC_COLOR_WHITE);
                 //draw_origin();
                
-                world_update();
+                world_update(fps);
 
         gf3d_vgraphics_render_end();
         if (gfc_input_command_down("exit")) world->_done = 1; // exit condition
@@ -156,6 +156,7 @@ void game_frame_delay()
     Uint32 diff;
     static Uint32 now;
     static Uint32 then;
+
     then = now;
     slog_sync();// make sure logs get written when we have time to write it
     now = SDL_GetTicks();
@@ -165,6 +166,6 @@ void game_frame_delay()
         SDL_Delay(frame_delay - diff);
     }
     fps = 1000.0/MAX(SDL_GetTicks() - then,0.001);
-//     slog("fps: %f",fps);
+    //slog("fps: %f",fps);
 }
 /*eol@eof*/

@@ -15,11 +15,11 @@ typedef struct {
 	// projectile flags
 	Uint8			vortexed;		// was the projectile from player vortex?
 	
-		// missile data
+	// missile data
 	Uint8			missile_active;	// is missile in motion
 	GFC_Vector3D*	missile_target;	// pointer to the missile target
 		
-		// nuke data
+	// nuke data
 	Uint8			nuke_active;	// is nuke attack active?
 	GFC_Vector3D    nuke_deton_pos;	// nuke's detonation position
 	float			nuke_dur;		// nuke duraton
@@ -38,6 +38,8 @@ typedef struct {
 * @param vortexed: was the projectile formed from vortex attack?
 */
 void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float curr_time, Uint8 vortexed);
+
+void player_reflected_proj_spawn(Entity* proj, void* p_data);
 
 /**
 * @brief spawn an enemy attack/projectile
@@ -69,6 +71,7 @@ void proj_think_missile(Entity* self);
 
 /**
 * @brief vortex weapon sucks in enemy projectiles and sends them to reticle position
+* @note vortex weapon becomes reflector shield (if player has the perk) that reverses projectile movement
 */
 void proj_think_vortex(Entity* self);
 

@@ -492,18 +492,34 @@ void proj_think_vortex(Entity* self) {
             gfc_vector3d_copy_ptr(player_pos, p_data->player_pos);
 
             if (data->owner_type == ENEMY && gfc_vector3d_distance_between_less_than(player_pos, proj->position, 20.0f)) {
-                p_data->vortex_damage += data->damage;
-                data->damage = 0;
-                entity_free(proj);
+                
+                // REFLECTOR_SHIELD perk implementation
+                if (p_data->perk1->type == REFLECTOR_SHIELD || p_data->perk2->type == REFLECTOR_SHIELD) {
+
+                    slog("true");
+
+                    player_reflected_proj_spawn(proj, p_data);
+                    
+                    break;
+                }    
+                else {
+                    p_data->vortex_damage += data->damage;
+                    data->damage = 0;
+                    entity_free(proj);
+                }
             }
         }
 
+        // vortex meter decrease
         p_data->vortex_dur -= 1.0f;
     }
     else if (!p_data->vortex_flag) {
         time = CURRENT_TIME;
 
         p_data->vortex_damage *= 1.7f; // damage scaling
+
+        if (p_data->perk1->type == REFLECTOR_SHIELD || p_data->perk2->type == REFLECTOR_SHIELD)
+            p_data->vortex_damage = 0;
 
         if (p_data->vortex_damage > 0) {
             player_pos.x = p_data->player_pos->x;
@@ -522,6 +538,61 @@ void proj_think_vortex(Entity* self) {
 
         entity_free(self);
     }
+}
+
+void player_reflected_proj_spawn(Entity* proj, void* p_data) {
+    Entity* self;
+    ProjData* proj_data, * old_proj;
+    PlayerData* player;
+    Perk* perk;
+    float modifier;
+
+    self = entity_new();
+
+    proj_data = gfc_allocate_array(sizeof(ProjData), 1);
+    if (proj_data) self->data = proj_data;
+
+    old_proj = proj->data;
+
+    player = (PlayerData*) p_data;
+
+    if (!proj || !self || !self->data || !p_data) return;
+
+    player->proj_count++;
+
+    self->think = proj_think_basic;
+    self->update = proj_update_player;
+    self->entity_type = PROJECTILE;
+    proj_data->owner_type = PLAYER;
+    self->position = proj->position;
+    self->free = proj_free;
+    proj_data->y_bound = -170;
+
+    self->model = proj->model;
+
+    if (old_proj->type == CHARGERS || old_proj->type == BOMBERS)
+        proj_data->type = CHARGE_SHOT;
+    else
+        proj_data->type = SINGLE_SHOT;
+
+    proj_data->forspeed = old_proj->forspeed;
+    proj_data->rigspeed = -old_proj->rigspeed;
+    proj_data->upspeed = -old_proj->upspeed;
+
+    self->rotation.x = -proj->rotation.x;
+    self->rotation.y = -proj->rotation.y;
+    self->rotation.z = -proj->rotation.z;
+
+    if (player->perk1->type == REFLECTOR_SHIELD)
+        modifier = player->perk1->num_effect / 100.0f;
+    else if (player->perk2->type == REFLECTOR_SHIELD)
+        modifier = player->perk2->num_effect / 100.0f;
+    else
+        modifier = 0;
+
+    proj_data->damage = modifier * old_proj->damage;
+
+    entity_free(proj);
 }
 
 void proj_think_super_nuke(Entity* self) {
