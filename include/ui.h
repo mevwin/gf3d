@@ -167,6 +167,8 @@ void player_death_screen();
 
 void enemy_hud_all();
 
+void display_previous_runs();
+
 UIData* get_UI_data();
 
 #endif

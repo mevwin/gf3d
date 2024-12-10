@@ -12,6 +12,11 @@
 *	- Assets (models and def/json files)
 */
 
+typedef enum SaveType_E {
+	GAMESAVE,		// player quits mid-game, so save progress
+	RUNSAVE			// player dies so save run for displaying
+}SaveType;
+
 typedef enum GameState_E{
 	START_MENU,
 	PREVIOUS,
@@ -41,7 +46,6 @@ typedef struct WorldData_S {
 
 	// def files
 	SJson*			player_init;
-	const char*		player_save;
 
 }WorldData;
 

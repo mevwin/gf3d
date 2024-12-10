@@ -17,7 +17,7 @@ void world_check_for_menu_input();
 void start_menu_input_check(UIData* ui_data);
 void update_time_checks(float curr_time);
 void game_data_init_from_save();
-void game_save();
+void game_save(SaveType save_type);
 
 void world_init() {
 	world = gfc_allocate_array(sizeof(WorldData), 1);
@@ -96,7 +96,7 @@ void world_check_for_menu_input() {
 				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 			}
 			else if (gf2d_mouse_in_rect(ui->quit_block)) {
-				game_save();
+				game_save(GAMESAVE);
 				perk_list_close();
 				full_level_reset();
 				shop_reset();
@@ -334,6 +334,7 @@ void world_update(float fps) {
 		case GAME_OVER:
 			player_death_screen();
 			gf2d_mouse_draw();
+
 			break;
 
 		case IN_GAME: // game plays here
@@ -357,6 +358,7 @@ void world_update(float fps) {
 			if (p_data->player_dead) {
 				entity_reset();
 				level->total_game_time += CURRENT_TIME - level->game_start;
+				game_save(RUNSAVE);
 				world->current_state = GAME_OVER;
 			}
 
@@ -400,19 +402,18 @@ void game_data_init_from_save() {
 	sj_free(save);
 }
 
-void game_save() {
+void game_save(SaveType save_type) {
 	PlayerData* p_data;
 	LevelData* level;
 	UIData* ui;
-	SJson* save, *value, *data_entry, *perk_entry, *color;
+	SJson* save, *save_check, *value, *data_entry, *perk_entry, *color;
 	Uint32 wave_check;
+	int i;
+	char buffer[30];
 
 	p_data = get_player_data();
 	level = get_level_data();
 	ui = get_UI_data();
-
-	if (p_data->player_dead)
-		return;
 
 	save = sj_load("def/player_save_base.def");
 
@@ -421,7 +422,7 @@ void game_save() {
 
 	data_entry = sj_object_get_value(value, "wave_count");
 	sj_object_get_value_as_uint32(value, "wave_count", &wave_check);
-	if (level->wave_count == wave_check || level->wave_count == 1) {    // don't save if currently on starting wave from save
+	if (save_type == GAMESAVE && (level->wave_count == wave_check || level->wave_count == 1)) {    // don't save if currently on starting wave from save
 		slog("Game Not Saved");
 		return;
 	}
@@ -558,10 +559,30 @@ void game_save() {
 	data_entry = sj_object_get_value(value, "charge_shot_count");
 	data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->charge_shot_count));
 
-	sj_save(save, "def/player_save.def");
-	sj_free(save);
+	if (save_type == GAMESAVE) {
+		sj_save(save, "def/player_save.def");
+		slog("Game Saved");
+	}
+	else if (save_type == RUNSAVE) {
+		for (i = 1; i > 0; i++) {
+			sprintf(buffer, "def/player_runs/run%d.def", i);
+			slog("%s", buffer);
 
-	slog("Game Saved");
+			save_check = sj_load(buffer);
+
+			if (!save_check) {
+				sj_save(save, buffer);
+				slog("Run saved");
+				break;
+			}
+			else {
+				sj_free(save_check);
+				strcpy(buffer, "");
+			}
+		}
+	}
+	sj_free(save);
+	
 }
 
 WorldData* get_world_data() {

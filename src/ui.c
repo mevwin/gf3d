@@ -1346,6 +1346,10 @@ void notif_window(NotifType notif_type) {
         slog("not an array");
 }
 
+void display_previous_runs() {
+
+}
+
 UIData* get_UI_data() {
     if (!UI_data) return NULL;
 
