@@ -12,10 +12,14 @@
 
 static WorldData* world;
 static Entity* player;
+static GFC_List* previous_runs_list;
 
 void world_check_for_menu_input();
 void start_menu_input_check(UIData* ui_data);
 void update_time_checks(float curr_time);
+int previous_runs_list_init();
+void previous_runs_list_free();
+void previous_run_init();
 void game_data_init_from_save();
 void game_save(SaveType save_type);
 
@@ -31,6 +35,7 @@ void world_init() {
 	world->current_state = START_MENU;
 	world->last_state = NO_OPTION;
 	world->continue_from_save = 0;
+	world->previous_runs_flag = 0;
 
 	world->player_init = sj_load("def/player_init.def");
 
@@ -40,6 +45,41 @@ void world_init() {
 void world_close() {
 	sj_free(world->player_init);
 	free(world);
+}
+
+int previous_runs_list_init() {
+	SJson* run;
+	char buffer[30];
+	int i;
+
+	previous_runs_list = gfc_list_new();
+
+	for (i = 1; i > 0; i++) {
+		sprintf(buffer, "def/player_runs/run%d.def", i);
+
+		run = sj_load(buffer);
+
+		if (run)
+			gfc_list_append(previous_runs_list, run);
+		else {
+			if (i == 1) // if no runs have been found
+				return 0;
+			else //if at least 1 run has been found, return true
+				return 1;
+		}
+	}
+
+	atexit(previous_runs_list_free);
+}
+
+void previous_runs_list_free() {
+	gfc_list_foreach(previous_runs_list, sj_free);
+	gfc_list_clear(previous_runs_list);
+	gfc_list_delete(previous_runs_list);
+}
+
+void previous_run_init() {
+
 }
 
 void world_check_for_menu_input() {
@@ -170,6 +210,31 @@ void world_check_for_menu_input() {
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
 	}
+	else if (world->current_state == PREV_PREVIEW) {
+		if (gf2d_mouse_button_released(0)) {
+			if (gf2d_mouse_in_rect(ui->exit_block)) {
+				previous_runs_list_free();
+				world->current_state = START_MENU;
+			}
+			else if (gf2d_mouse_in_rect(ui->next_block)) {
+				if (previous_runs_list->count > ui->preview_page_offset){
+					ui->preview_page_offset += 3;
+					if (ui->preview_page_offset > previous_runs_list->count)
+						ui->preview_page_offset -= 3;
+				}
+				//else do nothing
+			}
+			else if (gf2d_mouse_in_rect(ui->prev_block)) {
+				if (ui->preview_page_offset - 3 >= 0)
+					ui->preview_page_offset -= 3;
+				else
+					ui->preview_page_offset = 0;
+			}
+		}
+	}
+	else if (world->current_state == PREVIOUS_RUN) {
+
+	}
 }
 
 void start_menu_input_check(UIData* ui_data) {
@@ -205,6 +270,14 @@ void start_menu_input_check(UIData* ui_data) {
 		}
 		else if (gf2d_mouse_in_rect(ui_data->previous_block)){
 			//TODO: add this deliverable
+
+			if (previous_runs_list_init())
+				world->current_state = PREV_PREVIEW;
+			else {
+				gfc_list_delete(previous_runs_list);
+				slog("no runs found");
+			}
+
 		}
 		else if (gf2d_mouse_in_rect(ui_data->s_quit_block)) {
 			world->_done = 1;
@@ -275,6 +348,18 @@ void world_update(float fps) {
 
 			break;
 
+		case PREV_PREVIEW:
+			preview_runs();
+			gf2d_mouse_draw();
+
+			break;
+
+		case PREVIOUS_RUN:
+			//preview_runs();
+			gf2d_mouse_draw();
+
+			break;
+
 		case LOADING_SCREEN:
 			if (!world->enemy_assets_made)
 				enemy_assets_init();
@@ -332,7 +417,7 @@ void world_update(float fps) {
 			break;
 
 		case GAME_OVER:
-			player_death_screen();
+			player_death_screen(ui->game_over, ui->game_over_data);
 			gf2d_mouse_draw();
 
 			break;
@@ -370,6 +455,22 @@ void world_update(float fps) {
 			break;
 	}	
 }
+
+/*
+	else if (save_type == RUNSAVE) {
+		sprintf(buffer, "def/player_runs/run%d.def", run);
+		slog("%s", buffer);
+
+		save = sj_load(buffer);
+
+		if (!save) {
+			slog("run doesn't exist");
+			return;
+		}
+
+		world->previous_runs_flag = 1;
+	}
+*/
 
 void game_data_init_from_save() {
 	LevelData* level;
@@ -566,7 +667,7 @@ void game_save(SaveType save_type) {
 	else if (save_type == RUNSAVE) {
 		for (i = 1; i > 0; i++) {
 			sprintf(buffer, "def/player_runs/run%d.def", i);
-			slog("%s", buffer);
+			//slog("%s", buffer);
 
 			save_check = sj_load(buffer);
 
@@ -587,4 +688,8 @@ void game_save(SaveType save_type) {
 
 WorldData* get_world_data() {
 	return world;
+}
+
+GFC_List* get_previous_runs() {
+	return previous_runs_list;
 }

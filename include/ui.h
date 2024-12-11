@@ -136,6 +136,16 @@ typedef struct UIData_S{
     Uint8           notif_type;
     Sprite*         notif_block;
     Sprite*         notif_dur;
+
+    /*previous runs*/
+    SJson*          prev_menu_data;
+    Sprite*         preview_menu;
+    Sprite*         previous_run;
+    GFC_Rect        return_block;
+    GFC_Rect        exit_block;
+    GFC_Rect        next_block;
+    GFC_Rect        prev_block;
+    int             preview_page_offset;
 }UIData;
 
 void UI_init();
@@ -163,11 +173,13 @@ void pause_menu(Sprite* menu, SJson* data);
 void wave_start();
 void wave_completed();
 
-void player_death_screen();
+void player_death_screen(Sprite* menu, SJson* data);
 
 void enemy_hud_all();
 
-void display_previous_runs();
+void preview_runs();
+
+void display_previous_run(SJson* run);
 
 UIData* get_UI_data();
 

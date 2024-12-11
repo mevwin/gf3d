@@ -247,6 +247,25 @@ void UI_init() {
     UI_data->notif_block = gf2d_sprite_load_image("images/UI/notifications/notif_bar.png");
     UI_data->notif_dur = gf2d_sprite_load_image("images/UI/notifications/notif_duration.png");
 
+    /*previous runs*/
+    UI_data->prev_menu_data = sj_load("menus/previous_run.menu");
+    UI_data->preview_menu = gf2d_sprite_load_image("images/UI/previous_runs/runs_preview.png");
+    UI_data->previous_run = gf2d_sprite_load_image("images/UI/previous_runs/previous_run.png");
+
+    sj_value_as_vector4d(sj_object_get_value(UI_data->prev_menu_data, "return_rect"), &rect);
+    UI_data->return_block = gfc_rect_from_vector4(rect);
+
+    sj_value_as_vector4d(sj_object_get_value(UI_data->prev_menu_data, "previews_menu_exit"), &rect);
+    UI_data->exit_block = gfc_rect_from_vector4(rect);
+
+    sj_value_as_vector4d(sj_object_get_value(UI_data->prev_menu_data, "previews_next_page"), &rect);
+    UI_data->next_block = gfc_rect_from_vector4(rect);
+
+    sj_value_as_vector4d(sj_object_get_value(UI_data->prev_menu_data, "previews_prev_page"), &rect);
+    UI_data->prev_block = gfc_rect_from_vector4(rect);
+
+    UI_data->preview_page_offset = 0;
+
     atexit(UI_free);
 }
 
@@ -259,6 +278,7 @@ void UI_free() {
     sj_free(UI_data->game_over_data);
     sj_free(UI_data->shop_data);
     sj_free(UI_data->notif_data);
+    sj_free(UI_data->prev_menu_data);
     gf2d_sprite_free(UI_data->player_hud);
     gf2d_sprite_free(UI_data->start_menu);
     gf2d_sprite_free(UI_data->pause_menu);
@@ -277,6 +297,8 @@ void UI_free() {
     gf2d_sprite_free(UI_data->item_progress_bar);
     gf2d_sprite_free(UI_data->notif_block);
     gf2d_sprite_free(UI_data->notif_dur);
+    gf2d_sprite_free(UI_data->preview_menu);
+    gf2d_sprite_free(UI_data->previous_run);
 
     free(UI_data);
 }
@@ -685,7 +707,6 @@ void buy_perk(GFC_List* perk_list, Perk* perk) {
     }
 
     // at this point, player has no open slots and must sell perks
-
 }
 
 void sell_perk(PlayerData* p_data, Uint8 slot) {
@@ -1052,7 +1073,7 @@ void pause_menu(Sprite* menu, SJson* data) {
     data_entry = sj_object_get_value(data, "progress_bar");
     sj_value_as_vector2d(sj_object_get_value(data_entry, "bar_offset"), &offset);
 
-        // check objective type
+        // check objective type (TODO)
     switch (level->obj_type){   
         case KILL_ENEMY:
             progress = (float) level->enemy_killed;
@@ -1141,7 +1162,6 @@ void pause_menu(Sprite* menu, SJson* data) {
     gf2d_sprite_draw(UI_data->item_progress_bar, offset, &scale,
         NULL, NULL, NULL, NULL, NULL, NULL);
 
-    // perks draws (TODO)
     display_player_perks(p_data);
 }
 
@@ -1190,7 +1210,7 @@ void wave_completed() {
     // TODO: implement images and text for next stages
 }
 
-void player_death_screen() {
+void player_death_screen(Sprite* menu, SJson* data) {
     SJson* data_entry;
     LevelData* level;
     char buffer[35];
@@ -1199,10 +1219,10 @@ void player_death_screen() {
     level = get_level_data();
 
     gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(255, 0, 0, 0.4f));
-    pause_menu(UI_data->game_over, UI_data->game_over_data);
+    pause_menu(menu, data);
 
     // stats display
-    data_entry = sj_object_get_value(UI_data->game_over_data, "stats");
+    data_entry = sj_object_get_value(data, "stats");
     sj_object_get_value_as_float(data_entry, "text_x", &x);
 
     sj_object_get_value_as_float(data_entry, "enemy_y", &y);
@@ -1298,56 +1318,79 @@ void notif_window(NotifType notif_type) {
     char buffer[30];
     int index;
     float width;
-    GFC_Rect rect_buf;
-    GFC_Color color;;
+    GFC_Color color;
     GFC_Vector2D scale, offset;
 
     data = sj_object_get_value(UI_data->notif_data, "notifs");
     index = (int) notif_type;
 
-    if (sj_is_array(data)) {
-        notif = sj_array_get_nth(data, index);
+    notif = sj_array_get_nth(data, index);
 
-        if (!notif) {
-            slog("nope");
-            return;
-        }
+    if (!notif) {
+        slog("nope");
+        return;
+    }
 
-        strcpy(buffer, sj_object_get_value_as_string(notif, "text"));
+    strcpy(buffer, sj_object_get_value_as_string(notif, "text"));
 
-        sj_value_as_vector2d(sj_object_get_value(notif, "notif_rect_offset"), &offset);
-        color = sj_object_get_color(notif, "color");
+    sj_value_as_vector2d(sj_object_get_value(notif, "notif_rect_offset"), &offset);
+    color = sj_object_get_color(notif, "color");
 
-        gf2d_sprite_draw_image(UI_data->notif_block, offset);
-        gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, offset);
+    gf2d_sprite_draw_image(UI_data->notif_block, offset);
+    gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, offset);
         
-        // duration meter
-        sj_value_as_vector2d(sj_object_get_value(notif, "notif_dur_offset"), &offset);
+    // duration meter
+    sj_value_as_vector2d(sj_object_get_value(notif, "notif_dur_offset"), &offset);
 
-        if (notif_type == HAPPYTRIG_POWERUP || notif_type == INVINCE_POWERUP)
-            width = notif_type == HAPPYTRIG_POWERUP ? 
-                (get_player_data()->item_duration - CURRENT_TIME) / HAPPYTRIG_DUR : 
-                (get_player_data()->item_duration - CURRENT_TIME) / INVINCIBILITY_DUR;
-        else if (notif_type == NO_SCRAP || notif_type == DUPE_PERKS)
-            width = (UI_data->notification_time - CURRENT_TIME) / NOTIF_TIME_MAX;
-        else
-            width = 0;
+    if (notif_type == HAPPYTRIG_POWERUP || notif_type == INVINCE_POWERUP)
+        width = notif_type == HAPPYTRIG_POWERUP ? 
+            (get_player_data()->item_duration - CURRENT_TIME) / HAPPYTRIG_DUR : 
+            (get_player_data()->item_duration - CURRENT_TIME) / INVINCIBILITY_DUR;
+    else if (notif_type == NO_SCRAP || notif_type == DUPE_PERKS)
+        width = (UI_data->notification_time - CURRENT_TIME) / NOTIF_TIME_MAX;
+    else
+        width = 0;
 
-        scale = gfc_vector2d(width, 1.0f);
-        if (width > 0) {
-            gf2d_sprite_draw(UI_data->notif_dur, offset, &scale,
-                NULL, NULL, NULL, NULL, NULL, NULL);
-        }
-        else
-            UI_data->notif_flag = 0;
-        
+    scale = gfc_vector2d(width, 1.0f);
+    if (width > 0) {
+        gf2d_sprite_draw(UI_data->notif_dur, offset, &scale,
+            NULL, NULL, NULL, NULL, NULL, NULL);
     }
     else
-        slog("not an array");
+        UI_data->notif_flag = 0;
 }
 
-void display_previous_runs() {
+void preview_runs() {
+    GFC_List* run_list;
+    SJson* run, *data, *run_preview;
+    GFC_Vector4D rect_vec;
+    GFC_Rect preview_rect;
+    GFC_Color color;
+    int i, j;
 
+    gf2d_sprite_draw_image(UI_data->preview_menu, gfc_vector2d(0, 0));
+
+    run_list = get_previous_runs();
+    data = sj_object_get_value(UI_data->prev_menu_data, "previews");
+
+    for (i = 0, j = UI_data->preview_page_offset; i < 3; i++, j++) {
+        run = gfc_list_nth(run_list, j);
+        if (run) {
+            run_preview = sj_array_get_nth(data, i);
+
+            sj_value_as_vector4d(sj_object_get_value(run_preview, "rect"), &rect_vec);
+            preview_rect = gfc_rect_from_vector4(rect_vec);
+
+            color = sj_object_get_color(UI_data->prev_menu_data, "previews_menu_color");
+            gf2d_draw_rect_filled(preview_rect, color);
+        }
+    }
+    
+
+}
+
+void display_previous_run(SJson* run) {
+    player_death_screen(UI_data->previous_run, run);
 }
 
 UIData* get_UI_data() {

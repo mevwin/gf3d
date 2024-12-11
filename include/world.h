@@ -19,7 +19,8 @@ typedef enum SaveType_E {
 
 typedef enum GameState_E{
 	START_MENU,
-	PREVIOUS,
+	PREV_PREVIEW,
+	PREVIOUS_RUN,
 	LOADING_SCREEN,
 	PAUSE_MENU,
 	SHOP,
@@ -40,6 +41,7 @@ typedef struct WorldData_S {
 	Uint8			enemy_start;
 	Uint8			_done;
 	Uint8			continue_from_save;
+	Uint8			previous_runs_flag;
 	GameState		current_state;
 	GameState		last_state;
 	float			pause_time;
@@ -53,5 +55,6 @@ void world_init();
 void world_close();
 void world_update(float fps);
 WorldData* get_world_data();
+GFC_List* get_previous_runs();
 
 #endif
