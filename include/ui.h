@@ -6,6 +6,7 @@
 #include "gf3d_vgraphics.h"
 
 #define RES (gf3d_vgraphics_get_resolution())
+#define NOTIF_TIME_MAX (3.0f)
 
 /*
 typedef enum {
@@ -23,7 +24,8 @@ typedef enum NotifType_S {
     INVINCE_POWERUP,
     HAPPYTRIG_POWERUP,
     NO_SCRAP,
-    DUPE_PERKS
+    DUPE_PERKS,
+    NO_RUNS
 }NotifType;
 
 typedef struct UIData_S{
@@ -168,18 +170,18 @@ void player_hud(void* d);
 
 void start_menu();
 
-void pause_menu(Sprite* menu, SJson* data);
+void prev(Sprite* menu, SJson* data);
 
 void wave_start();
 void wave_completed();
 
-void player_death_screen(Sprite* menu, SJson* data);
+void player_death_screen(Sprite* menu, SJson* menu_data);
 
 void enemy_hud_all();
 
 void preview_runs();
 
-void display_previous_run(SJson* run);
+void display_previous_run();
 
 UIData* get_UI_data();
 

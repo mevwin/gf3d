@@ -4,6 +4,7 @@
 #include "gfc_input.h"
 #include "gfc_audio.h"
 #include "gf2d_font.h"
+#include "gfc_config.h"
 #include "world.h"
 #include "ui.h"
 #include "level.h"
@@ -19,8 +20,7 @@ void start_menu_input_check(UIData* ui_data);
 void update_time_checks(float curr_time);
 int previous_runs_list_init();
 void previous_runs_list_free();
-void previous_run_init();
-void game_data_init_from_save();
+void previous_runs_perks_init(SJson* run);
 void game_save(SaveType save_type);
 
 void world_init() {
@@ -35,7 +35,6 @@ void world_init() {
 	world->current_state = START_MENU;
 	world->last_state = NO_OPTION;
 	world->continue_from_save = 0;
-	world->previous_runs_flag = 0;
 
 	world->player_init = sj_load("def/player_init.def");
 
@@ -76,10 +75,6 @@ void previous_runs_list_free() {
 	gfc_list_foreach(previous_runs_list, sj_free);
 	gfc_list_clear(previous_runs_list);
 	gfc_list_delete(previous_runs_list);
-}
-
-void previous_run_init() {
-
 }
 
 void world_check_for_menu_input() {
@@ -233,11 +228,19 @@ void world_check_for_menu_input() {
 		}
 	}
 	else if (world->current_state == PREVIOUS_RUN) {
-
+		if (gf2d_mouse_button_released(0) && gf2d_mouse_in_rect(ui->return_block)) {
+			free(world->perk1);
+			free(world->perk2);
+			world->current_state = PREV_PREVIEW;
+		}
 	}
 }
 
 void start_menu_input_check(UIData* ui_data) {
+	UIData* ui;
+
+	ui = get_UI_data();
+
 	if (gf2d_mouse_button_released(0)) {
 		if (gf2d_mouse_in_rect(ui_data->new_start_block)) {
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
@@ -275,7 +278,9 @@ void start_menu_input_check(UIData* ui_data) {
 				world->current_state = PREV_PREVIEW;
 			else {
 				gfc_list_delete(previous_runs_list);
-				slog("no runs found");
+				ui->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+				ui->notif_flag = 1;
+				ui->notif_type = NO_RUNS;
 			}
 
 		}
@@ -355,7 +360,7 @@ void world_update(float fps) {
 			break;
 
 		case PREVIOUS_RUN:
-			//preview_runs();
+			display_previous_run();
 			gf2d_mouse_draw();
 
 			break;
@@ -371,7 +376,7 @@ void world_update(float fps) {
 				player = player_spawn();
 
 				if (world->continue_from_save) {
-					game_data_init_from_save();
+					game_data_init_from_save(GAMESAVE, NULL);
 					world->continue_from_save = 0;
 				}
 				world->current_state = WAVE_START;
@@ -441,9 +446,9 @@ void world_update(float fps) {
 
 			// player death check
 			if (p_data->player_dead) {
-				entity_reset();
 				level->total_game_time += CURRENT_TIME - level->game_start;
 				game_save(RUNSAVE);
+				entity_reset();
 				world->current_state = GAME_OVER;
 			}
 
@@ -456,30 +461,61 @@ void world_update(float fps) {
 	}	
 }
 
-/*
-	else if (save_type == RUNSAVE) {
-		sprintf(buffer, "def/player_runs/run%d.def", run);
-		slog("%s", buffer);
+void previous_runs_perks_init(SJson* run) {
+	SJson* save, *data_entry, *perk_entry;
+	PerkType perk_type;
+	const char* name;
+	const char* desc;
+	int uses, num_effect;
+	GFC_Color color;
 
-		save = sj_load(buffer);
+	data_entry = sj_object_get_value(run, "player_data");
+	perk_entry = sj_object_get_value(data_entry, "perk1");
 
-		if (!save) {
-			slog("run doesn't exist");
-			return;
-		}
-
-		world->previous_runs_flag = 1;
+	sj_object_get_value_as_int(perk_entry, "type", &perk_type);
+	if (perk_type != NO_PERK) {
+		sj_object_get_value_as_int(perk_entry, "uses", &uses);
+		sj_object_get_value_as_int(perk_entry, "num_effect", &num_effect);
+		name = sj_object_get_value_as_string(perk_entry, "name");
+		desc = sj_object_get_value_as_string(perk_entry, "desc");
+		color = sj_object_get_color(perk_entry, "color");
+		world->perk1 = create_perk(perk_type, uses, num_effect, name, desc, color);
 	}
-*/
+	else
+		world->perk1 = create_dummy_perk();
 
-void game_data_init_from_save() {
+	perk_entry = sj_object_get_value(data_entry, "perk2");
+	sj_object_get_value_as_int(data_entry, "type", &perk_type);
+	if (perk_type != NO_PERK) {
+		sj_object_get_value_as_int(perk_entry, "uses", &uses);
+		sj_object_get_value_as_int(perk_entry, "num_effect", &num_effect);
+		name = sj_object_get_value_as_string(perk_entry, "name");
+		desc = sj_object_get_value_as_string(perk_entry, "desc");
+		color = sj_object_get_color(perk_entry, "color");
+		world->perk2 = create_perk(perk_type, uses, num_effect, name, desc, color);
+	}
+	else
+		world->perk2 = create_dummy_perk();
+
+}
+
+void game_data_init_from_save(SaveType type, SJson* json) {
 	LevelData* level;
 	UIData* ui;
 	SJson* save, * value;
 
 	level = get_level_data();
 	ui = get_UI_data();
-	save = sj_load("def/player_save.def");
+
+	if (type == GAMESAVE)
+		save = sj_load("def/player_save.def");
+	else if (type == RUNSAVE)
+		save = json;
+	else
+		save = NULL;
+
+	if (!save)
+		return;
 
 	value = sj_object_get_value(save, "level_data");
 	sj_object_get_value_as_uint32(value, "wave_count", &level->wave_count);
@@ -500,7 +536,12 @@ void game_data_init_from_save() {
 	sj_object_get_value_as_uint8(value, "single_shot_count", &ui->single_shot_count);
 	sj_object_get_value_as_uint8(value, "harge_shot_count", &ui->missiles_count);
 
-	sj_free(save);
+	if (type == GAMESAVE)
+		sj_free(save);
+	else if (type == RUNSAVE) {
+		previous_runs_perks_init(json);
+		world->current_state = PREVIOUS_RUN;
+	}
 }
 
 void game_save(SaveType save_type) {

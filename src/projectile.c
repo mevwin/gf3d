@@ -495,11 +495,7 @@ void proj_think_vortex(Entity* self) {
                 
                 // REFLECTOR_SHIELD perk implementation
                 if (p_data->perk1->type == REFLECTOR_SHIELD || p_data->perk2->type == REFLECTOR_SHIELD) {
-
-                    slog("true");
-
                     player_reflected_proj_spawn(proj, p_data);
-                    
                     break;
                 }    
                 else {

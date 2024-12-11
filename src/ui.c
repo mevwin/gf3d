@@ -12,12 +12,10 @@
 #include "item.h"
 #include "perk.h"
 
-#define NOTIF_TIME_MAX (3.0f)
-
 static UIData* UI_data;
 
 void display_new_perk(Perk* perk, Uint8 slot);
-void display_player_perks(PlayerData* p_data);
+void display_player_perks(void* data);
 void buy_perk(GFC_List* perk_list, Perk* perk);
 void sell_perk(PlayerData* p_data, Uint8 slot);
 void notif_window(NotifType notif_type);
@@ -590,16 +588,23 @@ void display_new_perk(Perk* perk, Uint8 slot) {
     }
 }
 
-void display_player_perks(PlayerData* p_data){
+void display_player_perks(void* data){
     Perk* perk;
     WorldData* world;
     GFC_Rect desc_block;
+    PlayerData* p_data;
     
-    if (!p_data) return;
-
     world = get_world_data();
 
-    perk = p_data->perk1;
+    // if null, dislaying previous run
+    if (!data) {
+        perk = (Perk*) world->perk1;
+    }
+    else {
+        p_data = (PlayerData*) data;
+        perk = p_data->perk1;
+    }
+
     if (perk->type != NO_PERK) {
         if (world->current_state == SHOP) {
             gf2d_draw_rect_filled(UI_data->curr_perk1, perk->color);
@@ -614,7 +619,7 @@ void display_player_perks(PlayerData* p_data){
                 gf2d_font_draw_text_wrap_tag(perk->desc, FT_H5, GFC_COLOR_WHITE, desc_block);
             }
         }
-        else if (world->current_state == PAUSE_MENU || world->current_state == GAME_OVER) {
+        else if (world->current_state == PAUSE_MENU || world->current_state == GAME_OVER || world->current_state == PREVIOUS_RUN) {
             gf2d_draw_rect_filled(UI_data->p_perk1, perk->color);
 
             if (gf2d_mouse_in_rect(UI_data->p_perk1)) {
@@ -630,7 +635,14 @@ void display_player_perks(PlayerData* p_data){
         }
     }
 
-    perk = p_data->perk2;
+    if (!data) {
+        perk = (Perk*) world->perk2;
+    }
+    else {
+        p_data = (PlayerData*)data;
+        perk = p_data->perk2;
+    }
+
     if (perk->type != NO_PERK) {
         if (world->current_state == SHOP) {
             gf2d_draw_rect_filled(UI_data->curr_perk2, perk->color);
@@ -645,7 +657,7 @@ void display_player_perks(PlayerData* p_data){
                 gf2d_font_draw_text_wrap_tag(perk->desc, FT_H5, GFC_COLOR_WHITE, desc_block);
             }
         }
-        else if (world->current_state == PAUSE_MENU || world->current_state == GAME_OVER) {
+        else if (world->current_state == PAUSE_MENU || world->current_state == GAME_OVER || world->current_state == PREVIOUS_RUN){
             gf2d_draw_rect_filled(UI_data->p_perk2, perk->color);
 
             if (gf2d_mouse_in_rect(UI_data->p_perk2)) {
@@ -1053,6 +1065,9 @@ void player_hud(void* d) {
 
 void start_menu() {
     gf2d_sprite_draw_image(UI_data->start_menu, gfc_vector2d(0, 0));
+
+    if (UI_data->notif_flag)
+        notif_window(UI_data->notif_type);
 }
 
 void pause_menu(Sprite* menu, SJson* data) {
@@ -1062,9 +1077,15 @@ void pause_menu(Sprite* menu, SJson* data) {
     LevelData* level;
     PlayerData* p_data;
     GFC_Vector2D scale, offset;
+    WorldData* world;
 
     level = get_level_data();
-    p_data = get_player_data();
+    world = get_world_data();
+
+    if (world->current_state == PREVIOUS_RUN)
+        p_data = NULL;
+    else
+        p_data = get_player_data();
 
     gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(65, 65, 65, 0.4f));
     gf2d_sprite_draw_image(menu, gfc_vector2d(0, 0));
@@ -1162,7 +1183,10 @@ void pause_menu(Sprite* menu, SJson* data) {
     gf2d_sprite_draw(UI_data->item_progress_bar, offset, &scale,
         NULL, NULL, NULL, NULL, NULL, NULL);
 
-    display_player_perks(p_data);
+    if (world->current_state == PREVIOUS_RUN)
+        display_player_perks(NULL);
+    else
+        display_player_perks(p_data);
 }
 
 void wave_start() {
@@ -1210,7 +1234,7 @@ void wave_completed() {
     // TODO: implement images and text for next stages
 }
 
-void player_death_screen(Sprite* menu, SJson* data) {
+void player_death_screen(Sprite* menu, SJson* menu_data) {
     SJson* data_entry;
     LevelData* level;
     char buffer[35];
@@ -1219,10 +1243,10 @@ void player_death_screen(Sprite* menu, SJson* data) {
     level = get_level_data();
 
     gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(255, 0, 0, 0.4f));
-    pause_menu(menu, data);
+    pause_menu(menu, menu_data);
 
     // stats display
-    data_entry = sj_object_get_value(data, "stats");
+    data_entry = sj_object_get_value(menu_data, "stats");
     sj_object_get_value_as_float(data_entry, "text_x", &x);
 
     sj_object_get_value_as_float(data_entry, "enemy_y", &y);
@@ -1230,7 +1254,7 @@ void player_death_screen(Sprite* menu, SJson* data) {
     gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, gfc_vector2d(x, y));
 
     sj_object_get_value_as_float(data_entry, "waves_y", &y);
-    sprintf(buffer, "Waves Cleared: %d", level->wave_count);
+    sprintf(buffer, "Waves Cleared: %d", level->wave_count - 1);
     gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, gfc_vector2d(x, y));
 
     sj_object_get_value_as_float(data_entry, "scrap_y", &y);
@@ -1346,7 +1370,7 @@ void notif_window(NotifType notif_type) {
         width = notif_type == HAPPYTRIG_POWERUP ? 
             (get_player_data()->item_duration - CURRENT_TIME) / HAPPYTRIG_DUR : 
             (get_player_data()->item_duration - CURRENT_TIME) / INVINCIBILITY_DUR;
-    else if (notif_type == NO_SCRAP || notif_type == DUPE_PERKS)
+    else if (notif_type == NO_SCRAP || notif_type == DUPE_PERKS || notif_type == NO_RUNS)
         width = (UI_data->notification_time - CURRENT_TIME) / NOTIF_TIME_MAX;
     else
         width = 0;
@@ -1361,15 +1385,19 @@ void notif_window(NotifType notif_type) {
 }
 
 void preview_runs() {
+    WorldData* world;
     GFC_List* run_list;
     SJson* run, *data, *run_preview;
     GFC_Vector4D rect_vec;
+    GFC_Vector2D offset;
     GFC_Rect preview_rect;
     GFC_Color color;
+    char buffer[10];
     int i, j;
 
     gf2d_sprite_draw_image(UI_data->preview_menu, gfc_vector2d(0, 0));
 
+    world = get_world_data();
     run_list = get_previous_runs();
     data = sj_object_get_value(UI_data->prev_menu_data, "previews");
 
@@ -1380,17 +1408,24 @@ void preview_runs() {
 
             sj_value_as_vector4d(sj_object_get_value(run_preview, "rect"), &rect_vec);
             preview_rect = gfc_rect_from_vector4(rect_vec);
-
             color = sj_object_get_color(UI_data->prev_menu_data, "previews_menu_color");
+
+            sprintf(buffer, "RUN #%d", j+1);
+            sj_value_as_vector2d(sj_object_get_value(run_preview, "text_offset"), &offset);
+
             gf2d_draw_rect_filled(preview_rect, color);
+            gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, offset);
+
+            if (gf2d_mouse_button_released(0) && gf2d_mouse_in_rect(preview_rect)) {
+                level_begin();
+                game_data_init_from_save(RUNSAVE, run);
+            }
         }
     }
-    
-
 }
 
-void display_previous_run(SJson* run) {
-    player_death_screen(UI_data->previous_run, run);
+void display_previous_run() {
+    player_death_screen(UI_data->previous_run, UI_data->prev_menu_data);
 }
 
 UIData* get_UI_data() {

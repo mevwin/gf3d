@@ -41,10 +41,13 @@ typedef struct WorldData_S {
 	Uint8			enemy_start;
 	Uint8			_done;
 	Uint8			continue_from_save;
-	Uint8			previous_runs_flag;
 	GameState		current_state;
 	GameState		last_state;
 	float			pause_time;
+	
+	// dummy perk containers for previous runs
+	void*			perk1; 
+	void*			perk2;
 
 	// def files
 	SJson*			player_init;
@@ -54,6 +57,7 @@ typedef struct WorldData_S {
 void world_init();
 void world_close();
 void world_update(float fps);
+void game_data_init_from_save(SaveType type, SJson* json);
 WorldData* get_world_data();
 GFC_List* get_previous_runs();
 
