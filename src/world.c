@@ -146,7 +146,6 @@ void world_check_for_menu_input() {
 	else if (world->current_state == SHOP) {
 		if (gf2d_mouse_button_released(0) && gf2d_mouse_in_rect(ui->next_wave_block)) {
 			empty_perk_list();
-			level_load(world->game_mode); // load next level
 			world->current_state = WAVE_START;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
@@ -180,11 +179,14 @@ void world_check_for_menu_input() {
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
 		else if (gf2d_mouse_button_released(2)) {
-			if (gf2d_mouse_in_rect(ui->stage_block1)) {
+			if (gf2d_mouse_in_rect(ui->stage_block1) && world->game_mode == ENDLESS) {
 				// TODO: add level changing here
 			}
-			else if (gf2d_mouse_in_rect(ui->stage_block2)) {
+			else if (gf2d_mouse_in_rect(ui->stage_block2) && world->game_mode == ENDLESS) {
 				// TODO: add level changing here
+			}
+			else if (gf2d_mouse_in_rect(ui->nextwave_block) && world->game_mode == REGULAR) {
+				level_load(world->game_mode, 0); // load next level
 			}
 			else
 				return;
@@ -376,7 +378,6 @@ void update_time_checks(float curr_time) {
 	}
 }
 
-// TODO: add option for pre-defined levels (made by tool chain) or endless mode
 void world_update(float fps) {
 	PlayerData* p_data;
 	UIData* ui;
@@ -475,7 +476,6 @@ void world_update(float fps) {
 			wave_completed(world->game_mode);
 			gf2d_mouse_draw();
 
-			update_player_perks();
 			break;
 
 		case GAME_OVER:

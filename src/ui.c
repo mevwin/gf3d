@@ -590,7 +590,9 @@ void display_player_perks(void* data){
                 gf2d_font_draw_text_wrap_tag(perk->desc, FT_H5, GFC_COLOR_WHITE, desc_block);
             }
         }
-        else if (world->current_state == PAUSE_MENU || world->current_state == GAME_OVER || world->current_state == PREVIOUS_RUN) {
+        else if (world->current_state == PAUSE_MENU || world->current_state == GAME_OVER || 
+                 world->current_state == PREVIOUS_RUN || world->current_state == GAME_COMPLETED) 
+        {
             gf2d_draw_rect_filled(UI_data->p_perk1, perk->color);
 
             if (gf2d_mouse_in_rect(UI_data->p_perk1)) {
@@ -628,7 +630,9 @@ void display_player_perks(void* data){
                 gf2d_font_draw_text_wrap_tag(perk->desc, FT_H5, GFC_COLOR_WHITE, desc_block);
             }
         }
-        else if (world->current_state == PAUSE_MENU || world->current_state == GAME_OVER || world->current_state == PREVIOUS_RUN){
+        else if (world->current_state == PAUSE_MENU || world->current_state == GAME_OVER ||
+            world->current_state == PREVIOUS_RUN || world->current_state == GAME_COMPLETED)
+        {
             gf2d_draw_rect_filled(UI_data->p_perk2, perk->color);
 
             if (gf2d_mouse_in_rect(UI_data->p_perk2)) {
@@ -1187,13 +1191,55 @@ void wave_start() {
 
 // TODO: make two cases: stage select (ENDLESS) and show next level (REGULAR)
 void wave_completed(Uint8 game_mode) {
+    SJson* next_level, *stage_desc;
+    LevelData* level;
+    LevelType level_type;
+    ObjType obj_type;
+    GFC_Vector2D offset;
+    int i;
+    char name[20];
+    char obj[20];
+
+    level = get_level_data();
+
     gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(65, 65, 65, 0.4f));
     gf2d_sprite_draw_image(UI_data->wave_completed, gfc_vector2d(0, 0));
 
     // TODO: implement images and text for next stages
     if (game_mode == REGULAR) {
+        stage_desc = sj_array_get_nth(sj_object_get_value(UI_data->wave_completed_data, "stage_desc"), 0);
+
         gf2d_draw_rect_filled(UI_data->nextwave_block, gfc_color(65, 65, 65, 0.4f));
 
+        next_level = sj_array_get_nth(sj_object_get_value(level->level_def, "level_list"), level->wave_count - 1);
+
+        strcpy(name, sj_object_get_value_as_string(next_level, "name"));
+
+        sj_object_get_value_as_int(next_level, "level_type", &i);
+        level_type = (LevelType) i;
+        sj_object_get_value_as_int(next_level, "obj_type", &i);
+        obj_type = (ObjType) i;
+
+        switch (obj_type) {
+            case KILL_ENEMY:
+                strcpy(obj, "KILL ENEMY");
+
+                break;
+            case SURVIVE:
+                strcpy(obj, "SURVIVE");
+
+                break;
+
+            case BOSS:
+                strcpy(obj, "MINI-BOSS");
+
+                break;
+        }
+        sj_value_as_vector2d(sj_object_get_value(stage_desc, "level_text"), &offset);
+        gf2d_font_draw_line_tag(name, FT_Large, GFC_COLOR_WHITE, offset);
+
+        sj_value_as_vector2d(sj_object_get_value(stage_desc, "level_obj"), &offset);
+        gf2d_font_draw_line_tag(obj, FT_Large, GFC_COLOR_WHITE, offset);
 
     }
     else if (game_mode == ENDLESS) {

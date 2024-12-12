@@ -47,20 +47,20 @@ void level_begin(Uint8 game_mode) {
     switch (game_mode) {
         case REGULAR:
             level->level_def = sj_load("levels/regular_levels.def");
-            level_load(REGULAR);
+            level_load(REGULAR, 0);
 
             break;
 
         case ENDLESS:
             level->level_def = sj_load("levels/endless.def");
-            level_load(ENDLESS);
+            level_load(ENDLESS, 0);
 
             break;
     }
 }
 
 // load a level based on wave_count-1
-void level_load(Uint8 game_mode) {
+void level_load(Uint8 game_mode, Uint8 slot) {
     SJson* data, *curr_level;
     char buffer[30];
     int i;
@@ -69,6 +69,8 @@ void level_load(Uint8 game_mode) {
         data = sj_object_get_value(level->level_def, "level_list");
         curr_level = sj_array_get_nth(data, level->wave_count - 1);
         
+        strcpy(level->name, sj_object_get_value_as_string(curr_level, "name"));
+
         sj_object_get_value_as_int(curr_level, "level_type", &i);
         level->level_type = (LevelType) i;
 
@@ -93,7 +95,6 @@ void level_load(Uint8 game_mode) {
         }
 
         level->wave_goal = data->v.array->count;
-        //level->wave_goal = 1;
 
         // load level assets
 
@@ -106,6 +107,7 @@ void level_load(Uint8 game_mode) {
     }
 
 }
+
 
 void new_wave_level_reset(){
     level->last_powerup = 0;
@@ -254,7 +256,6 @@ void level_update() {
 
         if (level->wave_count - 1 == level->wave_goal) {
             level->total_game_time += CURRENT_TIME - level->game_start;
-            level->enemy_killed_total += level->enemy_killed;
 
             game_save(RUNSAVE);
             world->current_state = GAME_COMPLETED;
@@ -281,6 +282,7 @@ void level_update() {
 
         level->obj_complete = 0;
         world->current_state = WAVE_COMPLETED;
+        update_player_perks();
     }
 
 }

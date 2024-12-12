@@ -3,6 +3,7 @@
     "level_list":
     [
         {
+            "name": "Asteroid Belt",
             "level_type": 0,
             "obj_type": 0,
             "level_goal": 10,
@@ -22,6 +23,7 @@
             ]
         },
         {
+            "name": "Asteroid Belt",
             "level_type": 0,
             "obj_type": 0,
             "level_goal": 20,

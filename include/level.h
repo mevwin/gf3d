@@ -41,6 +41,7 @@ typedef struct LevelData_S{
 
 	// level/objective type
 	SJson*			level_def;
+	char			name[20];
 	LevelType		level_type;
 	ObjType			obj_type;
 	char			level_obj[30];
@@ -69,7 +70,7 @@ typedef struct LevelData_S{
 void level_init();
 
 void level_begin(Uint8 game_mode);
-void level_load(Uint8 game_mode);
+void level_load(Uint8 game_mode, Uint8 slot);
 
 void new_wave_level_reset();
 void full_level_reset();
