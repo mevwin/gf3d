@@ -96,6 +96,8 @@ EnemyData* enemy_data_init_from_config() {
 
 }
 
+// TODO: spawn enemy from config
+
 void enemy_spawn(GFC_Vector3D* player_pos) {
 	Entity* self;
 	EnemyData* data;
@@ -112,7 +114,7 @@ void enemy_spawn(GFC_Vector3D* player_pos) {
 	if (!data) return;
 
 	level = get_level_data();
-	if (level->wave_count > 0) 
+	if (level->wave_count > 1) 
 		enemy_update_stats(data);
 
 	self->think = enemy_think;

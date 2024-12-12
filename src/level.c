@@ -42,6 +42,7 @@ void level_begin(Uint8 game_mode) {
     level->wave_count = 1;
     level->total_scrap = 0;
     level->emper_flag = 0;
+    level->spawn_counter = 0;
 
     switch (game_mode) {
         case REGULAR:
@@ -105,8 +106,6 @@ void level_load(Uint8 game_mode) {
     }
 
 }
-
-// TODO: CONFIGURE LEVEL.DEF
 
 void new_wave_level_reset(){
     level->last_powerup = 0;

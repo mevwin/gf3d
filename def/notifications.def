@@ -1,0 +1,35 @@
+{
+    "notifs":
+    [
+        {
+            "text": "Brief Invincibilty",
+            "notif_rect_offset": [535, 10],
+            "notif_dur_offset": [535, 105],
+            "color": [128,128,128,140]
+        },
+        {
+            "text": "Happy Trigger",
+            "notif_rect_offset": [535, 10],
+            "notif_dur_offset": [535, 105],
+            "color": [128,128,128,140]
+        },
+        {
+            "text": "Not Enough Scrap",
+            "notif_rect_offset": [418, 29],
+            "notif_dur_offset": [418, 124],
+            "color": [128,128,128,120]
+        },
+        {
+            "text": "No Duplicate Perks",
+            "notif_rect_offset": [418, 29],
+            "notif_dur_offset": [418, 124],
+            "color": [128,128,128,120]
+        },
+        {
+            "text": "No Previous Runs",
+            "notif_rect_offset": [418, 29],
+            "notif_dur_offset": [418, 124],
+            "color": [128,128,128,120]
+        }
+    ]   
+}

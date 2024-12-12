@@ -5,8 +5,6 @@
 #define ENEMY_GOAL 20
 #define ASTEROID_MAX 20
 
-
-
 /**
 * Notes here (TODO)
 */

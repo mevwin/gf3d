@@ -1,0 +1,33 @@
+{
+    "perks":
+    [
+        {
+            "name": "Damage Resistance",
+            "desc": "Reduce incoming damage by %d%% | Uses: %i Waves",
+            "color": [128, 128, 128, 140],
+            "num_effect": [7, 35],
+            "uses": [2, 5]
+        },
+        {
+            "name": "Passive Health Regen",
+            "desc": "Restore %d%% of full HP every second | Uses: %i Waves",
+            "color": [255,0,0, 140],
+            "num_effect": [3, 10],
+            "uses": [2, 5]
+        },
+        {
+            "name": "Roll Invincibility",
+            "desc": "Horizontal rolls provide brief invincibility | Uses: %i Rolls",
+            "color": [0, 140, 140,140],
+            "num_effect": [3, 12],
+            "uses": [6, 10]
+        },
+        {
+            "name": "Reflector Shield",
+            "desc": "Vortex Weapon becomes a shield that reflects %d%% of incoming damage | Uses: %i Uses",
+            "color": [0,140,0,90],
+            "num_effect": [25, 75],
+            "uses": [10, 30]
+        }
+    ]
+}

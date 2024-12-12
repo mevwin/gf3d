@@ -22,7 +22,6 @@ void notif_window(NotifType notif_type);
 
 void UI_init() {
     SJson* position_data, *dimen_data;
-    float x_start, y_start, width, height;
     GFC_Vector4D rect;
 
     UI_data = gfc_allocate_array(sizeof(UIData), 1);
@@ -39,30 +38,23 @@ void UI_init() {
 
         // upgrades section
     position_data = sj_object_get_value(UI_data->shop_data, "upgrades");
-    dimen_data = sj_object_get_value(position_data, "offsets");
+    sj_value_as_vector4d(sj_object_get_value(position_data, "shields"), &rect);
+    UI_data->shields_block = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(position_data, "width", &width);
-    sj_object_get_value_as_float(position_data, "height", &height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "scrap"), &rect);
+    UI_data->scrap_block = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(dimen_data, "column1", &x_start);
-    sj_object_get_value_as_float(dimen_data, "row1", &y_start);
-    UI_data->shields_block = gfc_rect(x_start, y_start, width, height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "missile"), &rect);
+    UI_data->missiles_block = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(dimen_data, "row2", &y_start);
-    UI_data->scrap_block = gfc_rect(x_start, y_start, width, height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "single_shot"), &rect);
+    UI_data->single_shot_block = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(dimen_data, "row3", &y_start);
-    UI_data->missiles_block = gfc_rect(x_start, y_start, width, height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "charge_shot"), &rect);
+    UI_data->charge_shot_block = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(dimen_data, "column2", &x_start);
-    sj_object_get_value_as_float(dimen_data, "row1", &y_start);
-    UI_data->single_shot_block = gfc_rect(x_start, y_start, width, height);
-
-    sj_object_get_value_as_float(dimen_data, "row2", &y_start);
-    UI_data->charge_shot_block = gfc_rect(x_start, y_start, width, height);
-
-    sj_object_get_value_as_float(dimen_data, "row3", &y_start);
-    UI_data->nuke_block = gfc_rect(x_start, y_start, width, height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "nuke"), &rect);
+    UI_data->nuke_block = gfc_rect_from_vector4(rect);
 
             // upgrade caps
     dimen_data = sj_object_get_value(position_data, "upgrade_caps");
@@ -88,34 +80,24 @@ void UI_init() {
     UI_data->scrap_bar = gfc_rect_from_vector4(rect);
 
             // current perks
-    position_data = sj_object_get_value(UI_data->shop_data, "curr_perks");
-    sj_object_get_value_as_float(position_data, "y_offset", &y_start);
-    sj_object_get_value_as_float(position_data, "width", &width);
-    sj_object_get_value_as_float(position_data, "height", &height);
+    position_data = sj_object_get_value(UI_data->shop_data, "perks");
+    sj_value_as_vector4d(sj_object_get_value(position_data, "curr_perk1"), &rect);
+    UI_data->curr_perk1 = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(position_data, "p1x_offset", &x_start);
-    UI_data->curr_perk1 = gfc_rect(x_start, y_start, width, height);
-
-    sj_object_get_value_as_float(position_data, "p2x_offset", &x_start);
-    UI_data->curr_perk2 = gfc_rect(x_start, y_start, width, height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "curr_perk2"), &rect);
+    UI_data->curr_perk2 = gfc_rect_from_vector4(rect);
 
             // new perks
-    position_data = sj_object_get_value(UI_data->shop_data, "new_perks");
-    sj_object_get_value_as_float(position_data, "x_offset", &x_start);
-    sj_object_get_value_as_float(position_data, "width", &width);
-    sj_object_get_value_as_float(position_data, "height", &height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "new_perk1"), &rect);
+    UI_data->new_perk1 = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(position_data, "p1y_offset", &y_start);
-    UI_data->new_perk1 = gfc_rect(x_start, y_start, width, height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "new_perk2"), &rect);
+    UI_data->new_perk2 = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(position_data, "p2y_offset", &y_start);
-    UI_data->new_perk2 = gfc_rect(x_start, y_start, width, height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "new_perk3"), &rect);
+    UI_data->new_perk3 = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(position_data, "p3y_offset", &y_start);
-    UI_data->new_perk3 = gfc_rect(x_start, y_start, width, height);
-
-    dimen_data = sj_object_get_value(position_data, "desc_box");
-    sj_value_as_vector4d(dimen_data, &rect);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "desc_box"), &rect);
     UI_data->s_perk_desc = gfc_rect_from_vector4(rect);
 
     /*player UI*/
@@ -138,26 +120,19 @@ void UI_init() {
     UI_data->start_menu_data = sj_load("menus/start_menu.menu");
 
     position_data = sj_object_get_value(UI_data->start_menu_data, "option_pos");
-    sj_object_get_value_as_float(position_data, "block_x", &x_start);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "new_game"), &rect);
+    UI_data->new_start_block = gfc_rect_from_vector4(rect);
 
-    dimen_data = sj_object_get_value(UI_data->start_menu_data, "menu_block");
-    sj_object_get_value_as_float(dimen_data, "width", &width);
-    sj_object_get_value_as_float(dimen_data, "height", &height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "continue"), &rect);
+    UI_data->continue_block = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(position_data, "new_game_y", &y_start);
-    UI_data->new_start_block = gfc_rect(x_start, y_start, width, height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "previous"), &rect);
+    UI_data->previous_block = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(position_data, "continue_y", &y_start);
-    UI_data->continue_block = gfc_rect(x_start, y_start, width, height);
-
-    sj_object_get_value_as_float(position_data, "previous_y", &y_start);
-    UI_data->previous_block = gfc_rect(x_start, y_start, width, height);
-
-    sj_object_get_value_as_float(position_data, "s_quit_y", &y_start);
-    UI_data->s_quit_block = gfc_rect(x_start, y_start, width, height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "s_quit"), &rect);
+    UI_data->s_quit_block = gfc_rect_from_vector4(rect);
 
     position_data = sj_object_get_value(UI_data->start_menu_data, "game_mode_sel");
-
     sj_value_as_vector4d(sj_object_get_value(position_data, "regular"), &rect);
     UI_data->regular_block = gfc_rect_from_vector4(rect);
 
@@ -175,35 +150,23 @@ void UI_init() {
 
         // menu blocks
     position_data = sj_object_get_value(UI_data->pause_menu_data, "option_pos");
-    sj_object_get_value_as_float(position_data, "block_x", &x_start);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "resume"), &rect);
+    UI_data->resume_block = gfc_rect_from_vector4(rect);
 
-    dimen_data = sj_object_get_value(UI_data->pause_menu_data, "menu_block");
-    sj_object_get_value_as_float(dimen_data, "width", &width);
-    sj_object_get_value_as_float(dimen_data, "height", &height);
-
-    sj_object_get_value_as_float(position_data, "resume_y", &y_start);
-    UI_data->resume_block = gfc_rect(x_start, y_start, width, height);
-
-    sj_object_get_value_as_float(position_data, "quit_y", &y_start);
-    UI_data->quit_block = gfc_rect(x_start, y_start, width, height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "quit"), &rect);
+    UI_data->quit_block = gfc_rect_from_vector4(rect);
 
         // perks and item progress are calculated in pause_menu()
 
-    dimen_data = sj_object_get_value(UI_data->pause_menu_data, "perks_blocks");
-    sj_object_get_value_as_float(dimen_data, "width", &width);
-    sj_object_get_value_as_float(dimen_data, "height", &height);
-    sj_object_get_value_as_float(dimen_data, "block_y", &y_start);
+    position_data = sj_object_get_value(UI_data->pause_menu_data, "perks_blocks");
+    sj_value_as_vector4d(sj_object_get_value(position_data, "perk1"), &rect);
+    UI_data->p_perk1 = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(dimen_data, "perk_x1", &x_start);
-    UI_data->p_perk1 = gfc_rect(x_start, y_start, width, height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "perk2"), &rect);
+    UI_data->p_perk2 = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(dimen_data, "perk_x2", &x_start);
-    UI_data->p_perk2 = gfc_rect(x_start, y_start, width, height);
-
-    position_data = sj_object_get_value(dimen_data, "desc_box");
-    sj_value_as_vector4d(position_data, &rect);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "desc_box"), &rect);
     UI_data->p_perk_desc = gfc_rect_from_vector4(rect);
-
 
     /*wave start*/
     UI_data->wave_start = gf2d_sprite_load_image("images/UI/wave_start/wave_start.png");
@@ -218,17 +181,14 @@ void UI_init() {
     UI_data->wave_completed_data = sj_load("menus/wave_completed.menu");
 
     position_data = sj_object_get_value(UI_data->wave_completed_data, "stage_blocks");
-    sj_object_get_value_as_float(position_data, "width", &width);
-    sj_object_get_value_as_float(position_data, "height", &height);
-    
-    sj_object_get_value_as_float(position_data, "y_offset", &y_start);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "stage1_block"), &rect);
+    UI_data->stage_block1 = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(position_data, "x_offset1", &x_start);
-    UI_data->stage_block1 = gfc_rect(x_start, y_start, width, height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "stage2_block"), &rect);
+    UI_data->stage_block2 = gfc_rect_from_vector4(rect);
 
-    sj_object_get_value_as_float(position_data, "x_offset2", &x_start);
-    UI_data->stage_block2 = gfc_rect(x_start, y_start, width, height);
-
+    sj_value_as_vector4d(sj_object_get_value(position_data, "nextwave_block"), &rect);
+    UI_data->nextwave_block = gfc_rect_from_vector4(rect);
 
     /*game over (very similar to pause menu)*/
     UI_data->game_over = gf2d_sprite_load_image("images/UI/game_over/game_over.png");
@@ -236,17 +196,11 @@ void UI_init() {
 
         // menu blocks
     position_data = sj_object_get_value(UI_data->game_over_data, "option_pos");
-    sj_object_get_value_as_float(position_data, "block_x", &x_start);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "respawn"), &rect);
+    UI_data->respawn_block = gfc_rect_from_vector4(rect);
 
-    dimen_data = sj_object_get_value(UI_data->game_over_data, "menu_block");
-    sj_object_get_value_as_float(dimen_data, "width", &width);
-    sj_object_get_value_as_float(dimen_data, "height", &height);
-
-    sj_object_get_value_as_float(position_data, "respawn_y", &y_start);
-    UI_data->respawn_block = gfc_rect(x_start, y_start, width, height);
-
-    sj_object_get_value_as_float(position_data, "g_quit_y", &y_start);
-    UI_data->g_quit_block = gfc_rect(x_start, y_start, width, height);
+    sj_value_as_vector4d(sj_object_get_value(position_data, "g_quit"), &rect);
+    UI_data->g_quit_block = gfc_rect_from_vector4(rect);
 
     UI_data->nuke_alpha = 0.0f;
     UI_data->emper_alpha = 0.0f;
@@ -958,8 +912,8 @@ void shop_reset() {
 
 void player_hud(void* d) {
     GFC_Vector2D bar_position, scale;
-    SJson* position_data, *dimen_data;
-    float scrap, maxscrap, nuke_cost, x, y, bar_length;
+    SJson* position_data;
+    float scrap, maxscrap, nuke_cost, bar_length;
     float currHealth, currShield, currScrap, currVortex, currNuke;
     //float enemy_kill, currEnem;
     LevelData* level;
@@ -986,24 +940,17 @@ void player_hud(void* d) {
        // currEnem = 0;
 
     gf2d_sprite_draw_image(UI_data->player_hud, gfc_vector2d(0, 0));
-    position_data = sj_object_get_value(UI_data->player_hud_data, "bar_start_positions");
-    dimen_data = sj_object_get_value(UI_data->player_hud_data, "bar_dimensions");
-
-    sj_object_get_value_as_float(position_data, "bar_x", &x);
+    position_data = sj_object_get_value(UI_data->player_hud_data, "player_bars");
 
     // health bar draws
         // current health
-    sj_object_get_value_as_float(position_data, "health_y", &y);
-    bar_position = gfc_vector2d(x, y);
-
-
+    sj_value_as_vector2d(sj_object_get_value(position_data, "health_offset"), &bar_position);
     scale = gfc_vector2d(currHealth, 1.0f);
     gf2d_sprite_draw(UI_data->player_health, bar_position, &scale, 
                     NULL, NULL, NULL, NULL, NULL, NULL);
 
         // current shield
-    sj_object_get_value_as_float(dimen_data, "player_bars_w", &bar_length);
-
+    sj_object_get_value_as_float(position_data, "bar_width", &bar_length);
     if (currShield > 0) {
         bar_position.x += (bar_length * currHealth);
         scale = gfc_vector2d(currShield, 1.0f);
@@ -1013,8 +960,7 @@ void player_hud(void* d) {
 
     // scrap bar draws
         // current scrap
-    sj_object_get_value_as_float(position_data, "scrap_y", &y);
-    bar_position = gfc_vector2d(x, y);
+    sj_value_as_vector2d(sj_object_get_value(position_data, "scrap_offset"), &bar_position);
     scale = gfc_vector2d(currScrap, 1.0f);
     gf2d_sprite_draw(UI_data->player_scrap, bar_position, &scale, 
                     NULL, NULL, NULL, NULL, NULL, NULL);
@@ -1029,10 +975,8 @@ void player_hud(void* d) {
     }
 
     // vortex bar draws
-    sj_object_get_value_as_float(position_data, "vortex_y", &y);
-    bar_position = gfc_vector2d(x, y);
+    sj_value_as_vector2d(sj_object_get_value(position_data, "vortex_offset"), &bar_position);
     scale = gfc_vector2d(currVortex, 1.0f);
-
     gf2d_sprite_draw(UI_data->player_vortex, bar_position, &scale, 
                     NULL, NULL, NULL, NULL, NULL, NULL);
     
@@ -1041,7 +985,6 @@ void player_hud(void* d) {
         notif_window(HAPPYTRIG_POWERUP);
     else if (data->active_item == INVINCIBILITY)
         notif_window(INVINCE_POWERUP);
-
 
     // visual for super nuke
     if (data->nuke_flag) {
@@ -1242,22 +1185,27 @@ void wave_start() {
     gf2d_font_draw_line_tag(level->level_obj, FT_H2, GFC_COLOR_WHITE, obj_loc);
 }
 
-void wave_completed() { 
-    LevelData* level;
-
-    level = get_level_data();
-
-    if (!level) return;
-
+// TODO: make two cases: stage select (ENDLESS) and show next level (REGULAR)
+void wave_completed(Uint8 game_mode) {
     gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(65, 65, 65, 0.4f));
     gf2d_sprite_draw_image(UI_data->wave_completed, gfc_vector2d(0, 0));
 
     // TODO: implement images and text for next stages
+    if (game_mode == REGULAR) {
+        gf2d_draw_rect_filled(UI_data->nextwave_block, gfc_color(65, 65, 65, 0.4f));
+
+
+    }
+    else if (game_mode == ENDLESS) {
+
+    }
+
 }
 
 void player_death_screen(Sprite* menu, SJson* menu_data) {
     SJson* data_entry;
     LevelData* level;
+    GFC_Vector2D offset;
     char buffer[35];
     float x, y;
 
@@ -1268,23 +1216,22 @@ void player_death_screen(Sprite* menu, SJson* menu_data) {
 
     // stats display
     data_entry = sj_object_get_value(menu_data, "stats");
-    sj_object_get_value_as_float(data_entry, "text_x", &x);
 
-    sj_object_get_value_as_float(data_entry, "enemy_y", &y);
+    sj_value_as_vector2d(sj_object_get_value(data_entry, "enemy_offset"), &offset);
     sprintf(buffer, "Enemies Killed: %d", level->enemy_killed_total);
-    gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, gfc_vector2d(x, y));
+    gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, offset);
 
-    sj_object_get_value_as_float(data_entry, "waves_y", &y);
+    sj_value_as_vector2d(sj_object_get_value(data_entry, "waves_offset"), &offset);
     sprintf(buffer, "Waves Cleared: %d", level->wave_count - 1);
-    gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, gfc_vector2d(x, y));
+    gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, offset);
 
-    sj_object_get_value_as_float(data_entry, "scrap_y", &y);
+    sj_value_as_vector2d(sj_object_get_value(data_entry, "scrap_offset"), &offset);
     sprintf(buffer, "Scrap Collected: %d", level->total_scrap);
-    gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, gfc_vector2d(x, y));
+    gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, offset);
 
-    sj_object_get_value_as_float(data_entry, "time_y", &y);
+    sj_value_as_vector2d(sj_object_get_value(data_entry, "time_offset"), &offset);
     sprintf(buffer, "Time Played: %f", level->total_game_time);
-    gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, gfc_vector2d(x, y));
+    gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, offset);
 }
 
 void enemy_hud(void* e, GFC_Vector3D position) {

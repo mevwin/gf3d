@@ -1,0 +1,43 @@
+{
+    "#comment": "must match with endless.def level objects",
+    "level_list":
+    [
+        {
+            "level_type": 0,
+            "obj_type": 0,
+            "level_goal": 10,
+            "level_obj": "Kill %d enemies",
+            "hazards": 
+            {
+                "model": "",
+                "count": 0,
+                "max_onscreen": 25
+            },
+            "#comment": "level_prog",
+            "level_spawns":
+            [
+                {
+                    
+                }
+            ]
+        },
+        {
+            "level_type": 0,
+            "obj_type": 0,
+            "level_goal": 20,
+            "level_obj": "Kill %d enemies",
+            "hazards": 
+            {
+                "model": "",
+                "count": 0,
+                "max_onscreen": 25
+            },
+            "#comment": "level_prog",
+            "level_spawns":
+            [
+
+            ]
+        }
+
+    ]
+}

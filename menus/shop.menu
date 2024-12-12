@@ -1,0 +1,35 @@
+{
+    "upgrades":
+    {
+        "shields": [86, 326, 240, 120],
+        "scrap": [385, 326, 240, 120],
+        "missile": [86, 483, 240, 120],
+        "single_shot": [385, 483, 240, 120],
+        "charge_shot": [86, 644, 240, 120],
+        "nuke": [385, 644, 240, 120],
+        "upgrade_caps":
+        {
+            "shields": 5,
+            "scrap": 3,
+            "missile": 3,
+            "single_shot": 3,
+            "charge_shot": 2,
+            "nuke": 1
+        },
+        "upgrade_progress_height": 30,
+        "upgrade_cost_default": 5,
+        "perk_cost_default": 5,
+        "perk_sell_reduction": 2
+    },
+    "scrap_bar_rect": [108, 242, 500, 40],
+    "perks":
+    {
+        "curr_perk1": [775, 188, 201, 121],
+        "curr_perk2": [1010, 188, 201, 121],
+        "new_perk1": [794, 335, 404, 161],
+        "new_perk2": [794, 524, 404, 161],
+        "new_perk3": [794, 711, 404, 161],
+        "desc_box": [787, 11, 401, 161] 
+    },
+    "next_wave_rect": [221, 814, 262, 50]
+}

@@ -1,18 +1,13 @@
 {
-    "bar_start_positions":
+    "player_bars":
     {
-        "bar_x": 138, 
-        "health_y": 20,
-        "scrap_y": 56,
-        "vortex_y": 94,
-        "level_progress_x": 0,
-        "level_progress_y": 850
+        "health_offset": [138, 20],
+        "scrap_offset": [138, 56],
+        "vortex_offset": [138, 94],
+        "bar_width": 344
     },
-    "bar_dimensions":
+    "level_obj":
     {
-        "player_bars_w": 344,
-        "player_bars_h": 25,
-        "level_progress_w": 1280,
-        "level_progress_h": 50
+
     }
 }

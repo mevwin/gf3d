@@ -25,7 +25,8 @@ typedef enum NotifType_S {
     HAPPYTRIG_POWERUP,
     NO_SCRAP,
     DUPE_PERKS,
-    NO_RUNS
+    NO_RUNS,
+    BOSS_ATTACK
 }NotifType;
 
 typedef struct UIData_S{
@@ -128,6 +129,7 @@ typedef struct UIData_S{
     Sprite*         wave_completed;
     GFC_Rect        stage_block1;
     GFC_Rect        stage_block2;
+    GFC_Rect        nextwave_block;
 
     /*game over*/
     SJson*          game_over_data;
@@ -181,7 +183,7 @@ void start_menu(Uint8 state);
 
 void wave_start();
 
-void wave_completed();
+void wave_completed(Uint8 game_mode);
 
 void player_death_screen(Sprite* menu, SJson* menu_data);
 

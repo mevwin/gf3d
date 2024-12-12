@@ -472,7 +472,7 @@ void world_update(float fps) {
 			break;
 
 		case WAVE_COMPLETED:
-			wave_completed();
+			wave_completed(world->game_mode);
 			gf2d_mouse_draw();
 
 			update_player_perks();

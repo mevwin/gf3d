@@ -1,16 +1,10 @@
 {
     "option_pos":
     {
-        "block_x": 492, 
-        "new_game_y": 233,
-        "continue_y": 384,
-        "previous_y": 535,
-        "s_quit_y": 688
-    },
-    "menu_block":
-    {
-        "width": 300,
-        "height": 120
+        "new_game": [492, 233, 300, 120],
+        "continue": [492, 384, 300, 120],
+        "previous": [492, 535, 300, 120],
+        "s_quit": [492, 688, 300, 120]
     },
     "game_mode_sel":
     {

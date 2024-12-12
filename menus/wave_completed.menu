@@ -1,0 +1,27 @@
+{
+    "stage_blocks":
+    {
+        "stage1_block": [304, 429, 300, 180],
+        "stage2_block": [675, 429, 300, 180],
+        "nextwave_block": [500, 429, 300, 180]
+    },
+    "stage_desc":
+    [
+        {
+            "#comment": "REGULAR MODE",
+            "level_text": [548, 462],
+            "level_obj": [548, 514]
+        },
+        {
+            "#comment": "ENDLESS: STAGE 1",
+            "level_text": [326, 462],
+            "level_obj": [326, 514]
+        },
+        {
+            "#comment": "ENDLESS: STAGE 2",
+            "level_text": [696, 462],
+            "level_obj": [696, 514]
+        }
+    ]
+
+}

@@ -1,0 +1,28 @@
+{
+    "option_pos":
+    {
+        "resume": [101, 325, 300, 120],
+        "quit": [101, 497, 300, 120]
+    },
+    "progress_bar":
+    {
+        "bar_offset": [586, 209],
+        "text_offset": [579, 165]
+    },
+    "item_progress_bar":
+    {
+        "shields_offset": [579, 427],
+        "scrapup_offset": [813, 429],
+        "missiles_offset": [1045, 429],
+        "singleshot_offset": [579, 574],
+        "chargeshot_offset": [813, 574],
+        "nukecost_offset": [1045, 574]
+    },
+    "perks_blocks":
+    {
+        "perk1": [588, 713, 140, 120],
+        "perk2": [758, 713, 140, 120],
+        "desc_box": [944, 694, 300, 159]
+    }
+    
+}
