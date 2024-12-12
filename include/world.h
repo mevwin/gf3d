@@ -17,8 +17,16 @@ typedef enum SaveType_E {
 	RUNSAVE			// player dies so save run for displaying
 }SaveType;
 
+// TODO: implement these modes
+typedef enum GameMode_E {
+	REGULAR,		// premade levels
+	ENDLESS,			// procedurally generated
+	PREV_DISPLAY
+}GameMode;
+
 typedef enum GameState_E{
 	START_MENU,
+	GAME_MODE_SEL,
 	PREV_PREVIEW,
 	PREVIOUS_RUN,
 	LOADING_SCREEN,
@@ -37,10 +45,13 @@ typedef struct WorldData_S {
 	Uint8			enemy_assets_made;
 	Uint8			item_assets_made;
 	Uint8			level_assets_made;
+
 	Uint8			player_spawned;
 	Uint8			enemy_start;
 	Uint8			_done;
 	Uint8			continue_from_save;
+
+	GameMode		game_mode;
 	GameState		current_state;
 	GameState		last_state;
 	float			pause_time;

@@ -96,11 +96,15 @@ typedef struct UIData_S{
     /*start menu*/
     SJson*          start_menu_data;
     Sprite*         start_menu;
+    Sprite*         game_mode_select;
     GFC_Rect        new_start_block;
     GFC_Rect        continue_block;
     GFC_Rect        previous_block;
     GFC_Rect        s_quit_block;
-
+    GFC_Rect        regular_block;
+    GFC_Rect        endless_block;
+    GFC_Rect        s_exit_block;
+    
     /*pause menu*/
     SJson*          pause_menu_data;
     Sprite*         pause_menu;
@@ -130,6 +134,7 @@ typedef struct UIData_S{
     Sprite*         game_over;
     GFC_Rect        respawn_block;
     GFC_Rect        g_quit_block;
+    // TODO: add way to check individual wave progress (maybe)
 
     /*notifications*/
     SJson*          notif_data;
@@ -168,9 +173,7 @@ void shop_reset();
 
 void player_hud(void* d);
 
-void start_menu();
-
-void prev(Sprite* menu, SJson* data);
+void start_menu(Uint8 state);
 
 void wave_start();
 void wave_completed();

@@ -50,6 +50,8 @@ typedef struct {
 	GFC_Vector3D*	player_pos;			// pointer to player's current position
 	GFC_Vector3D    spawn_pos;			// initial spawn position
 	Uint8			missile_targeted;	// flag for player missile attack
+	int				scrap_amount;
+	Uint8			item_type;
 
 }EnemyData;
 

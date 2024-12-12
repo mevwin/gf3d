@@ -244,10 +244,6 @@ void entity_assets_close() {
 
     world = get_world_data();
 
-    world->player_assets_made = 0;
-    world->enemy_assets_made = 0;
-    world->item_assets_made = 0;
-
     gf3d_model_free(models->player);
     gf3d_texture_free(models->single_shot);
     gf3d_texture_free(models->charge_shot);
@@ -272,6 +268,10 @@ void entity_assets_close() {
     gf3d_model_free(models->health_pickup);
     gf3d_model_free(models->happy_trigger);
     gf3d_model_free(models->invincibility);
+
+    world->player_assets_made = 0;
+    world->enemy_assets_made = 0;
+    world->item_assets_made = 0;
 
 }
 

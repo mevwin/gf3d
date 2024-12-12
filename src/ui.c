@@ -134,6 +134,7 @@ void UI_init() {
 
     /*start menu*/
     UI_data->start_menu = gf2d_sprite_load_image("images/UI/start_menu/start_menu.png");
+    UI_data->game_mode_select = gf2d_sprite_load_image("images/UI/start_menu/game_mode_sel.png");
     UI_data->start_menu_data = sj_load("menus/start_menu.menu");
 
     position_data = sj_object_get_value(UI_data->start_menu_data, "option_pos");
@@ -155,6 +156,16 @@ void UI_init() {
     sj_object_get_value_as_float(position_data, "s_quit_y", &y_start);
     UI_data->s_quit_block = gfc_rect(x_start, y_start, width, height);
 
+    position_data = sj_object_get_value(UI_data->start_menu_data, "game_mode_sel");
+
+    sj_value_as_vector4d(sj_object_get_value(position_data, "regular"), &rect);
+    UI_data->regular_block = gfc_rect_from_vector4(rect);
+
+    sj_value_as_vector4d(sj_object_get_value(position_data, "endless"), &rect);
+    UI_data->endless_block = gfc_rect_from_vector4(rect);
+
+    sj_value_as_vector4d(sj_object_get_value(position_data, "exit"), &rect);
+    UI_data->s_exit_block = gfc_rect_from_vector4(rect);
 
     /*pause menu*/
     UI_data->pause_menu = gf2d_sprite_load_image("images/UI/pause_menu/pause_menu.png");
@@ -279,6 +290,7 @@ void UI_free() {
     sj_free(UI_data->prev_menu_data);
     gf2d_sprite_free(UI_data->player_hud);
     gf2d_sprite_free(UI_data->start_menu);
+    gf2d_sprite_free(UI_data->game_mode_select);
     gf2d_sprite_free(UI_data->pause_menu);
     gf2d_sprite_free(UI_data->wave_start);
     gf2d_sprite_free(UI_data->wave_completed);
@@ -1063,8 +1075,12 @@ void player_hud(void* d) {
     */
 }
 
-void start_menu() {
-    gf2d_sprite_draw_image(UI_data->start_menu, gfc_vector2d(0, 0));
+void start_menu(Uint8 state) {
+    
+    if (state == START_MENU)
+        gf2d_sprite_draw_image(UI_data->start_menu, gfc_vector2d(0, 0));
+    else if (state == GAME_MODE_SEL)
+        gf2d_sprite_draw_image(UI_data->game_mode_select, gfc_vector2d(0, 0));
 
     if (UI_data->notif_flag)
         notif_window(UI_data->notif_type);
@@ -1417,7 +1433,9 @@ void preview_runs() {
             gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, offset);
 
             if (gf2d_mouse_button_released(0) && gf2d_mouse_in_rect(preview_rect)) {
-                level_begin();
+                gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+
+                level_begin(PREV_DISPLAY);
                 game_data_init_from_save(RUNSAVE, run);
             }
         }

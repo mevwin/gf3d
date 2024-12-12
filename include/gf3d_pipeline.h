@@ -171,3 +171,13 @@ void gf3d_pipeline_submit_all_pipe_commands();
 VkFormat gf3d_pipeline_find_depth_format();
 
 #endif
+
+/**
+* look at config files
+* write shaders (make ubo and such)
+*   - make sure ubo matches the implementation in src
+*   - ex: spirte.vert -> gf2d_sprite.c (way to instantiate it)
+* assuming both pipelines are setup, determine which pipeline to use
+*   - a flag in the ubos themselves
+*   - a flag in the src code
+*/

@@ -14,15 +14,15 @@
 typedef enum ObjType_E {
 	KILL_ENEMY,
 	SURVIVE,
-	COLLECT,
 	BOSS
 }ObjType;
 
 typedef enum LevelType_E {
 	ASTEROID_BELT,
+	BLACK_HOLE,
+	BOSS_STAGE,
 	LAVA_WORLD,
-	ICE_CAVERN,
-	BLACK_HOLE
+	ICE_CAVERN
 }LevelType;
 
 typedef struct LevelData_S{
@@ -46,6 +46,7 @@ typedef struct LevelData_S{
 	LevelType		level_type;
 	ObjType			obj_type;
 	char			level_obj[30];
+	SJson*			level_def;
 
 		// objective 1: kill x enemies
 	int				enemy_killed;
@@ -56,23 +57,24 @@ typedef struct LevelData_S{
 	float			survival_time;
 	float			goal_timestamp;
 
-		// objective 3: collect x items
+		// objective 3: mini-boss
 	// TODO
 
-		// objective 4: mini-boss
+		// objective 4: collect x items
 	// TODO
 
 }LevelData;
 
 void level_init();
 
-void level_begin();
-void level_load();
+void level_begin(Uint8 game_mode);
+void level_load(Uint8 game_mode);
 
 void new_wave_level_reset();
 void full_level_reset();
 void asteroid_init();
 void asteroid_free();
+
 void level_visuals();
 void level_update();
 void level_free();

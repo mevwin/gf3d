@@ -29,36 +29,81 @@ void level_init() {
     atexit(level_free);
 }
 
-void level_begin() {
+void level_begin(Uint8 game_mode) {
     level->last_powerup = 0;
     level->enemy_count = 0;
     level->enemy_killed = 0;
-    level->enemy_goal = 5;
     level->enemy_killed_total = 0;
-    level->emper_flag = 0;
     level->fencer_flag = 0;
-
     level->wave_end_time = 0;
     level->total_game_time = 0;
-
     level->wave_end = 0;
     level->obj_complete = 0;
     level->wave_count = 1;
-
     level->total_scrap = 0;
+    level->emper_flag = 0;
 
-    // set level objective
-    level->obj_type = KILL_ENEMY;
-    switch (level->obj_type) {
-        case KILL_ENEMY:
-            sprintf(level->level_obj, "Kill %i Enemies", level->enemy_goal);
+    switch (game_mode) {
+        case REGULAR:
+            level->level_def = sj_load("levels/regular_levels.def");
+            level_load(REGULAR);
 
             break;
-        case SURVIVE:
+
+        case ENDLESS:
+            level->level_def = sj_load("levels/endless.def");
+            level_load(ENDLESS);
 
             break;
     }
 }
+
+// load a level based on wave_count-1
+void level_load(Uint8 game_mode) {
+    SJson* data, *curr_level;
+    char buffer[30];
+    int i;
+
+    if (game_mode == REGULAR) {
+        data = sj_object_get_value(level->level_def, "level_list");
+        curr_level = sj_array_get_nth(data, level->wave_count - 1);
+        
+        sj_object_get_value_as_int(curr_level, "level_type", &i);
+        level->level_type = (LevelType) i;
+
+        sj_object_get_value_as_int(curr_level, "obj_type", &i);
+        level->obj_type = (ObjType) i;
+
+        sj_object_get_value_as_int(curr_level, "level_goal", &i);
+        if (i == 0) // boss stage does not need sprintf
+            strcpy(level->level_obj, sj_object_get_value_as_string(curr_level, "level_obj"));
+        else {
+            sprintf(buffer, sj_object_get_value_as_string(curr_level, "level_obj"), i);
+            strcpy(level->level_obj, buffer);
+        }
+
+        switch (level->obj_type) {
+            case KILL_ENEMY:
+                level->enemy_goal = i;
+                break;
+            case SURVIVE:
+                level->survival_time = i;
+                break;
+        }
+
+        // load level assets
+
+    }
+    else if (game_mode == ENDLESS) {
+
+    }
+    else if (game_mode == PREV_DISPLAY) {
+        // all done in game_data_init_from_save
+    }
+
+}
+
+// TODO: CONFIGURE LEVEL.DEF
 
 void new_wave_level_reset(){
     level->last_powerup = 0;
@@ -90,6 +135,9 @@ void full_level_reset() {
 
     level->wave_count = 1;
     level->wave_end = 0;
+
+    if (level->level_def)
+        sj_free(level->level_def);
 }
 
 /*

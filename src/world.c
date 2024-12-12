@@ -16,7 +16,7 @@ static Entity* player;
 static GFC_List* previous_runs_list;
 
 void world_check_for_menu_input();
-void start_menu_input_check(UIData* ui_data);
+void start_menu_input_check(UIData* ui);
 void update_time_checks(float curr_time);
 int previous_runs_list_init();
 void previous_runs_list_free();
@@ -146,6 +146,7 @@ void world_check_for_menu_input() {
 	else if (world->current_state == SHOP) {
 		if (gf2d_mouse_button_released(0) && gf2d_mouse_in_rect(ui->next_wave_block)) {
 			empty_perk_list();
+			level_load(world->game_mode); // load next level
 			world->current_state = WAVE_START;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
@@ -208,10 +209,15 @@ void world_check_for_menu_input() {
 	else if (world->current_state == PREV_PREVIEW) {
 		if (gf2d_mouse_button_released(0)) {
 			if (gf2d_mouse_in_rect(ui->exit_block)) {
+				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+
 				previous_runs_list_free();
+				ui->preview_page_offset = 0;
 				world->current_state = START_MENU;
 			}
 			else if (gf2d_mouse_in_rect(ui->next_block)) {
+				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+
 				if (previous_runs_list->count > ui->preview_page_offset){
 					ui->preview_page_offset += 3;
 					if (ui->preview_page_offset > previous_runs_list->count)
@@ -220,6 +226,8 @@ void world_check_for_menu_input() {
 				//else do nothing
 			}
 			else if (gf2d_mouse_in_rect(ui->prev_block)) {
+				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+
 				if (ui->preview_page_offset - 3 >= 0)
 					ui->preview_page_offset -= 3;
 				else
@@ -229,63 +237,90 @@ void world_check_for_menu_input() {
 	}
 	else if (world->current_state == PREVIOUS_RUN) {
 		if (gf2d_mouse_button_released(0) && gf2d_mouse_in_rect(ui->return_block)) {
+			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+
 			free(world->perk1);
 			free(world->perk2);
+			full_level_reset();
+			shop_reset();
 			world->current_state = PREV_PREVIEW;
 		}
 	}
 }
 
-void start_menu_input_check(UIData* ui_data) {
-	UIData* ui;
-
-	ui = get_UI_data();
-
+void start_menu_input_check(UIData* ui) {
 	if (gf2d_mouse_button_released(0)) {
-		if (gf2d_mouse_in_rect(ui_data->new_start_block)) {
-			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+		if (world->current_state == START_MENU) {
+			if (gf2d_mouse_in_rect(ui->new_start_block)) {
+				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+				world->current_state = GAME_MODE_SEL;
+			}
+			else if (gf2d_mouse_in_rect(ui->continue_block)) {
+				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 
-			level_begin();
-			player_assets_init();
-			world->current_state = LOADING_SCREEN;
+				/*
+				level_begin(ENDLESS);
+				player_assets_init();
 
-			if (world->player_assets_made) {
-				gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), GFC_COLOR_BLACK);
-			
-				world->enemy_start = 0;
-				world->player_spawned = 1;	
+				if (world->player_assets_made) {
+
+					world->enemy_start = 0;
+					world->continue_from_save = 1;
+					world->player_spawned = 1;
+					world->current_state = LOADING_SCREEN;
+				}
+				*/
+			}
+			else if (gf2d_mouse_in_rect(ui->previous_block)) {
+
+				if (previous_runs_list_init())
+					world->current_state = PREV_PREVIEW;
+				else {
+					gfc_list_delete(previous_runs_list);
+					ui->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+					ui->notif_flag = 1;
+					ui->notif_type = NO_RUNS;
+				}
+
+			}
+			else if (gf2d_mouse_in_rect(ui->s_quit_block)) {
+				world->_done = 1;
 			}
 		}
-		else if (gf2d_mouse_in_rect(ui_data->continue_block)) {
-			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+		else if (world->current_state == GAME_MODE_SEL) {
+			if (gf2d_mouse_in_rect(ui->regular_block)) {
+				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 
-			level_begin();
-			player_assets_init();
-			world->current_state = LOADING_SCREEN;
+				world->game_mode = REGULAR;
+				level_begin(REGULAR);
+				player_assets_init();
 
-			if (world->player_assets_made) {
-				gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), GFC_COLOR_BLACK);
-				
-				world->enemy_start = 0;
-				world->continue_from_save = 1;
-				world->player_spawned = 1;
+				if (world->player_assets_made) {
+
+					world->enemy_start = 0;
+					world->player_spawned = 1;
+					world->current_state = LOADING_SCREEN;
+				}
 			}
-		}
-		else if (gf2d_mouse_in_rect(ui_data->previous_block)){
-			//TODO: add this deliverable
+			else if (gf2d_mouse_in_rect(ui->endless_block)) {
+				/*
+				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 
-			if (previous_runs_list_init())
-				world->current_state = PREV_PREVIEW;
-			else {
-				gfc_list_delete(previous_runs_list);
-				ui->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
-				ui->notif_flag = 1;
-				ui->notif_type = NO_RUNS;
+				world->game_mode = ENDLESS;
+				level_begin(ENDLESS);
+				player_assets_init();
+
+				if (world->player_assets_made) {
+
+					world->enemy_start = 0;
+					world->player_spawned = 1;
+					world->current_state = LOADING_SCREEN;
+				}
+				*/
 			}
-
-		}
-		else if (gf2d_mouse_in_rect(ui_data->s_quit_block)) {
-			world->_done = 1;
+			else if (gf2d_mouse_in_rect(ui->s_exit_block)) {
+				world->current_state = START_MENU;
+			}
 		}
 	}
 }
@@ -328,6 +363,7 @@ void update_time_checks(float curr_time) {
 	}
 }
 
+// TODO: add option for pre-defined levels (made by tool chain) or endless mode
 void world_update(float fps) {
 	PlayerData* p_data;
 	UIData* ui;
@@ -339,7 +375,8 @@ void world_update(float fps) {
 
 	if (!level | !ui) return;
 
-	world_check_for_menu_input();
+	if (world->current_state != START_MENU)
+		world_check_for_menu_input();
 
 	// fps check
 	//sprintf(fps_string, "fps: %f", fps);
@@ -347,7 +384,14 @@ void world_update(float fps) {
 
 	switch (world->current_state){
 		case START_MENU:
-			start_menu();
+			start_menu(world->current_state);
+			start_menu_input_check(ui);
+			gf2d_mouse_draw();
+
+			break;
+
+		case GAME_MODE_SEL:
+			start_menu(world->current_state);
 			start_menu_input_check(ui);
 			gf2d_mouse_draw();
 
@@ -462,17 +506,18 @@ void world_update(float fps) {
 }
 
 void previous_runs_perks_init(SJson* run) {
-	SJson* save, *data_entry, *perk_entry;
+	SJson* *data_entry, *perk_entry;
 	PerkType perk_type;
 	const char* name;
 	const char* desc;
-	int uses, num_effect;
+	int perk_type_int, uses, num_effect;
 	GFC_Color color;
 
 	data_entry = sj_object_get_value(run, "player_data");
 	perk_entry = sj_object_get_value(data_entry, "perk1");
 
-	sj_object_get_value_as_int(perk_entry, "type", &perk_type);
+	sj_object_get_value_as_int(perk_entry, "type", &perk_type_int);
+	perk_type = (PerkType) perk_type_int;
 	if (perk_type != NO_PERK) {
 		sj_object_get_value_as_int(perk_entry, "uses", &uses);
 		sj_object_get_value_as_int(perk_entry, "num_effect", &num_effect);
@@ -485,7 +530,8 @@ void previous_runs_perks_init(SJson* run) {
 		world->perk1 = create_dummy_perk();
 
 	perk_entry = sj_object_get_value(data_entry, "perk2");
-	sj_object_get_value_as_int(data_entry, "type", &perk_type);
+	sj_object_get_value_as_int(data_entry, "type", &perk_type_int);
+	perk_type = (PerkType)perk_type_int;
 	if (perk_type != NO_PERK) {
 		sj_object_get_value_as_int(perk_entry, "uses", &uses);
 		sj_object_get_value_as_int(perk_entry, "num_effect", &num_effect);
@@ -503,6 +549,7 @@ void game_data_init_from_save(SaveType type, SJson* json) {
 	LevelData* level;
 	UIData* ui;
 	SJson* save, * value;
+	int i;
 
 	level = get_level_data();
 	ui = get_UI_data();
@@ -522,6 +569,23 @@ void game_data_init_from_save(SaveType type, SJson* json) {
 	sj_object_get_value_as_uint32(value, "enemy_killed_total", &level->enemy_killed_total);
 	sj_object_get_value_as_float(value, "total_game_time", &level->total_game_time);
 	sj_object_get_value_as_uint32(value, "total_scrap", &level->total_scrap);
+
+	sj_object_get_value_as_int(value, "level_type", &i);
+	level->level_type = (LevelType) i;
+
+	sj_object_get_value_as_int(value, "obj_type", &i);
+	level->obj_type = (ObjType) i;
+
+	switch (level->obj_type) {
+		case KILL_ENEMY:
+			sj_object_get_value_as_int(value, "level_goal", &level->enemy_goal);
+			break;
+
+		case SURVIVE:
+			sj_object_get_value_as_float(value, "level_goal", &level->survival_time);
+			break;
+	}
+	strcpy(level->level_obj, sj_object_get_value_as_string(value, "level_obj"));
 
 	value = sj_object_get_value(save, "upgrades");
 	sj_object_get_value_as_uint8(value, "shields_check", &ui->shields_check);
@@ -579,6 +643,30 @@ void game_save(SaveType save_type) {
 
 	data_entry = sj_object_get_value(value, "total_scrap");
 	data_entry->v.string = sj_value_to_json_string(sj_new_uint32(level->total_scrap));
+
+	data_entry = sj_object_get_value(value, "level_type");
+	data_entry->v.string = sj_value_to_json_string(sj_new_int(level->level_type));
+
+	data_entry = sj_object_get_value(value, "obj_type");
+	data_entry->v.string = sj_value_to_json_string(sj_new_int(level->obj_type));
+
+	data_entry = sj_object_get_value(value, "level_goal");
+	switch (level->obj_type) {
+		case KILL_ENEMY:
+			data_entry->v.string = sj_value_to_json_string(sj_new_int(level->enemy_goal));
+			break;
+
+		case SURVIVE:
+			data_entry->v.string = sj_value_to_json_string(sj_new_float(level->survival_time));
+			break;
+
+		case BOSS:
+			data_entry->v.string = sj_value_to_json_string(sj_new_int(0));
+			break;
+	}
+
+	data_entry = sj_object_get_value(value, "level_obj");
+	data_entry->v.string = sj_new_str(level->level_obj)->v.string;
 
 	// player save
 	value = sj_object_get_value(save, "player_data");

@@ -32,7 +32,11 @@
         "wave_count": 1,
         "enemy_killed_total": 0,
         "total_game_time": 0,
-        "total_scrap": 0
+        "total_scrap": 0,
+        "level_type": 0,
+        "obj_type": 0,
+        "level_goal": 0,
+        "level_obj": "null"
     },
     "upgrades":
     {

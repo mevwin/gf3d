@@ -16,9 +16,10 @@
 
 static Entity* self;
 
-// timing passive health regen
+// timing var for passive health regen perk
 static float then = 0;
-static float now = 0;
+
+// make custom draw function for animations
 
 Entity* player_spawn() {
     PlayerData* data;
@@ -136,8 +137,6 @@ void player_data_init(PlayerData* data) {
     
     // debug init
     data->player_no_attack = 0;
-
-    now = CURRENT_TIME;
 }
 
 void player_data_init_from_save(PlayerData* data) {
@@ -280,7 +279,7 @@ void player_update(Entity* self) {
     PlayerData* data;
     Perk* perk;
     float time;
-    float health_rate;      // float container for PASSIVE_HEALS num_effect
+    float health_rate;   // float container for PASSIVE_HEALS num_effect
 
     if (!self) return;
 
@@ -361,7 +360,7 @@ void player_update(Entity* self) {
 
     // vortex duration restoration
     if (data->currMode != VORTEX && data->vortex_dur < data->vortex_max && !gfc_input_command_held("vortex"))
-        data->vortex_dur += 0.1f;
+        data->vortex_dur += 0.2f;
 
     // active powerup checks
     time = CURRENT_TIME;
@@ -392,7 +391,7 @@ void player_free(Entity* self){
 
     if (!self) return;
 
-    data = (PlayerData*)self->data;
+    data = (PlayerData*) self->data;
     
     if (data->reticle)
         entity_free(data->reticle);
