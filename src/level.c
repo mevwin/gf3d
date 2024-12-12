@@ -91,6 +91,9 @@ void level_load(Uint8 game_mode) {
                 break;
         }
 
+        level->wave_goal = data->v.array->count;
+        //level->wave_goal = 1;
+
         // load level assets
 
     }
@@ -136,7 +139,7 @@ void full_level_reset() {
     level->wave_count = 1;
     level->wave_end = 0;
 
-    if (level->level_def)
+    if (level->level_def && get_world_data()->current_state != PREVIOUS_RUN)
         sj_free(level->level_def);
 }
 
@@ -208,6 +211,7 @@ void level_visuals() {
 void level_update() {
     Entity* item, *entityList;
     ItemData* i_data;
+    PlayerData* p_data;
     WorldData* world;
     int i;
 
@@ -215,6 +219,21 @@ void level_update() {
 
     world = get_world_data();
     entityList = get_entityList();
+    p_data = get_player_data();
+
+    // player death check
+    if (p_data->player_dead) {
+        level->total_game_time += CURRENT_TIME - level->game_start;
+        level->enemy_killed_total += level->enemy_killed;
+
+        game_save(RUNSAVE);
+        world->current_state = GAME_OVER;
+    }
+
+    // enemy spawning (TODO: remove later)
+    if (level->enemy_count < 5 && world->enemy_start) {
+        enemy_spawn(p_data->player_pos);
+    }
 
     // check if level objective has been accomplished
     switch (level->obj_type) {
@@ -233,6 +252,16 @@ void level_update() {
     if (level->obj_complete) {
         enemy_reset();
         new_wave_level_reset();
+
+        if (level->wave_count - 1 == level->wave_goal) {
+            level->total_game_time += CURRENT_TIME - level->game_start;
+            level->enemy_killed_total += level->enemy_killed;
+
+            game_save(RUNSAVE);
+            world->current_state = GAME_COMPLETED;
+            return;
+        }
+
         player_upgrade();
         shop_reset();
 
@@ -254,6 +283,7 @@ void level_update() {
         level->obj_complete = 0;
         world->current_state = WAVE_COMPLETED;
     }
+
 }
 
 LevelData* get_level_data() {

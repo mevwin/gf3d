@@ -39,14 +39,17 @@ typedef struct LevelData_S{
 	float			game_start;
 	float			wave_end_time;
 	float			total_game_time;
-
 	Uint32			total_scrap;
 
 	// level/objective type
+	SJson*			level_def;
 	LevelType		level_type;
 	ObjType			obj_type;
 	char			level_obj[30];
-	SJson*			level_def;
+	Uint32			wave_goal;
+	Uint8			spawn_counter;
+	void*			background;
+	GFC_List*		hazard_list;
 
 		// objective 1: kill x enemies
 	int				enemy_killed;
@@ -75,7 +78,8 @@ void full_level_reset();
 void asteroid_init();
 void asteroid_free();
 
-void level_visuals();
+void level_visuals_init();
+void level_visuals_update();
 void level_update();
 void level_free();
 LevelData* get_level_data();

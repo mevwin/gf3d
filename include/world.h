@@ -35,6 +35,7 @@ typedef enum GameState_E{
 	WAVE_START,
 	WAVE_COMPLETED,
 	GAME_OVER,
+	GAME_COMPLETED,
 	IN_GAME,
 	NO_OPTION				// option for nothing
 }GameState;
@@ -69,6 +70,7 @@ void world_init();
 void world_close();
 void world_update(float fps);
 void game_data_init_from_save(SaveType type, SJson* json);
+void game_save(SaveType save_type);
 WorldData* get_world_data();
 GFC_List* get_previous_runs();
 

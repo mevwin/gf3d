@@ -275,6 +275,10 @@ void UI_init() {
 
     UI_data->preview_page_offset = 0;
 
+
+    /*game complete*/
+    UI_data->game_complete = gf2d_sprite_load_image("images/UI/game_complete/game_complete.png");
+
     atexit(UI_free);
 }
 
@@ -309,6 +313,7 @@ void UI_free() {
     gf2d_sprite_free(UI_data->notif_dur);
     gf2d_sprite_free(UI_data->preview_menu);
     gf2d_sprite_free(UI_data->previous_run);
+    gf2d_sprite_free(UI_data->game_complete);
 
     free(UI_data);
 }
@@ -651,7 +656,7 @@ void display_player_perks(void* data){
         perk = (Perk*) world->perk2;
     }
     else {
-        p_data = (PlayerData*)data;
+        p_data = (PlayerData*) data;
         perk = p_data->perk2;
     }
 
@@ -1444,6 +1449,10 @@ void preview_runs() {
 
 void display_previous_run() {
     player_death_screen(UI_data->previous_run, UI_data->prev_menu_data);
+}
+
+void game_complete() {
+    player_death_screen(UI_data->game_complete, UI_data->prev_menu_data);
 }
 
 UIData* get_UI_data() {

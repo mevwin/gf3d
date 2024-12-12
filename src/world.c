@@ -137,8 +137,8 @@ void world_check_for_menu_input() {
 				shop_reset();
 				entity_despawn_all();
 				entity_assets_close();
-				world->current_state = START_MENU;
 				world->player_spawned = 0;
+				world->current_state = START_MENU;
 				gfc_sound_play(get_sound_data()->cancel, 0, 1, -1, -1);
 			}
 		}
@@ -167,9 +167,9 @@ void world_check_for_menu_input() {
 				shop_reset();
 				entity_despawn_all();
 				entity_assets_close();
-				world->current_state = START_MENU;
 				world->player_spawned = 0;
 				gfc_sound_play(get_sound_data()->cancel, 0, 1, -1, -1);
+				world->current_state = START_MENU;
 			}
 		}
 	}
@@ -244,6 +244,19 @@ void world_check_for_menu_input() {
 			full_level_reset();
 			shop_reset();
 			world->current_state = PREV_PREVIEW;
+		}
+	}
+	else if (world->current_state == GAME_COMPLETED) {
+		if (gf2d_mouse_button_released(0) && gf2d_mouse_in_rect(ui->return_block)) {
+			perk_list_close();
+			full_level_reset();
+			shop_reset();
+			entity_despawn_all();
+			entity_assets_close();
+			world->player_spawned = 0;
+			gfc_sound_play(get_sound_data()->cancel, 0, 1, -1, -1);
+			world->current_state = START_MENU;
+
 		}
 	}
 }
@@ -471,6 +484,12 @@ void world_update(float fps) {
 
 			break;
 
+		case GAME_COMPLETED:
+			game_complete();
+			gf2d_mouse_draw();
+
+			break;
+
 		case IN_GAME: // game plays here
 			p_data = player->data;
 
@@ -487,19 +506,6 @@ void world_update(float fps) {
 			// hud draws
 			enemy_hud_all();
 			player_hud(p_data);
-
-			// player death check
-			if (p_data->player_dead) {
-				level->total_game_time += CURRENT_TIME - level->game_start;
-				game_save(RUNSAVE);
-				entity_reset();
-				world->current_state = GAME_OVER;
-			}
-
-			// enemy spawning (TODO: remove later)
-			if (level->enemy_count < 5 && world->enemy_start) {
-				enemy_spawn(&player->position);
-			}
 
 			break;
 	}	
@@ -530,8 +536,9 @@ void previous_runs_perks_init(SJson* run) {
 		world->perk1 = create_dummy_perk();
 
 	perk_entry = sj_object_get_value(data_entry, "perk2");
-	sj_object_get_value_as_int(data_entry, "type", &perk_type_int);
-	perk_type = (PerkType)perk_type_int;
+
+	sj_object_get_value_as_int(perk_entry, "type", &perk_type_int);
+	perk_type = (PerkType) perk_type_int;
 	if (perk_type != NO_PERK) {
 		sj_object_get_value_as_int(perk_entry, "uses", &uses);
 		sj_object_get_value_as_int(perk_entry, "num_effect", &num_effect);
@@ -633,35 +640,35 @@ void game_save(SaveType save_type) {
 		return;
 	}
 
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint32(level->wave_count));
+	data_entry->v.string = sj_new_uint32(level->wave_count)->v.string;
 	
 	data_entry = sj_object_get_value(value, "enemy_killed_total");
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint32(level->enemy_killed_total));
+	data_entry->v.string = sj_new_uint32(level->enemy_killed_total)->v.string;
 
 	data_entry = sj_object_get_value(value, "total_game_time");
-	data_entry->v.string = sj_value_to_json_string(sj_new_float(level->total_game_time));
+	data_entry->v.string = sj_new_float(level->total_game_time)->v.string;
 
 	data_entry = sj_object_get_value(value, "total_scrap");
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint32(level->total_scrap));
+	data_entry->v.string = sj_new_uint32(level->total_scrap)->v.string;
 
 	data_entry = sj_object_get_value(value, "level_type");
-	data_entry->v.string = sj_value_to_json_string(sj_new_int(level->level_type));
+	data_entry->v.string = sj_new_int(level->level_type)->v.string;
 
 	data_entry = sj_object_get_value(value, "obj_type");
-	data_entry->v.string = sj_value_to_json_string(sj_new_int(level->obj_type));
+	data_entry->v.string = sj_new_int(level->obj_type)->v.string;
 
 	data_entry = sj_object_get_value(value, "level_goal");
 	switch (level->obj_type) {
 		case KILL_ENEMY:
-			data_entry->v.string = sj_value_to_json_string(sj_new_int(level->enemy_goal));
+			data_entry->v.string = sj_new_int(level->enemy_goal)->v.string;
 			break;
 
 		case SURVIVE:
-			data_entry->v.string = sj_value_to_json_string(sj_new_float(level->survival_time));
+			data_entry->v.string = sj_new_float(level->survival_time)->v.string;
 			break;
 
 		case BOSS:
-			data_entry->v.string = sj_value_to_json_string(sj_new_int(0));
+			data_entry->v.string = sj_new_int(0)->v.string;
 			break;
 	}
 
@@ -671,37 +678,39 @@ void game_save(SaveType save_type) {
 	// player save
 	value = sj_object_get_value(save, "player_data");
 	data_entry = sj_object_get_value(value, "maxHealth");
-	data_entry->v.string = sj_value_to_json_string(sj_new_float(p_data->maxHealth));
+	data_entry->v.string = sj_new_float(p_data->maxHealth)->v.string;
 
 	data_entry = sj_object_get_value(value, "currHealth");
-	data_entry->v.string = sj_value_to_json_string(sj_new_float(p_data->currHealth));
+	data_entry->v.string = sj_new_float(p_data->currHealth)->v.string;
 
 	data_entry = sj_object_get_value(value, "maxShield");
-	data_entry->v.string = sj_value_to_json_string(sj_new_float(p_data->maxShield));
+	data_entry->v.string = sj_new_float(p_data->maxShield)->v.string;
 
 	data_entry = sj_object_get_value(value, "currShield");
-	data_entry->v.string = sj_value_to_json_string(sj_new_float(p_data->currShield));
+	data_entry->v.string = sj_new_float(p_data->currShield)->v.string;
 
 	data_entry = sj_object_get_value(value, "maxScrap");
-	data_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->maxScrap));
+	data_entry->v.string = sj_new_int(p_data->maxScrap)->v.string;
 
 	data_entry = sj_object_get_value(value, "currScrap");
-	data_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->currScrap));
+	data_entry->v.string = sj_new_int(p_data->currScrap)->v.string;
 
 	data_entry = sj_object_get_value(value, "single_shot_bonus");
-	data_entry->v.string = sj_value_to_json_string(sj_new_float(p_data->single_shot_bonus));
+	data_entry->v.string = sj_new_float(p_data->single_shot_bonus)->v.string;
 
 	data_entry = sj_object_get_value(value, "charge_shot_mult");
-	data_entry->v.string = sj_value_to_json_string(sj_new_float(p_data->charge_shot_mult));
+	data_entry->v.string = sj_new_float(p_data->charge_shot_mult)->v.string;
 
 	data_entry = sj_object_get_value(value, "nuke_cost");
-	data_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->nuke_cost));
+	data_entry->v.string = sj_new_int(p_data->nuke_cost)->v.string;
 
 		// perks
 	if (p_data->perk1->type != NO_PERK) {
 		data_entry = sj_object_get_value(value, "perk1");
 		perk_entry = sj_object_get_value(data_entry, "type");
-		perk_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->perk1->type));
+		
+		i = (int) p_data->perk1->type;
+		perk_entry->v.string = sj_new_int(i)->v.string;
 
 		perk_entry = sj_object_get_value(data_entry, "name");
 		perk_entry->v.string = sj_new_str(p_data->perk1->name)->v.string;
@@ -710,10 +719,10 @@ void game_save(SaveType save_type) {
 		perk_entry->v.string = sj_new_str(p_data->perk1->desc)->v.string;
 
 		perk_entry = sj_object_get_value(data_entry, "num_effect");
-		perk_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->perk1->type));
+		perk_entry->v.string = sj_new_int(p_data->perk1->type)->v.string;
 
 		perk_entry = sj_object_get_value(data_entry, "uses");
-		perk_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->perk1->uses));
+		perk_entry->v.string = sj_new_int(p_data->perk1->uses)->v.string;
 
 		perk_entry = sj_object_get_value(data_entry, "color");
 		color = sj_array_new();
@@ -729,7 +738,9 @@ void game_save(SaveType save_type) {
 	if (p_data->perk2->type != NO_PERK) {
 		data_entry = sj_object_get_value(value, "perk2");
 		perk_entry = sj_object_get_value(data_entry, "type");
-		perk_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->perk2->type));
+
+		i = (int) p_data->perk2->type;
+		perk_entry->v.string = sj_new_int(i)->v.string;
 
 		perk_entry = sj_object_get_value(data_entry, "name");
 		perk_entry->v.string = sj_new_str(p_data->perk2->name)->v.string;
@@ -738,10 +749,10 @@ void game_save(SaveType save_type) {
 		perk_entry->v.string = sj_new_str(p_data->perk2->desc)->v.string;
 
 		perk_entry = sj_object_get_value(data_entry, "num_effect");
-		perk_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->perk2->type));
+		perk_entry->v.string = sj_new_int(p_data->perk2->type)->v.string;
 
 		perk_entry = sj_object_get_value(data_entry, "uses");
-		perk_entry->v.string = sj_value_to_json_string(sj_new_int(p_data->perk2->uses));
+		perk_entry->v.string = sj_new_int(p_data->perk2->uses)->v.string;
 
 		perk_entry = sj_object_get_value(data_entry, "color");
 		color = sj_array_new();
@@ -757,37 +768,37 @@ void game_save(SaveType save_type) {
 	// upgrades save
 	value = sj_object_get_value(save, "upgrades");
 	data_entry = sj_object_get_value(value, "shields_check");
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->shields_check));
+	data_entry->v.string = sj_new_uint8(ui->shields_check)->v.string;
 
 	data_entry = sj_object_get_value(value, "more_scrap_check");
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->more_scrap_check));
+	data_entry->v.string = sj_new_uint8(ui->more_scrap_check)->v.string;
 
 	data_entry = sj_object_get_value(value, "missiles_check");
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->missiles_check));
+	data_entry->v.string = sj_new_uint8(ui->missiles_check)->v.string;
 
 	data_entry = sj_object_get_value(value, "single_shot_check");
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->single_shot_check));
+	data_entry->v.string = sj_new_uint8(ui->single_shot_check)->v.string;
 
 	data_entry = sj_object_get_value(value, "charge_shot_check");
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->charge_shot_check));
+	data_entry->v.string = sj_new_uint8(ui->charge_shot_check)->v.string;
 
 	data_entry = sj_object_get_value(value, "nuke_check");
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->nuke_check));
+	data_entry->v.string = sj_new_uint8(ui->nuke_check)->v.string;
 
 	data_entry = sj_object_get_value(value, "shields_count");
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->shields_count));
+	data_entry->v.string = sj_new_uint8(ui->shields_count)->v.string;
 
 	data_entry = sj_object_get_value(value, "more_scrap_count");
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->more_scrap_count));
+	data_entry->v.string = sj_new_uint8(ui->more_scrap_count)->v.string;
 
 	data_entry = sj_object_get_value(value, "missiles_count");
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->missiles_count));
+	data_entry->v.string = sj_new_uint8(ui->missiles_count)->v.string;
 
 	data_entry = sj_object_get_value(value, "single_shot_count");
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->single_shot_count));
+	data_entry->v.string = sj_new_uint8(ui->single_shot_count)->v.string;
 
 	data_entry = sj_object_get_value(value, "charge_shot_count");
-	data_entry->v.string = sj_value_to_json_string(sj_new_uint8(ui->charge_shot_count));
+	data_entry->v.string = sj_new_uint8(ui->charge_shot_count)->v.string;
 
 	if (save_type == GAMESAVE) {
 		sj_save(save, "def/player_save.def");

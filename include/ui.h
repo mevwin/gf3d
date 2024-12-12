@@ -153,6 +153,10 @@ typedef struct UIData_S{
     GFC_Rect        next_block;
     GFC_Rect        prev_block;
     int             preview_page_offset;
+
+    /*game complete*/
+    Sprite*         game_complete;
+    // same data and rects as previous runs
 }UIData;
 
 void UI_init();
@@ -176,6 +180,7 @@ void player_hud(void* d);
 void start_menu(Uint8 state);
 
 void wave_start();
+
 void wave_completed();
 
 void player_death_screen(Sprite* menu, SJson* menu_data);
@@ -185,6 +190,8 @@ void enemy_hud_all();
 void preview_runs();
 
 void display_previous_run();
+
+void game_complete();
 
 UIData* get_UI_data();
 
