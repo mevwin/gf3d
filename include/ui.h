@@ -26,7 +26,7 @@ typedef enum NotifType_S {
     NO_SCRAP,
     DUPE_PERKS,
     NO_RUNS,
-    BOSS_ATTACK
+    BOSS_ATTACK         // TODO
 }NotifType;
 
 typedef struct UIData_S{

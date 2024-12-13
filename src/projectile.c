@@ -15,6 +15,46 @@
 #define SUPER_NUKE_DMG 30.0f
 #define ENEMY_FENCER_BOX(p) (gfc_box(p.x - 24.0f, p.y - 13.0f, p.z - 17.0f, 48.0f, 26.0f, 34.0f))
 
+void player_reflected_proj_spawn(Entity* proj, void* p_data);
+void proj_update_player(Entity* self);
+void proj_update_enemy(Entity* self);
+void proj_free(Entity* self);
+
+/**
+* @brief checks to see if projectile is within its y-bound;
+*/
+Uint8 proj_exist(Entity* self, ProjData* data);
+
+/**
+* @brief thinking for SINGLE_SHOT/PEAS and CHARGE_SHOT/CHARGERS
+*/
+void proj_think_basic(Entity* self);
+
+/**
+* @brief missiles only spawn when reticle meets enemy
+*/
+void proj_think_missile(Entity* self);
+
+/**
+* @brief vortex weapon sucks in enemy projectiles and sends them to reticle position
+* @note vortex weapon becomes reflector shield (if player has the perk) that reverses projectile movement
+*/
+void proj_think_vortex(Entity* self);
+
+/**
+* @brief super nuke travels to center of screen and detonates, attacking all enemies
+*/
+void proj_think_super_nuke(Entity* self);
+
+
+/**
+* @brief enemy attack that restricts player movement to a certain region on-screen
+*/
+void fencer_think(Entity* self);
+
+void bomber_think(Entity* self);
+
+
 void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float curr_time, Uint8 vortexed) {
     Entity* self;
     ProjData* data;
@@ -242,8 +282,8 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     if (data->type == PEAS || data->type == CHARGE_SHOT) {
         self->think = proj_think_basic;
         self->model = data->type == PEAS ? models->peas_shot : models->chargers_shot;
-        data->forspeed = data->type == PEAS ? enemy_data->pea_speed : enemy_data->pea_speed * 1.25f;
-        data->damage = data->type == PEAS ? enemy_data->base_damage : enemy_data->base_damage * 2.0f;
+        data->forspeed = enemy_data->pea_speed;
+        data->damage = enemy_data->base_damage;
         enemy_data->next_single_shot = data->type == PEAS ? curr_time + 0.9f : curr_time + 1.8f;
 
         conver = enemy_data->dist_to_player / data->forspeed;
@@ -253,7 +293,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     else if (data->type == BOMBERS) {
         self->think = bomber_think;
         self->model = models->single_proj;
-        data->forspeed = 1.0f;
+        data->forspeed = enemy_data->pea_speed;
         data->damage = enemy_data->base_damage;
 
         conver = enemy_data->dist_to_player / data->forspeed;

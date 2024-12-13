@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "gfc_audio.h"
+#include "gfc_config.h"
 #include "enemy.h"
 #include "player.h"
 #include "projectile.h"
@@ -9,29 +10,42 @@
 #define EMPER_CHARGE_TIME 5.0f
 #define ENEMY_HURTBOX gfc_box(400, -150, 200, 1, 1, 1) // make temporary dummy hitbox not accessible to player when enemy is dead
 
-// spawn random enemy
+void enemy_think(Entity* self);
+void enemy_update(Entity* self);
+void emper_think(Entity* self);
+void enemy_move(Entity* self);
+void enemy_free(Entity* self);
+void enemy_update_stats(EnemyData* data);
+void enemy_take_damage(Entity* self, EnemyData* data);
+void enemy_die(Entity* self, EnemyData* data, int item_type);
+void bomber_die(Entity* self, EnemyData* data, GFC_Vector3D position);
+int random_item();
+EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object);
+
+// spawn random enemy (OLD, commented out for future reference)
+/*
 EnemyData* enemy_data_init_random() {
 	EnemyData* data;
-	Enemy_Type type;
+	EnemyType type;
 	LevelData* level;
 
 	data = gfc_allocate_array(sizeof(EnemyData), 1);
 	if (!data) return NULL;
 
 	level = get_level_data();
-	type = (Enemy_Type) gfc_random_int(5);
+	type = (EnemyType) gfc_random_int(5);
 
 	// only one fencer on-screen
 	if (type == FENCERS && !level->fencer_flag)
 		level->fencer_flag = 1;
 	else if (type == FENCERS && level->fencer_flag)
-		type = (Enemy_Type) gfc_random_int(4);
+		type = (EnemyType) gfc_random_int(4);
 
 	// only one emper on-screen
 	if (type == EMPERS && !level->emper_flag)
 		level->emper_flag = 1;
 	else if (type == EMPERS && level->emper_flag)
-		type = (Enemy_Type) gfc_random_int(3);
+		type = (EnemyType) gfc_random_int(3);
 
 	data->enemy_type = type;
 
@@ -81,34 +95,71 @@ EnemyData* enemy_data_init_random() {
 
 	return data;
 }
+*/
 
-
-EnemyData* enemy_data_init_from_config() {
-	EnemyData* data;
-	Enemy_Type type;
+EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object) {
+	SJson* enemy_def, *enemy_entry;
+	EnemyData* e_data;
 	LevelData* level;
-
-	data = gfc_allocate_array(sizeof(EnemyData), 1);
-	if (!data) return NULL;
+	GFC_Vector2D spawn_check;
+	int index, i;
 
 	level = get_level_data();
+	enemy_def = sj_load("def/enemy.def");
 
+	e_data = gfc_allocate_array(sizeof(EnemyData), 1);
+	if (!e_data) return NULL;
 
+	e_data->proj_count = 0;
+	e_data->damage_taken = 0;
+	e_data->next_single_shot = 0;
+
+	e_data->x_bound = 74; // left is positive, right is negative
+	e_data->z_bound = 50;
+	e_data->dist_to_player = -65;
+
+	if (object) { //i.e. spawning from given enemy object (REGULAR)
+		sj_object_get_value_as_int(object, "enemy_type", &index);
+		e_data->enemy_type = (EnemyType) index;
+
+		sj_value_as_vector2d(sj_object_get_value(object, "spawn"), &spawn_check);
+		if (spawn_check.x == 0 && spawn_check.y == 0)
+			e_data->spawn_pos = gfc_vector3d_enemy_random_pos(e_data->x_bound, e_data->dist_to_player, e_data->z_bound);
+		else
+			e_data->spawn_pos = gfc_vector3d(spawn_check.x, e_data->dist_to_player, spawn_check.y);
+	}
+	else { // i.e. spawning random enemy (ENDLESS)
+		index = (int) enemy_type;
+		e_data->enemy_type = enemy_type;
+		e_data->spawn_pos = gfc_vector3d_enemy_random_pos(e_data->x_bound, e_data->dist_to_player, e_data->z_bound);
+	}
+
+	enemy_entry = sj_array_get_nth(sj_object_get_value(enemy_def, "enemy_list"), index);
+
+	sj_object_get_value_as_float(enemy_entry, "pea_speed", &e_data->pea_speed);
+	sj_object_get_value_as_float(enemy_entry, "maxHealth", &e_data->maxHealth);
+	e_data->currHealth = e_data->maxHealth;
+	sj_object_get_value_as_float(enemy_entry, "base_damage", &e_data->base_damage);
+	sj_object_get_value_as_int(enemy_entry, "move_type", &i);
+	e_data->move_type = (EnemyMove) i;
+	sj_object_get_value_as_float(enemy_entry, "upspeed", &e_data->upspeed);
+	sj_object_get_value_as_float(enemy_entry, "rigspeed", &e_data->rigspeed);
+
+	free(enemy_def);
+
+	return e_data;
 }
 
-// TODO: spawn enemy from config
-
-void enemy_spawn(GFC_Vector3D* player_pos) {
+void enemy_spawn(GFC_Vector3D* player_pos, EnemyType enemy_type, SJson* object) {
 	Entity* self;
 	EnemyData* data;
 	LevelData* level;
 	Entity_Models* models;
-	GFC_Vector3D position;
 
 	self = entity_new();
 	if (!self) return NULL;
 
-	data = enemy_data_init_random();
+	data = enemy_data_init_from_config(enemy_type, object);
 	if (data) self->data = data;
 
 	if (!data) return;
@@ -123,25 +174,34 @@ void enemy_spawn(GFC_Vector3D* player_pos) {
 	self->entity_type = ENEMY;
 
 	models = get_models();
-	if (data->enemy_type == PEAS) 
-		self->model = models->peas;
-	else if (data->enemy_type == CHARGERS) 
-		self->model = models->chargers;
-	else if (data->enemy_type == FENCERS)
-		self->model = models->fencer;
-	else if (data->enemy_type == EMPERS) {
-		self->model = models->emper;
-		self->think = emper_think;
-		data->emper_attack_time = CURRENT_TIME + EMPER_CHARGE_TIME;
+	switch (data->enemy_type) {
+		case PEAS:
+			self->model = models->peas;
+			break;
+
+		case CHARGERS:
+			self->model = models->chargers;
+			break;
+
+		case FENCERS:
+			self->model = models->fencer;
+			break;
+
+		case EMPERS:
+			self->model = models->emper;
+			self->think = emper_think;
+			data->emper_attack_active = 0;
+			data->emper_attack_time = CURRENT_TIME + EMPER_CHARGE_TIME;
+			break;
+
+		case BOMBERS:
+			self->model = models->bomber;
+			break;
+
 	}
-	else if (data->enemy_type == BOMBERS)
-		self->model = models->bomber;
-	
 	data->player_pos = player_pos;
 
-	position = gfc_vector3d_enemy_random_pos(data->x_bound, data->dist_to_player, data->z_bound);
-	self->position = position;
-	data->spawn_pos = position;
+	self->position = data->spawn_pos;
 
 	update_hurtbox(self);
 

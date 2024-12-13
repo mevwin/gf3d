@@ -14,6 +14,25 @@
 #define PLAYER_SPAWN gfc_vector3d(0, 0 ,0);
 #define DAMAGE_TIMING 0.5f
 
+/**
+* @brief initialize player data
+* @note some values need to be hard-coded
+*/
+void player_data_init(PlayerData* data);
+
+/**
+* @brief initialize player data from a json file
+* @note hard-code values as needed
+*/
+void player_data_init_from_save(PlayerData* data);
+void player_think(Entity* self);
+void player_update(Entity* self);
+void player_free(Entity* self);
+void player_attack(Entity* self, PlayerData* data);
+void player_take_damage(Entity* self, PlayerData* data, float time);
+void player_die();
+void player_death();
+
 static Entity* self;
 
 // timing var for passive health regen perk
@@ -514,12 +533,6 @@ void player_respawn() {
     player_data_init(data);
     reticle_pos = gfc_vector3d(self->position.x, -60.0f, self->position.z);
     data->reticle = reticle_spawn(reticle_pos);
-}
-
-void player_quit() {
-    if (!self) return;
-
-    entity_free(self);
 }
 
 void player_upgrade() {

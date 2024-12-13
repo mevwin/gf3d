@@ -39,7 +39,6 @@ typedef struct {
 */
 void player_proj_spawn(GFC_Vector3D position, GFC_Vector3D reticle_pos, float curr_time, Uint8 vortexed);
 
-void player_reflected_proj_spawn(Entity* proj, void* p_data);
 
 /**
 * @brief spawn an enemy attack/projectile
@@ -49,43 +48,5 @@ void player_reflected_proj_spawn(Entity* proj, void* p_data);
 * @param curr_time: curren time from attack call
 */
 void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* owner, float curr_time);
-
-void proj_update_player(Entity* self);
-void proj_update_enemy(Entity* self);
-void proj_free(Entity* self);
-
-/**
-* @brief checks to see if projectile is within its y-bound;
-*/
-Uint8 proj_exist(Entity* self, ProjData* data);
-
-/**
-* @brief thinking for SINGLE_SHOT/PEAS and CHARGE_SHOT/CHARGERS
-*/
-void proj_think_basic(Entity* self);
-
-/**
-* @brief missiles only spawn when reticle meets enemy
-*/
-void proj_think_missile(Entity* self);
-
-/**
-* @brief vortex weapon sucks in enemy projectiles and sends them to reticle position
-* @note vortex weapon becomes reflector shield (if player has the perk) that reverses projectile movement
-*/
-void proj_think_vortex(Entity* self);
-
-/**
-* @brief super nuke travels to center of screen and detonates, attacking all enemies
-*/
-void proj_think_super_nuke(Entity* self);
-
-
-/**
-* @brief enemy attack that restricts player movement to a certain region on-screen
-*/
-void fencer_think(Entity* self);
-
-void bomber_think(Entity* self);
 
 #endif

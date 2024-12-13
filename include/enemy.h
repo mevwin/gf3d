@@ -3,31 +3,30 @@
 
 #include "entity.h"
 
-typedef enum EnemyType{
+typedef enum EnemyType_E{
 	PEAS,		// SINGLE_SHOT
 	CHARGERS,	// CHARGE_SHOT
 	BOMBERS,	// trynamite-type enemy
 	EMPERS,		// don't kill it in time, EMP that freezes ship
 	FENCERS		// restrict player space
-}Enemy_Type;
+}EnemyType;
 
-typedef enum {
+typedef enum EnemyMove_E{
 	HORIZONTAL,
 	DVD_LOGO,
 	STATIONARY
-}Enemy_Move;
+}EnemyMove;
 
-typedef struct {
+typedef struct EnemyData_S{
 	// enemy stats
-	Enemy_Type		enemy_type;			// type of enemy
+	EnemyType		enemy_type;			// type of enemy
 	float           maxHealth;          // enemy's maximum health
 	float           currHealth;         // enemy's current health
 	float			base_damage;		// starting damage
-	float			pea_speed;			// SINGLE_SHOT projectile speed
+	float			pea_speed;			// projectile speed
 
 	// enemy movement
-	Enemy_Move		move_type;
-	float			forspeed;			// y movement
+	EnemyMove		move_type;
 	float           upspeed;			// z movement
 	float           rigspeed;			// x movement
 	
@@ -55,19 +54,6 @@ typedef struct {
 
 }EnemyData;
 
-void enemy_spawn(GFC_Vector3D* player_pos);
-void enemy_think(Entity* self);
-void enemy_update(Entity* self);
-void enemy_move(Entity* self);
-void emper_think(Entity* self);
-void enemy_free(Entity* self);
-void enemy_take_damage(Entity* self, EnemyData* data);
-int random_item();
-void enemy_die(Entity* self, EnemyData* data, int item_type);
-void bomber_die(Entity* self, EnemyData* data, GFC_Vector3D position);
-void enemy_update_stats(EnemyData* data);
-//void check_rand_position(Entity* self);
-
-
+void enemy_spawn(GFC_Vector3D* player_pos, EnemyType enemy_type, SJson* object);
 
 #endif

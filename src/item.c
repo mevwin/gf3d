@@ -9,6 +9,10 @@
 #define SCRAP_SPEED 1.0f
 #define POWERUP_SPEED 2.0f
 
+void item_think(Entity* self);
+void item_update(Entity* self);
+void item_free(Entity* self);
+
 void item_spawn(int type, GFC_Vector3D spawn_pos, float dist_to_player) {
     Entity* self;
     ItemData* data;

@@ -5,6 +5,8 @@
 #include "ui.h"
 #include "world.h"
 
+//include perk.h is in player.h
+
 static GFC_List* perk_list;
 
 void perk_list_init() {

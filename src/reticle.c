@@ -6,6 +6,9 @@
 #include "projectile.h"
 #include "level.h"
 
+void reticle_update(Entity* self);
+void reticle_free(Entity* self);
+
 static Entity* self;
 
 Entity* reticle_spawn(GFC_Vector3D position){

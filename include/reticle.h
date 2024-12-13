@@ -14,8 +14,6 @@ typedef struct {
 }ReticleData;
 
 Entity* reticle_spawn(GFC_Vector3D position);
-void reticle_update(Entity* self);
-void reticle_free(Entity* self);
 GFC_Vector3D get_reticle_pos();
 
 #endif

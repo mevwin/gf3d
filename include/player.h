@@ -90,29 +90,7 @@ typedef struct PlayerData_S{
 }PlayerData;
 
 Entity* player_spawn();
-
-/**
-* @brief initialize player data
-* @note some values need to be hard-coded
-*/
-void player_data_init(PlayerData* data);
-
-/**
-* @brief initialize player data from a json file
-* @note hard-code values as needed
-*/
-void player_data_init_from_save(PlayerData* data);
-
-
-void player_think(Entity* self);
-void player_update(Entity* self);
-void player_free(Entity*  self);
-void player_attack(Entity* self, PlayerData* data);
-void player_take_damage(Entity* self, PlayerData* data, float time);
-void player_die();
-void player_death();
 void player_respawn();
-void player_quit();
 void player_upgrade();
 Entity* get_player();
 PlayerData* get_player_data();

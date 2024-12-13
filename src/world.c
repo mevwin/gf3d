@@ -94,7 +94,7 @@ void world_check_for_menu_input() {
 
 		if (gf2d_mouse_button_released(2)) {
 			world->enemy_start = 1;
-			if (level->enemy_count != 0)
+			if (level->enemy_count < 0)
 				level->enemy_count = 0;
 
 			level->game_start = CURRENT_TIME;
@@ -146,6 +146,7 @@ void world_check_for_menu_input() {
 	else if (world->current_state == SHOP) {
 		if (gf2d_mouse_button_released(0) && gf2d_mouse_in_rect(ui->next_wave_block)) {
 			empty_perk_list();
+			level_load_enemy_flock(level->curr_level, player->data);
 			world->current_state = WAVE_START;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
@@ -437,6 +438,9 @@ void world_update(float fps) {
 					game_data_init_from_save(GAMESAVE, NULL);
 					world->continue_from_save = 0;
 				}
+				// load level's initial enemies
+				level_load_enemy_flock(level->curr_level, player->data);
+
 				world->current_state = WAVE_START;
 			}
 			//else

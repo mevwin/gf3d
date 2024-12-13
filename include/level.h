@@ -26,7 +26,7 @@ typedef enum LevelType_E {
 typedef struct LevelData_S{
 	// game stats
 	float			last_powerup;		// time stamp of last active powerup
-	Uint8			enemy_count;		// enemies currently on-screen
+	int				enemy_count;		// enemies currently on-screen
 
 	Uint8			emper_flag;
 	Uint8			fencer_flag;
@@ -46,7 +46,8 @@ typedef struct LevelData_S{
 	ObjType			obj_type;
 	char			level_obj[30];
 	Uint32			wave_goal;
-	Uint8			spawn_counter;
+	SJson*			curr_level;
+	Uint8			flock_num;
 	void*			background;
 	GFC_List*		hazard_list;
 
@@ -71,6 +72,7 @@ void level_init();
 
 void level_begin(Uint8 game_mode);
 void level_load(Uint8 game_mode, Uint8 slot);
+void level_load_enemy_flock(SJson* curr_level, void* p_data);
 
 void new_wave_level_reset();
 void full_level_reset();
