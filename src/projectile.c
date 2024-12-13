@@ -215,7 +215,7 @@ void enemy_proj_spawn(GFC_Vector3D position, GFC_Vector3D player_pos, Entity* ow
     ProjData* data;
     EnemyData* enemy_data;
     LevelData* level;
-    Entity_Models* models;
+    EntityModels* models;
     float dist_x, dist_y, conver, z_angle, y_angle, time;
 
     self = entity_new();

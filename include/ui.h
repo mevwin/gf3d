@@ -6,7 +6,6 @@
 #include "gf3d_vgraphics.h"
 
 #define RES (gf3d_vgraphics_get_resolution())
-#define NOTIF_TIME_MAX (3.0f)
 
 /*
 typedef enum {
@@ -18,16 +17,6 @@ typedef enum {
     NUKE_COST_DOWN      // decrease nuke_cost
 }Upgrade_Type;
 */
-
-// @note order must match with notifications.def
-typedef enum NotifType_S {
-    INVINCE_POWERUP,
-    HAPPYTRIG_POWERUP,
-    NO_SCRAP,
-    DUPE_PERKS,
-    NO_RUNS,
-    BOSS_ATTACK         // TODO
-}NotifType;
 
 typedef struct UIData_S{
     /*shop UI*/
@@ -102,6 +91,9 @@ typedef struct UIData_S{
     GFC_Rect        continue_block;
     GFC_Rect        previous_block;
     GFC_Rect        s_quit_block;
+    GFC_Rect        editor_block;
+
+        // game_mode_select
     GFC_Rect        regular_block;
     GFC_Rect        endless_block;
     GFC_Rect        s_exit_block;
@@ -137,14 +129,6 @@ typedef struct UIData_S{
     GFC_Rect        respawn_block;
     GFC_Rect        g_quit_block;
     // TODO: add way to check individual wave progress (maybe)
-
-    /*notifications*/
-    SJson*          notif_data;
-    float           notification_time;      // timestamp to close notifcation popup
-    Uint8           notif_flag;
-    Uint8           notif_type;
-    Sprite*         notif_block;
-    Sprite*         notif_dur;
 
     /*previous runs*/
     SJson*          prev_menu_data;

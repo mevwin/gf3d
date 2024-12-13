@@ -48,7 +48,7 @@ typedef struct {
     Model*      invincibility;
     // 4
 
-}Entity_Models;
+}EntityModels;
 
 typedef struct Entity_S{
     Uint8           _inuse;     // flag for memory management
@@ -121,7 +121,7 @@ void entity_free(Entity* self);
  */
 Entity* get_entityList();
 
-Entity_Models* get_models();
+EntityModels* get_models();
 
 void update_hurtbox(Entity* self);
 

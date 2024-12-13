@@ -29,6 +29,7 @@ typedef enum GameState_E{
 	GAME_MODE_SEL,
 	PREV_PREVIEW,
 	PREVIOUS_RUN,
+	LEVEL_EDITOR,
 	LOADING_SCREEN,
 	PAUSE_MENU,
 	SHOP,
@@ -51,6 +52,12 @@ typedef struct WorldData_S {
 	Uint8			enemy_start;
 	Uint8			_done;
 	Uint8			continue_from_save;
+
+	// notifications
+	Uint8			notif_init;
+	Uint8			notif_flag;
+	Uint8			notif_type;
+	float			notification_time;      // timestamp to close notifcation popup
 
 	GameMode		game_mode;
 	GameState		current_state;

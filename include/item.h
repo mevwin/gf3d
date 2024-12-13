@@ -3,13 +3,9 @@
 
 #include "entity.h"
 
-#define POWERUP_DURATION 25.0f //cooldown between powerups
-#define INVINCIBILITY_DUR 10.0f
-#define HAPPYTRIG_DUR 5.0f
-
 typedef enum ItemType_E{
-	SCRAP,
 	NONE,
+	SCRAP,
 	HEALTH_PICKUP,
 
 	// powerups
@@ -18,8 +14,9 @@ typedef enum ItemType_E{
 }ItemType;
 
 typedef struct ItemData_S{
-	int				type;			// type of item
+	ItemType		type;			// type of item
 	Uint8			active;			// is currently moving to player
+	int				upper_bound;
 
 	// movement details
 	float			forspeed;		// y-movement

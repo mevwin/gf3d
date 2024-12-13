@@ -554,8 +554,10 @@ Entity* get_player() {
 }
 
 PlayerData* get_player_data() {
-    if (!self->data) return;
-    return self->data;
+    if (!self) 
+        return NULL;
+    else 
+        return self->data;
 }
 
 GFC_Primitive get_player_hurtbox(){

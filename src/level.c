@@ -47,6 +47,7 @@ void level_begin(Uint8 game_mode) {
     level_data->total_scrap = 0;
     level_data->emper_flag = 0;
     level_data->flock_num = 0;
+    level_data->level_base = sj_load("levels/level.def");
 
     switch (game_mode) {
         case REGULAR:
@@ -74,28 +75,30 @@ SJson* get_current_level() {
 
 // load a level based on wave_count-1
 void level_load(Uint8 game_mode, Uint8 slot) {
-    SJson* data, *curr_level;
+    SJson* data, *curr_level, *def_entry;
     char buffer[30];
-    int i;
+    int i, j;
 
     if (game_mode == REGULAR) {
         data = sj_object_get_value(level_data->level_def, "level_list");
         curr_level = sj_array_get_nth(data, level_data->wave_count - 1);
         level_data->curr_level = curr_level;
 
-        strcpy(level_data->name, sj_object_get_value_as_string(curr_level, "name"));
-
         sj_object_get_value_as_int(curr_level, "level_type", &i);
         level_data->level_type = (LevelType) i;
 
-        sj_object_get_value_as_int(curr_level, "obj_type", &i);
-        level_data->obj_type = (ObjType) i;
+        def_entry = sj_object_get_value(level_data->level_base, "level_type");
+        strcpy(level_data->name, sj_object_get_value_as_string(sj_array_get_nth(def_entry, i), "name"));
 
+        sj_object_get_value_as_int(curr_level, "obj_type", &j);
+        level_data->obj_type = (ObjType) j;
+
+        def_entry = sj_object_get_value(level_data->level_base, "level_obj");
         sj_object_get_value_as_int(curr_level, "level_goal", &i);
         if (i == 0) // boss stage does not need sprintf
-            strcpy(level_data->level_obj, sj_object_get_value_as_string(curr_level, "level_obj"));
+            strcpy(level_data->level_obj, sj_object_get_value_as_string(sj_array_get_nth(def_entry, j), "obj_desc"));
         else {
-            sprintf(buffer, sj_object_get_value_as_string(curr_level, "level_obj"), i);
+            sprintf(buffer, sj_object_get_value_as_string(sj_array_get_nth(def_entry, j), "obj_desc"), i);
             strcpy(level_data->level_obj, buffer);
         }
 
@@ -167,6 +170,10 @@ void level_load_enemy_random(PlayerData* p_data) {
 }
 
 void new_wave_level_reset(){
+    PlayerData* p_data;
+
+    p_data = get_player_data();
+
     level_data->last_powerup = 0;
     level_data->enemy_count = 0;
     level_data->enemy_killed_total += level_data->enemy_killed;
@@ -178,8 +185,12 @@ void new_wave_level_reset(){
     level_data->wave_count++;
     level_data->wave_end = 1;
 
-    if (get_player_data()->nuke_flag)
-        get_player_data()->nuke_flag = 0;
+    // update player data to reset
+    p_data->item_duration = 0;
+    p_data->active_item = 0;
+
+    if (p_data->nuke_flag)
+        p_data->nuke_flag = 0;
 }
 
 void full_level_reset() {
@@ -198,6 +209,8 @@ void full_level_reset() {
 
     level_data->wave_count = 1;
     level_data->wave_end = 0;
+
+    sj_free(level_data->level_base);
 
     if (level_data->level_def && get_world_data()->current_state != PREVIOUS_RUN)
         sj_free(level_data->level_def);
@@ -319,6 +332,7 @@ void level_update() {
         player_upgrade();
         shop_reset();
 
+        // clear all items
         for (i = 0; i < MAX_ENTITY; i++) {
             item = &entityList[i];
             if (item->entity_type != ITEM) continue;

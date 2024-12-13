@@ -47,6 +47,7 @@ typedef struct PlayerData_S{
 
     Uint8           active_item;        // current item in use
     float           item_duration;
+    float           powerup_dur;
 
     Perk*           perk1;
     Perk*           perk2;

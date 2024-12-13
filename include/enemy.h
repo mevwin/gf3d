@@ -50,7 +50,7 @@ typedef struct EnemyData_S{
 	GFC_Vector3D    spawn_pos;			// initial spawn position
 	Uint8			missile_targeted;	// flag for player missile attack
 	int				scrap_amount;
-	Uint8			item_type;
+	int				item_type;			// pre-determined item type (-1 = random, 0 = none)
 
 }EnemyData;
 

@@ -17,9 +17,8 @@ void enemy_move(Entity* self);
 void enemy_free(Entity* self);
 void enemy_update_stats(EnemyData* data);
 void enemy_take_damage(Entity* self, EnemyData* data);
-void enemy_die(Entity* self, EnemyData* data, int item_type);
+void enemy_die(Entity* self, EnemyData* data);
 void bomber_die(Entity* self, EnemyData* data, GFC_Vector3D position);
-int random_item();
 EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object);
 
 // spawn random enemy (OLD, commented out for future reference)
@@ -127,6 +126,8 @@ EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object) {
 			e_data->spawn_pos = gfc_vector3d_enemy_random_pos(e_data->x_bound, e_data->dist_to_player, e_data->z_bound);
 		else
 			e_data->spawn_pos = gfc_vector3d(spawn_check.x, e_data->dist_to_player, spawn_check.y);
+	
+		sj_object_get_value_as_int(object, "item", &e_data->item_type);
 	}
 	else { // i.e. spawning random enemy (ENDLESS)
 		index = (int) enemy_type;
@@ -154,7 +155,7 @@ void enemy_spawn(GFC_Vector3D* player_pos, EnemyType enemy_type, SJson* object) 
 	Entity* self;
 	EnemyData* data;
 	LevelData* level;
-	Entity_Models* models;
+	EntityModels* models;
 
 	self = entity_new();
 	if (!self) return NULL;
@@ -252,7 +253,6 @@ void enemy_update(Entity* self) {
 	EnemyData* data;
 	PlayerData* player_data;
 	float dist_x, dist_y, z_angle, y_angle;
-	int rand;
 
 	if (!self) return;
 
@@ -297,28 +297,20 @@ void enemy_update(Entity* self) {
 
 		return;
 	}
-	rand = random_item();
 	// bomber deaths are a special case
-	if (data->enemy_type != BOMBERS) {
-		if (data->currHealth <= 0.0 && !data->enemy_dead) 
-			enemy_die(self, data, rand);
-
-		self->rotation.y -= 0.1f;
-
-		if (data->enemy_dead && data->proj_count <= 0)
-			entity_free(self);
-	}
-	else if (data->enemy_type == BOMBERS) {
-		if (data->currHealth <= 0.0 && !data->enemy_dead) {
-			if (data->damaged_type == CHARGE_SHOT) 
-				enemy_die(self, data, rand);
+	if (data->currHealth <= 0.0 && !data->enemy_dead) {
+		if (data->enemy_type == BOMBERS) {
+			if (data->damaged_type == CHARGE_SHOT)
+				enemy_die(self, data);
 			else {
 				bomber_die(self, data, self->position);
 			}
 		}
-		else if (data->enemy_dead && data->proj_count == 0)
-			entity_free(self);
+		else
+			enemy_die(self, data);
 	}
+	else if (data->enemy_dead && data->proj_count == 0)
+		entity_free(self);
 }
 
 void enemy_move(Entity* self) {
@@ -408,27 +400,12 @@ void enemy_take_damage(Entity* self, EnemyData* data) {
 	data->damage_taken = 0;
 }
 
-int random_item() {
-	PlayerData* player_data;
-	int rand;
 
-	rand = 1 + gfc_random_int(4);
-	
-	player_data = get_player_data();
-
-	if (player_data->active_item == HAPPY_TRIGGER || player_data->active_item == INVINCIBILITY)
-		rand = 1 + gfc_random_int(2);
-	if (player_data->currHealth >= player_data->maxHealth && rand == HEALTH_PICKUP)
-		rand = 1;
-
-	return rand;
-}
-
-void enemy_die(Entity* self, EnemyData* data, int item_type) {
+void enemy_die(Entity* self, EnemyData* data) {
 	if (!self || !data) return;
 
 	item_spawn(SCRAP, self->position, data->dist_to_player);
-	item_spawn(item_type, self->position, data->dist_to_player);
+	item_spawn(data->item_type, self->position, data->dist_to_player);
 	self->rotation.y = 0;
 	self->hurtbox.s.b = ENEMY_HURTBOX;
 

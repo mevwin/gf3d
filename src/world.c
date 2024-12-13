@@ -10,6 +10,8 @@
 #include "level.h"
 #include "player.h"
 #include "enemy.h"
+#include "notifications.h"
+#include "level_editor.h"
 
 static WorldData* world;
 static Entity* player;
@@ -35,6 +37,10 @@ void world_init() {
 	world->current_state = START_MENU;
 	world->last_state = NO_OPTION;
 	world->continue_from_save = 0;
+	world->notif_init = 0;
+	world->notif_flag = 0;
+	world->notif_type = 0;
+	world->notification_time = 0;
 
 	world->player_init = sj_load("def/player_init.def");
 
@@ -259,7 +265,6 @@ void world_check_for_menu_input() {
 			world->player_spawned = 0;
 			gfc_sound_play(get_sound_data()->cancel, 0, 1, -1, -1);
 			world->current_state = START_MENU;
-
 		}
 	}
 }
@@ -287,15 +292,20 @@ void start_menu_input_check(UIData* ui) {
 				}
 				*/
 			}
+			else if (gf2d_mouse_in_rect(ui->editor_block)) {
+				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+				editor_init();
+				world->current_state = LEVEL_EDITOR;
+			}
 			else if (gf2d_mouse_in_rect(ui->previous_block)) {
 
 				if (previous_runs_list_init())
 					world->current_state = PREV_PREVIEW;
 				else {
 					gfc_list_delete(previous_runs_list);
-					ui->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
-					ui->notif_flag = 1;
-					ui->notif_type = NO_RUNS;
+					world->notification_time = CURRENT_TIME + NOTIF_TIME_MAX;
+					world->notif_flag = 1;
+					world->notif_type = NO_RUNS;
 				}
 
 			}
@@ -403,6 +413,11 @@ void world_update(float fps) {
 			start_menu_input_check(ui);
 			gf2d_mouse_draw();
 
+			if (world->last_state == LEVEL_EDITOR) {
+				world->last_state = NO_OPTION;
+				editor_close();
+			}
+
 			break;
 
 		case GAME_MODE_SEL:
@@ -420,6 +435,12 @@ void world_update(float fps) {
 
 		case PREVIOUS_RUN:
 			display_previous_run();
+			gf2d_mouse_draw();
+
+			break;
+
+		case LEVEL_EDITOR:
+			editor_ui(world);
 			gf2d_mouse_draw();
 
 			break;

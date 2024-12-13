@@ -1,31 +1,6 @@
 {
     "#comment": "used for procedural content generator",
     "#comment2": "must match with regular_levels.def level objects",
-    "level_type":
-    [
-        {
-            "name": "Asteroid Belt",
-            "hazard": "",
-            "background": ""
-        },
-        {
-            "name": "Black Hole",
-            "hazard": "",
-            "background": ""
-        }
-    ],
-    "level_obj":
-    [
-        {
-            "obj_desc": "Kill %d enemies"
-        },
-        {
-            "obj_desc": "Survive for %f seconds"
-        },
-        {
-            "obj_desc": "Defeat Mini-Boss"
-        }
-    ],
     "level_list":
     [
         {

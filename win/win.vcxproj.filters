@@ -213,6 +213,12 @@
     <ClCompile Include="..\src\perk.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\level_editor.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\notifications.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\gf2d_actor.h">
@@ -415,6 +421,12 @@
     </ClInclude>
     <ClInclude Include="..\gfc\simple_json\include\simple_json_list.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\level_editor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\notifications.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

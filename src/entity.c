@@ -12,7 +12,7 @@ typedef struct EntityManager_S{
 }EntityManager;
 
 static EntityManager entity_manager = {0}; //C needs 0, C++ doesn't
-static Entity_Models* models;
+static EntityModels* models;
 
 void entity_system_init(Uint32 maxEnts){
     //sanity check
@@ -33,7 +33,7 @@ void entity_system_init(Uint32 maxEnts){
     }
     entity_manager.entityMax = maxEnts; // at this point, big ass entity list is made
 
-    models = gfc_allocate_array(sizeof(Entity_Models), 1);
+    models = gfc_allocate_array(sizeof(EntityModels), 1);
     if (!models) {
         slog("failed to allocate resources for models struct");
         return;
@@ -44,6 +44,9 @@ void entity_system_init(Uint32 maxEnts){
 
 void entity_system_close(){
     int i;
+    WorldData* world;
+
+    world = get_world_data();
 
     for( i = 0; i < entity_manager.entityMax; i++){
         if (!entity_manager.entity_list[i]._inuse) continue;
@@ -52,8 +55,10 @@ void entity_system_close(){
 
     free(entity_manager.entity_list);
     memset(&entity_manager, 0, sizeof(EntityManager));
-
-    entity_assets_close();
+    
+    if (world->player_assets_made && world->enemy_assets_made && world->item_assets_made)
+        entity_assets_close();
+    
     free(models);
 }
 
@@ -272,7 +277,6 @@ void entity_assets_close() {
     world->player_assets_made = 0;
     world->enemy_assets_made = 0;
     world->item_assets_made = 0;
-
 }
 
 void entity_draw(Entity *self){
@@ -363,7 +367,7 @@ Entity* get_entityList() {
     return entity_manager.entity_list;
 }
 
-Entity_Models* get_models() {
+EntityModels* get_models() {
     return models;
 }
 

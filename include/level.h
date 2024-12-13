@@ -2,7 +2,6 @@
 #define __LEVEL_H__
 
 #define ENEMY_MIN_LIMIT 5 // minimum limit amount of enemies on-screen
-#define ENEMY_GOAL 20
 #define ASTEROID_MAX 20
 
 /**
@@ -40,6 +39,7 @@ typedef struct LevelData_S{
 	Uint32			total_scrap;
 
 	// level/objective type
+	SJson*			level_base; 
 	SJson*			level_def;
 	char			name[20];
 	LevelType		level_type;

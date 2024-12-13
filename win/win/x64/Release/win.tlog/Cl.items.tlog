@@ -56,7 +56,9 @@ C:\Users\vielg\gf3d\src\gf3d_vgraphics.c;C:\Users\vielg\gf3d\win\win\x64\Release
 C:\Users\vielg\gf3d\src\gf3d_vqueues.c;C:\Users\vielg\gf3d\win\win\x64\Release\gf3d_vqueues.obj
 C:\Users\vielg\gf3d\src\item.c;C:\Users\vielg\gf3d\win\win\x64\Release\item.obj
 C:\Users\vielg\gf3d\src\level.c;C:\Users\vielg\gf3d\win\win\x64\Release\level.obj
+C:\Users\vielg\gf3d\src\level_editor.c;C:\Users\vielg\gf3d\win\win\x64\Release\level_editor.obj
 C:\Users\vielg\gf3d\src\lights.c;C:\Users\vielg\gf3d\win\win\x64\Release\lights.obj
+C:\Users\vielg\gf3d\src\notifications.c;C:\Users\vielg\gf3d\win\win\x64\Release\notifications.obj
 C:\Users\vielg\gf3d\src\perk.c;C:\Users\vielg\gf3d\win\win\x64\Release\perk.obj
 C:\Users\vielg\gf3d\src\player.c;C:\Users\vielg\gf3d\win\win\x64\Release\player.obj
 C:\Users\vielg\gf3d\src\player_move.c;C:\Users\vielg\gf3d\win\win\x64\Release\player_move.obj

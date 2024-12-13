@@ -3,18 +3,15 @@
     "level_list":
     [
         {
-            "name": "Asteroid Belt",
             "level_type": 0,
             "obj_type": 0,
             "level_goal": 4,
-            "level_obj": "Kill %d enemies",
             "hazards": 
             {
                 "model": "",
                 "count": 0,
                 "max_onscreen": 25
             },
-            "#comment": "level_prog",
             "level_spawns":
             {
                 "#comment": "number of enemies should be >= level_goal",
@@ -22,43 +19,45 @@
                 [
                     {
                         "enemy_type": 0,
-                        "spawn": [-34, 0]
+                        "spawn": [-34, 0],
+                        "item": 0
                     },
                     {
                         "enemy_type": 1,
-                        "spawn": [60, -10]
+                        "spawn": [60, -10],
+                        "item": 2
                     },
                     {
-                        "enemy_type": 1,
-                        "spawn": [0, 0]
+                        "enemy_type": 2,
+                        "spawn": [0, 0],
+                        "item": -1
                     }
                 ],
                 "flock1":
                 [
                     {
                         "enemy_type": 0,
-                        "spawn": [20, 40]
+                        "spawn": [20, 40],
+                        "item": 3
                     },
                     {
                         "enemy_type": 2,
-                        "spawn": [3, -10]
+                        "spawn": [3, -10],
+                        "item": 0
                     }
                 ]
             }
         },
         {
-            "name": "Asteroid Belt",
             "level_type": 0,
             "obj_type": 0,
             "level_goal": 4,
-            "level_obj": "Kill %d enemies",
             "hazards": 
             {
                 "model": "",
                 "count": 0,
                 "max_onscreen": 25
             },
-            "#comment": "level_prog",
             "level_spawns":
             {
                 "#comment": "number of enemies should match with level_goal",
@@ -66,22 +65,31 @@
                 [
                     {
                         "enemy_type": 0,
-                        "spawn": [-34, 0]
+                        "spawn": [-34, 0],
+                        "item": 0
                     },
                     {
                         "enemy_type": 1,
-                        "spawn": [60, -10]
+                        "spawn": [60, -10],
+                        "item": 2
+                    },
+                    {
+                        "enemy_type": 3,
+                        "spawn": [0, 0],
+                        "item": 2
                     }
                 ],
                 "flock1":
                 [
                     {
                         "enemy_type": 0,
-                        "spawn": [20, 40]
+                        "spawn": [20, 40],
+                        "item": 3
                     },
                     {
                         "enemy_type": 2,
-                        "spawn": [3, -10]
+                        "spawn": [3, -10],
+                        "item": 0
                     }
                 ]
             }
