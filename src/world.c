@@ -445,6 +445,12 @@ void world_update(float fps) {
 			editor_ui(world);
 			gf2d_mouse_draw();
 
+			if (world->last_state == LEVEL_EDITOR_START) {
+				entity_draw_all();
+				player_think(get_player());
+				player_update(get_player());
+			}
+
 			break;
 
 		case LOADING_SCREEN:
@@ -453,18 +459,24 @@ void world_update(float fps) {
 			if (!world->item_assets_made && world->enemy_assets_made)
 				item_assets_init();
 
-			if (world->player_spawned && world->enemy_assets_made && world->item_assets_made) {
-				perk_list_init();
+			if (world->player_spawned && world->enemy_assets_made && world->item_assets_made){
 				player = player_spawn();
 
 				if (world->continue_from_save) {
 					game_data_init_from_save(GAMESAVE, NULL);
 					world->continue_from_save = 0;
 				}
-				// load level's initial enemies
-				level_load_enemy_flock(level->curr_level, player->data);
 
-				world->current_state = WAVE_START;
+				if (world->last_state == LEVEL_EDITOR) {
+					world->last_state = LEVEL_EDITOR_START;
+					world->current_state = LEVEL_EDITOR;	
+				}
+				else {
+					// load level's initial enemies
+					perk_list_init();
+					level_load_enemy_flock(level->curr_level, player->data);
+					world->current_state = WAVE_START;
+				}
 			}
 			//else
 				//world->current_state = START_MENU;

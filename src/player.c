@@ -3,7 +3,6 @@
 #include "gfc_config.h"
 #include "gfc_audio.h"
 #include "gf2d_mouse.h"
-#include "player.h"
 #include "enemy.h"
 #include "player_move.h"
 #include "projectile.h"
@@ -25,8 +24,6 @@ void player_data_init(PlayerData* data);
 * @note hard-code values as needed
 */
 void player_data_init_from_save(PlayerData* data);
-void player_think(Entity* self);
-void player_update(Entity* self);
 void player_free(Entity* self);
 void player_attack(Entity* self, PlayerData* data);
 void player_take_damage(Entity* self, PlayerData* data, float time);
@@ -73,7 +70,9 @@ Entity* player_spawn() {
     update_hurtbox(self);
 
     reticle_pos = gfc_vector3d(position.x, -60, position.z);
-    data->reticle = reticle_spawn(reticle_pos);
+
+    if (get_world_data()->last_state != LEVEL_EDITOR)
+        data->reticle = reticle_spawn(reticle_pos);
 
     return self;
 }
@@ -208,12 +207,15 @@ void player_data_init_from_save(PlayerData* data) {
 void player_think(Entity* self) {
     PlayerData* data;
     ReticleData* rec_data;
+    WorldData* world;
     float time;
 
     if (!self) return;
 
     data = self->data;
     if (!data) return;
+
+    world = get_world_data();
 
     time = CURRENT_TIME;
  
@@ -225,78 +227,81 @@ void player_think(Entity* self) {
     else
         barrel_roll(self, data);
 
-    /* player attack checks */
-    rec_data = data->reticle->data;
+    if (world->last_state != LEVEL_EDITOR_START) {
+        /* player attack checks */
+        rec_data = data->reticle->data;
 
         // CHARGE_SHOT
-    if (gf2d_mouse_button_pressed(0) && data->currMode == CHARGE_SHOT && !data->vortex_flag) {
-        player_attack(self, data);
-        data->next_charged_shot = time + NEXT_CHARGE_SHOT;
-        data->charge_shot_delay = time + CHARGE_SHOT_DELAY;
-        data->change_flag = 1;
-    }
+        if (gf2d_mouse_button_pressed(0) && data->currMode == CHARGE_SHOT && !data->vortex_flag) {
+            player_attack(self, data);
+            data->next_charged_shot = time + NEXT_CHARGE_SHOT;
+            data->charge_shot_delay = time + CHARGE_SHOT_DELAY;
+            data->change_flag = 1;
+        }
         // SINGLE_SHOT
-    else if ((gf2d_mouse_button_pressed(0) || gf2d_mouse_button_held(0)) && !data->mid_roll &&
-        data->charge_shot_delay <= time &&
-        data->currMode != CHARGE_SHOT && 
-        !data->vortex_flag)
-    {
-        data->next_charged_shot = time + NEXT_CHARGE_SHOT;
-        player_attack(self, data);
-    }
+        else if ((gf2d_mouse_button_pressed(0) || gf2d_mouse_button_held(0)) && !data->mid_roll &&
+            data->charge_shot_delay <= time &&
+            data->currMode != CHARGE_SHOT &&
+            !data->vortex_flag)
+        {
+            data->next_charged_shot = time + NEXT_CHARGE_SHOT;
+            player_attack(self, data);
+        }
         // MISSILE
-    else if (gf2d_mouse_button_held(2) && data->currScrap > 0 && 
-        data->missile_count < data->max_missile && !data->vortex_flag)
-    {
-        data->currMode = MISSILE;
-        
-        if (rec_data->locked_on)
-            data->missile_spawn = 1;
-        else
-            data->missile_spawn = 0;
-        
-        data->next_charged_shot = time + NEXT_CHARGE_SHOT;
-        player_attack(self, data);
-    }
+        else if (gf2d_mouse_button_held(2) && data->currScrap > 0 &&
+            data->missile_count < data->max_missile && !data->vortex_flag)
+        {
+            data->currMode = MISSILE;
+
+            if (rec_data->locked_on)
+                data->missile_spawn = 1;
+            else
+                data->missile_spawn = 0;
+
+            data->next_charged_shot = time + NEXT_CHARGE_SHOT;
+            player_attack(self, data);
+        }
         // VORTEX
-    else if (gfc_input_command_released("vortex") && data->currMode != VORTEX && data->vortex_dur >= (data->vortex_max / 3.0)) {
-        data->currMode = VORTEX;
-        data->next_charged_shot = time + NEXT_CHARGE_SHOT;
-        data->vortex_flag = 1;
+        else if (gfc_input_command_released("vortex") && data->currMode != VORTEX && data->vortex_dur >= (data->vortex_max / 3.0)) {
+            data->currMode = VORTEX;
+            data->next_charged_shot = time + NEXT_CHARGE_SHOT;
+            data->vortex_flag = 1;
 
-        player_attack(self, data);
+            player_attack(self, data);
 
-        if (data->perk1->type == REFLECTOR_SHIELD)
-            data->perk1->uses--;
-        else if (data->perk2->type == REFLECTOR_SHIELD)
-            data->perk2->uses--;
-    }
-    else if (gfc_input_command_released("nuke") && !data->vortex_flag && data->currScrap >= data->nuke_cost) {
-        data->currMode = SUPER_NUKE;
-        data->next_charged_shot = time + NEXT_CHARGE_SHOT;
+            if (data->perk1->type == REFLECTOR_SHIELD)
+                data->perk1->uses--;
+            else if (data->perk2->type == REFLECTOR_SHIELD)
+                data->perk2->uses--;
+        }
+        // NUKE
+        else if (gfc_input_command_released("nuke") && !data->vortex_flag && data->currScrap >= data->nuke_cost) {
+            data->currMode = SUPER_NUKE;
+            data->next_charged_shot = time + NEXT_CHARGE_SHOT;
 
-        player_attack(self, data);
-    }
+            player_attack(self, data);
+        }
 
-    /* debug tools */
-    //if (gfc_input_command_pressed("freelook")) {
-        //data->freelook = !data->freelook;
-        //gf3d_camera_enable_free_look(data->freelook);
-    //}
+        /* debug tools */
+        //if (gfc_input_command_pressed("freelook")) {
+            //data->freelook = !data->freelook;
+            //gf3d_camera_enable_free_look(data->freelook);
+        //}
 
-    if (gfc_input_command_pressed("change_attack")) {
-        if (!data->player_no_attack)
-            data->player_no_attack = 1;
-        else
-            data->player_no_attack = 0;
+        if (gfc_input_command_pressed("change_attack")) {
+            if (!data->player_no_attack)
+                data->player_no_attack = 1;
+            else
+                data->player_no_attack = 0;
 
-        data->currScrap = data->maxScrap;
+            data->currScrap = data->maxScrap;
+        }
     }
 }
 
 void player_update(Entity* self) {
+    WorldData* world;
     PlayerData* data;
-    Perk* perk;
     float time;
     float health_rate;   // float container for PASSIVE_HEALS num_effect
 
@@ -305,48 +310,14 @@ void player_update(Entity* self) {
     data = self->data;
     if (!data) return;
 
+    world = get_world_data();
+
     // update camera
     player_cam(self, data);
 
     /* updates model based on current attack type */
     time = CURRENT_TIME;
 
-        // CHARGE_SHOT texture
-    if (time >= data->next_charged_shot && 
-        time < (data->next_charged_shot + 0.03f) &&
-        !data->took_damage &&
-        !data->vortex_flag &&
-        !data->currMode != MISSILE
-        ){
-        data->currMode = CHARGE_SHOT;
-        self->model->texture = get_models()->charge_shot;
-    }
-        // SINGLE_SHOT texture
-    else if (data->take_damage_timing < time &&
-             data->change_flag && 
-             !data->took_damage &&
-             !data->currMode != MISSILE
-        ) {
-        data->currMode = SINGLE_SHOT;
-        self->model->texture = get_models()->single_shot;
-        data->change_flag = 0;
-    }
-
-    update_hurtbox(self);
-
-    // sanity check, making sure player stats are not over the max
-    if (data->currHealth > data->maxHealth)
-        data->currHealth = data->maxHealth;
-    if (data->currScrap > data->maxScrap)
-        data->currScrap = data->maxScrap;
-    if (data->currShield > data->maxShield)
-        data->currShield = data->maxShield;
-    if (data->vortex_dur > data->vortex_max)
-        data->vortex_dur = data->vortex_max;
-
-    // update health bar
-    data->total_health_bar = data->maxHealth + data->maxShield;
-    
     // reduce player movement when shooting
     if (!data->mid_roll) {
         if (gf2d_mouse_button_pressed(0) || gf2d_mouse_button_held(0)) {
@@ -359,50 +330,89 @@ void player_update(Entity* self) {
         }
     }
 
-    // PASSIVE_HEALS perk implementation
-    if (data->perk1->type == PASSIVE_HEALS)
-        health_rate = (data->perk1->num_effect / 100.0f) * data->maxHealth;
-    else if (data->perk2->type == PASSIVE_HEALS)
-        health_rate = (data->perk2->num_effect / 100.0f) * data->maxHealth;
-    else
-        health_rate = 0;
+    if (world->current_state != LEVEL_EDITOR_START) {
+        // CHARGE_SHOT texture
+        if (time >= data->next_charged_shot &&
+            time < (data->next_charged_shot + 0.03f) &&
+            !data->took_damage &&
+            !data->vortex_flag &&
+            !data->currMode != MISSILE
+            ) {
+            data->currMode = CHARGE_SHOT;
+            self->model->texture = get_models()->charge_shot;
+        }
+        // SINGLE_SHOT texture
+        else if (data->take_damage_timing < time &&
+            data->change_flag &&
+            !data->took_damage &&
+            !data->currMode != MISSILE
+            ) {
+            data->currMode = SINGLE_SHOT;
+            self->model->texture = get_models()->single_shot;
+            data->change_flag = 0;
+        }
+
+        update_hurtbox(self);
+
+        // sanity check, making sure player stats are not over the max
+        if (data->currHealth > data->maxHealth)
+            data->currHealth = data->maxHealth;
+        if (data->currScrap > data->maxScrap)
+            data->currScrap = data->maxScrap;
+        if (data->currShield > data->maxShield)
+            data->currShield = data->maxShield;
+        if (data->vortex_dur > data->vortex_max)
+            data->vortex_dur = data->vortex_max;
+
+        // update health bar
+        data->total_health_bar = data->maxHealth + data->maxShield;
 
 
-    if (CURRENT_TIME - then >= 1 && data->currHealth + health_rate <= data->maxHealth) {
-        data->currHealth += health_rate;
-        then = CURRENT_TIME;
+        // PASSIVE_HEALS perk implementation
+        if (data->perk1->type == PASSIVE_HEALS)
+            health_rate = (data->perk1->num_effect / 100.0f) * data->maxHealth;
+        else if (data->perk2->type == PASSIVE_HEALS)
+            health_rate = (data->perk2->num_effect / 100.0f) * data->maxHealth;
+        else
+            health_rate = 0;
+
+
+        if (CURRENT_TIME - then >= 1 && data->currHealth + health_rate <= data->maxHealth) {
+            data->currHealth += health_rate;
+            then = CURRENT_TIME;
+        }
+
+        // shield restoration
+        if (data->currShield < data->maxShield && data->maxShield > 0)
+            data->currShield += 1.5f;
+
+        // vortex duration restoration
+        if (data->currMode != VORTEX && data->vortex_dur < data->vortex_max && !gfc_input_command_held("vortex"))
+            data->vortex_dur += 0.2f;
+
+        // active powerup checks
+        time = CURRENT_TIME;
+        if (data->active_item == HAPPY_TRIGGER && time < data->item_duration) {
+            data->currMode = CHARGE_SHOT;
+            data->next_charged_shot = 0;
+        }
+        else if (data->active_item == INVINCIBILITY && time < data->item_duration) {
+            // do nothing here
+        }
+        else
+            data->active_item = NONE;
+
+        // check if player was hurt
+        if (data->took_damage) {
+            player_take_damage(self, data, time);
+            if (data->active_item != INVINCIBILITY && data->damaged_type != FENCERS)
+                gfc_sound_play(get_sound_data()->player_damaged, 0, 0.3f, -1, -1);
+        }
+
+        // check if player is dead
+        if (data->currHealth <= 0 && !data->player_dead)
+            player_die(self);
     }
-
-    // shield restoration
-    if (data->currShield < data->maxShield && data->maxShield > 0) 
-        data->currShield += 1.5f;
-
-    // vortex duration restoration
-    if (data->currMode != VORTEX && data->vortex_dur < data->vortex_max && !gfc_input_command_held("vortex"))
-        data->vortex_dur += 0.2f;
-
-    // active powerup checks
-    time = CURRENT_TIME;
-    if (data->active_item == HAPPY_TRIGGER && time < data->item_duration) {
-        data->currMode = CHARGE_SHOT;
-        data->next_charged_shot = 0;
-    }
-    else if (data->active_item == INVINCIBILITY && time < data->item_duration) {
-        // do nothing here
-    }
-    else
-        data->active_item = NONE;
-
-    // check if player was hurt
-    if (data->took_damage) {
-        player_take_damage(self, data, time);
-        if (data->active_item != INVINCIBILITY && data->damaged_type != FENCERS)
-            gfc_sound_play(get_sound_data()->player_damaged, 0, 0.3f, -1, -1);
-    }
-
-    // check if player is dead
-    if (data->currHealth <= 0 && !data->player_dead)
-        player_die(self);
 }
 
 void player_free(Entity* self){

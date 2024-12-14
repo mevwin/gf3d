@@ -121,7 +121,6 @@ void level_load(Uint8 game_mode, Uint8 slot) {
     else if (game_mode == PREV_DISPLAY) {
         // all done in game_data_init_from_save
     }
-
 }
 
 void level_load_enemy_flock(SJson* curr_level, void* p_data) {

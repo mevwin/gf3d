@@ -91,6 +91,8 @@ typedef struct PlayerData_S{
 }PlayerData;
 
 Entity* player_spawn();
+void player_think(Entity* self);
+void player_update(Entity* self);
 void player_respawn();
 void player_upgrade();
 Entity* get_player();
