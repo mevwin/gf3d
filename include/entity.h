@@ -4,6 +4,7 @@
 #include "gfc_types.h"
 #include "gfc_text.h"
 #include "gfc_vector.h"
+#include "gfc_shape.h"
 #include "gfc_primitives.h"
 #include "gf3d_model.h"
 
@@ -69,7 +70,12 @@ typedef struct Entity_S{
     Entity_Type     entity_type;                // type of entity
     GFC_Primitive   hurtbox;                    // entity's hurtbox
     Uint8           no_draw;
-    
+
+    // editor values
+    Uint8           editor_flag;
+    Uint8           editor_mouse;
+    GFC_Rect        editor_rect;                // for dragging purposes
+
 }Entity;
 
 /**

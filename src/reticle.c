@@ -37,7 +37,6 @@ Entity* reticle_spawn(GFC_Vector3D position){
 }
 
 void reticle_update(Entity* self) {
-    GFC_Vector2D cursor;
     ReticleData* data;
     Entity* entityList, *target;
     EnemyData* enemy_data;
@@ -52,9 +51,8 @@ void reticle_update(Entity* self) {
     level = get_level_data();
 
     // updating reticle position
-    cursor = gfc_2DPos_to_3DPos(gf2d_mouse_get_position(), data->x_bound, data->z_bound);
-    self->position.x = cursor.x;
-    self->position.z = cursor.y;
+    self->position = gfc_2DPos_to_3DPos(gf2d_mouse_get_position(), data->x_bound, data->z_bound);
+    self->position.y = data->y_bound;
 
     // update hurtbox
     update_hurtbox(self);

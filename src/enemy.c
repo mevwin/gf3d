@@ -1,11 +1,14 @@
 #include "simple_logger.h"
 #include "gfc_audio.h"
 #include "gfc_config.h"
+#include "gf2d_mouse.h"
 #include "enemy.h"
+#include "world.h"
 #include "player.h"
 #include "projectile.h"
 #include "item.h"
 #include "level.h"
+#include "level_editor.h"
 
 #define EMPER_CHARGE_TIME 5.0f
 #define ENEMY_HURTBOX gfc_box(400, -150, 200, 1, 1, 1) // make temporary dummy hitbox not accessible to player when enemy is dead
@@ -100,9 +103,11 @@ EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object) {
 	SJson* enemy_def, *enemy_entry;
 	EnemyData* e_data;
 	LevelData* level;
+	WorldData* world;
 	GFC_Vector2D spawn_check;
 	int index, i;
 
+	world = get_world_data();
 	level = get_level_data();
 	enemy_def = sj_load("def/enemy.def");
 
@@ -132,7 +137,16 @@ EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object) {
 	else { // i.e. spawning random enemy (ENDLESS)
 		index = (int) enemy_type;
 		e_data->enemy_type = enemy_type;
-		e_data->spawn_pos = gfc_vector3d_enemy_random_pos(e_data->x_bound, e_data->dist_to_player, e_data->z_bound);
+
+		if (world->current_state == LEVEL_EDITOR) {
+			e_data->spawn_pos = gfc_vector3d(0, 0, 0);
+			e_data->spawn_pos = gfc_2DPos_to_3DPos(get_asset_prev_location(), e_data->x_bound, e_data->z_bound);
+			e_data->spawn_pos.x += 15.0f;
+			e_data->spawn_pos.z -= 5.0f;
+			e_data->spawn_pos.y = e_data->dist_to_player;
+		}
+		else
+			e_data->spawn_pos = gfc_vector3d_enemy_random_pos(e_data->x_bound, e_data->dist_to_player, e_data->z_bound);
 	}
 
 	enemy_entry = sj_array_get_nth(sj_object_get_value(enemy_def, "enemy_list"), index);
@@ -146,16 +160,19 @@ EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object) {
 	sj_object_get_value_as_float(enemy_entry, "upspeed", &e_data->upspeed);
 	sj_object_get_value_as_float(enemy_entry, "rigspeed", &e_data->rigspeed);
 
+	e_data->flock_num = get_level_data()->flock_num;
+
 	free(enemy_def);
 
 	return e_data;
 }
 
-void enemy_spawn(GFC_Vector3D* player_pos, EnemyType enemy_type, SJson* object) {
+Entity* enemy_spawn(GFC_Vector3D* player_pos, EnemyType enemy_type, SJson* object) {
 	Entity* self;
 	EnemyData* data;
 	LevelData* level;
 	EntityModels* models;
+	GFC_Vector2D editor_rect;
 
 	self = entity_new();
 	if (!self) return NULL;
@@ -207,6 +224,13 @@ void enemy_spawn(GFC_Vector3D* player_pos, EnemyType enemy_type, SJson* object) 
 	update_hurtbox(self);
 
 	level->enemy_count++;
+
+	if (get_world_data()->current_state == LEVEL_EDITOR) {
+		editor_rect = gfc_3DPos_to_2DPos(self->position, data->x_bound, data->z_bound);
+		self->editor_rect = gfc_rect(editor_rect.x - 40.0f, editor_rect.y - 40.0f, 80, 80);
+	}
+
+	return self;
 }
 
 void enemy_think(Entity* self) {

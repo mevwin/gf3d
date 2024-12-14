@@ -1306,10 +1306,10 @@ void enemy_hud(void* e, GFC_Vector3D position) {
     scale = gfc_vector2d(currHealth, 1);
 
     // bar offset (maybe testing the scaling for other res???)
-    bar_position.x += 100.0f;
-    bar_position.y += 50.0f;
-    bar_position.x *= 0.8f;
-    bar_position.y *= 0.8f;
+    bar_position.x -= 50.0f;
+    bar_position.y -= 50.0f;
+    //bar_position.x *= 0.8f;
+    //bar_position.y *= 0.8f;
 
     gf2d_sprite_draw_image(UI_data->enemy_health_back, bar_position);
     gf2d_sprite_draw(UI_data->enemy_health, bar_position, &scale, NULL, NULL, NULL, NULL, NULL, NULL);
