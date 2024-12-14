@@ -144,6 +144,7 @@ EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object) {
 			e_data->spawn_pos.x += 15.0f;
 			e_data->spawn_pos.z -= 5.0f;
 			e_data->spawn_pos.y = e_data->dist_to_player;
+			e_data->item_type = -1;
 		}
 		else
 			e_data->spawn_pos = gfc_vector3d_enemy_random_pos(e_data->x_bound, e_data->dist_to_player, e_data->z_bound);

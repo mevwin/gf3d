@@ -69,9 +69,17 @@ void level_begin(Uint8 game_mode) {
 
 SJson* get_current_level() {
     SJson *data, *curr_level;
+    char buffer[30], level_path[30];
 
-    data = sj_object_get_value(level_data->level_def, "level_list");
-    curr_level = sj_array_get_nth(data, level_data->wave_count - 1);
+    data = sj_array_get_nth(sj_object_get_value(level_data->level_def, "level_list"), level_data->wave_count - 1);
+    sprintf(buffer, "level%d", level_data->wave_count - 1);
+    strcpy(level_path, sj_object_get_value_as_string(data, buffer));
+    curr_level = sj_load(level_path);
+
+    if (level_data->curr_level) 
+        sj_free(level_data->curr_level);
+
+    level_data->curr_level = curr_level;
 
     return curr_level;
 }
@@ -83,21 +91,19 @@ void level_load(Uint8 game_mode, Uint8 slot) {
     int i, j;
 
     if (game_mode == REGULAR) {
-        data = sj_object_get_value(level_data->level_def, "level_list");
-        curr_level = sj_array_get_nth(data, level_data->wave_count - 1);
-        level_data->curr_level = curr_level;
+        curr_level = get_current_level();
 
-        sj_object_get_value_as_int(curr_level, "level_type", &i);
+        sj_object_get_value_as_int(sj_object_get_value(curr_level, "level"), "level_type", &i);
         level_data->level_type = (LevelType) i;
 
         def_entry = sj_object_get_value(level_data->level_base, "level_type");
         strcpy(level_data->name, sj_object_get_value_as_string(sj_array_get_nth(def_entry, i), "name"));
 
-        sj_object_get_value_as_int(curr_level, "obj_type", &j);
+        sj_object_get_value_as_int(sj_object_get_value(curr_level, "level"), "obj_type", &j);
         level_data->obj_type = (ObjType) j;
 
         def_entry = sj_object_get_value(level_data->level_base, "level_obj");
-        sj_object_get_value_as_int(curr_level, "level_goal", &i);
+        sj_object_get_value_as_int(sj_object_get_value(curr_level, "level"), "level_goal", &i);
         if (i == 0) // boss stage does not need sprintf
             strcpy(level_data->level_obj, sj_object_get_value_as_string(sj_array_get_nth(def_entry, j), "obj_desc"));
         else {
@@ -113,6 +119,7 @@ void level_load(Uint8 game_mode, Uint8 slot) {
                 level_data->survival_time = i;
                 break;
         }
+        data = sj_array_get_nth(sj_object_get_value(level_data->level_def, "level_list"), level_data->wave_count - 1);
         level_data->wave_goal = data->v.array->count;
     }
     else if (game_mode == ENDLESS) {
@@ -134,7 +141,7 @@ void level_load_enemy_flock(SJson* curr_level, void* p_data) {
 
     player = (PlayerData*) p_data;
 
-    level_spawns = sj_object_get_value(curr_level, "level_spawns");
+    level_spawns = sj_object_get_value(sj_object_get_value(curr_level, "level"), "level_spawns");
 
     sprintf(buffer, "flock%d", level_data->flock_num);
     flock = sj_object_get_value(level_spawns, buffer);
@@ -356,7 +363,7 @@ void level_update() {
         return;
     }
 
-    if (world->game_mode == REGULAR) {
+    if (world->game_mode == REGULAR && world->current_state == IN_GAME) {
         if (level_data->enemy_count == 0) {
             // load next flock
             level_data->flock_num++;

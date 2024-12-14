@@ -30,6 +30,12 @@
             "notif_rect_offset": [418, 29],
             "notif_dur_offset": [418, 124],
             "color": [128,128,128,120]
+        },
+        {
+            "text": "Level Saved",
+            "notif_rect_offset": [418, 29],
+            "notif_dur_offset": [418, 124],
+            "color": [128,128,128,120]
         }
     ]   
 }

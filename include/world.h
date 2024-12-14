@@ -59,6 +59,7 @@ typedef struct WorldData_S {
 	Uint8			notif_init;
 	Uint8			notif_flag;
 	Uint8			notif_type;
+	Uint8			change_level_prop;
 	float			notification_time;      // timestamp to close notifcation popup
 
 	GameMode		game_mode;

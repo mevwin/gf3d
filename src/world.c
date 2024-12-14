@@ -411,13 +411,21 @@ void world_update(float fps) {
 
 	switch (world->current_state){
 		case START_MENU:
-			start_menu(world->current_state);
-			start_menu_input_check(ui);
-			gf2d_mouse_draw();
+			if (!world->change_level_prop) {
+				start_menu(world->current_state);
+				start_menu_input_check(ui);
+				gf2d_mouse_draw();
+			}
 
 			if (world->last_state == LEVEL_EDITOR) {
 				world->last_state = NO_OPTION;
 				editor_close();
+				if (world->change_level_prop) {
+					world->change_level_prop = 0;
+					level_begin(EDITOR);
+					editor_init();
+					world->current_state = LEVEL_EDITOR;
+				}
 			}
 
 			break;

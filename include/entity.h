@@ -73,7 +73,6 @@ typedef struct Entity_S{
 
     // editor values
     Uint8           editor_flag;
-    Uint8           editor_mouse;
     GFC_Rect        editor_rect;                // for dragging purposes
 
 }Entity;
