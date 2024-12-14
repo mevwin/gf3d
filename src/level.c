@@ -61,6 +61,9 @@ void level_begin(Uint8 game_mode) {
             level_load(ENDLESS, 0);
 
             break;
+        case EDITOR:
+
+            break;
     }
 }
 

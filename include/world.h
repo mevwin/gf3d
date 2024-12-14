@@ -21,7 +21,8 @@ typedef enum SaveType_E {
 typedef enum GameMode_E {
 	REGULAR,		// premade levels
 	ENDLESS,			// procedurally generated
-	PREV_DISPLAY
+	PREV_DISPLAY,
+	EDITOR
 }GameMode;
 
 typedef enum GameState_E{

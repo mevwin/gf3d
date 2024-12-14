@@ -294,6 +294,7 @@ void start_menu_input_check(UIData* ui) {
 			}
 			else if (gf2d_mouse_in_rect(ui->editor_block)) {
 				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
+				level_begin(EDITOR);
 				editor_init();
 				world->current_state = LEVEL_EDITOR;
 			}
@@ -348,6 +349,7 @@ void start_menu_input_check(UIData* ui) {
 				world->current_state = START_MENU;
 			}
 		}
+		// input checks for level_editor are done in level_editor.c
 	}
 }
 
