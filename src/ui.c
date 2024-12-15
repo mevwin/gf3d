@@ -1196,7 +1196,7 @@ void wave_start() {
 
 // TODO: make two cases: stage select (ENDLESS) and show next level (REGULAR)
 void wave_completed(Uint8 game_mode) {
-    SJson* next_level, *stage_desc;
+    SJson* stage_desc;
     LevelData* level;
     LevelType level_type;
     ObjType obj_type;
@@ -1207,7 +1207,6 @@ void wave_completed(Uint8 game_mode) {
 
     level = get_level_data();
 
-
     gf2d_draw_rect_filled(gfc_rect(0, 0, RES.x, RES.y), gfc_color(65, 65, 65, 0.4f));
     gf2d_sprite_draw_image(UI_data->wave_completed, gfc_vector2d(0, 0));
 
@@ -1217,13 +1216,16 @@ void wave_completed(Uint8 game_mode) {
 
         gf2d_draw_rect_filled(UI_data->nextwave_block, gfc_color(65, 65, 65, 0.4f));
 
-        next_level = sj_array_get_nth(sj_object_get_value(level->level_def, "level_list"), level->wave_count - 1);
+        if (!level->curr_level) 
+            get_current_level();
+        
 
-        sj_object_get_value_as_int(next_level, "level_type", &i);
+        sj_object_get_value_as_int(sj_object_get_value(level->curr_level, "level"), "level_type", &i);
         level_type = (LevelType) i;
-        strcpy(name, sj_object_get_value_as_string(sj_array_get_nth(sj_object_get_value(level->level_base, "level_type"), i), "name"));
 
-        sj_object_get_value_as_int(next_level, "obj_type", &i);
+        strcpy(name, sj_object_get_value_as_string(sj_array_get_nth(sj_object_get_value(level->level_base, "level_type"), i), "name"));
+        
+        sj_object_get_value_as_int(sj_object_get_value(level->curr_level, "level"), "obj_type", &i);
         obj_type = (ObjType) i;
 
         switch (obj_type) {

@@ -16,7 +16,6 @@ typedef struct Level_S {
 }Level;
 
 void level_load_enemy_random(PlayerData* p_data);
-SJson* get_current_level();
 
 static Level* level;
 static LevelData* level_data;
@@ -69,12 +68,14 @@ void level_begin(Uint8 game_mode) {
 
 SJson* get_current_level() {
     SJson *data, *curr_level;
-    char buffer[30], level_path[30];
+    char level_path[30];
 
     data = sj_array_get_nth(sj_object_get_value(level_data->level_def, "level_list"), level_data->wave_count - 1);
-    sprintf(buffer, "level%d", level_data->wave_count - 1);
-    strcpy(level_path, sj_object_get_value_as_string(data, buffer));
+    strcpy(level_path, sj_object_get_value_as_string(data, "level"));
     curr_level = sj_load(level_path);
+
+    if (!curr_level)
+        return NULL;
 
     if (level_data->curr_level) 
         sj_free(level_data->curr_level);
@@ -119,7 +120,7 @@ void level_load(Uint8 game_mode, Uint8 slot) {
                 level_data->survival_time = i;
                 break;
         }
-        data = sj_array_get_nth(sj_object_get_value(level_data->level_def, "level_list"), level_data->wave_count - 1);
+        data = sj_object_get_value(level_data->level_def, "level_list");
         level_data->wave_goal = data->v.array->count;
     }
     else if (game_mode == ENDLESS) {
@@ -142,6 +143,8 @@ void level_load_enemy_flock(SJson* curr_level, void* p_data) {
     player = (PlayerData*) p_data;
 
     level_spawns = sj_object_get_value(sj_object_get_value(curr_level, "level"), "level_spawns");
+    if (!level_spawns)
+        return;
 
     sprintf(buffer, "flock%d", level_data->flock_num);
     flock = sj_object_get_value(level_spawns, buffer);
@@ -221,7 +224,8 @@ void full_level_reset() {
 
     sj_free(level_data->level_base);
 
-    if (level_data->level_def && get_world_data()->current_state != PREVIOUS_RUN)
+    if (level_data->level_def && 
+        (get_world_data()->current_state != PREVIOUS_RUN && get_world_data()->current_state != LEVEL_EDITOR))
         sj_free(level_data->level_def);
 }
 
@@ -314,23 +318,22 @@ void level_update() {
 
     // check if level objective has been accomplished
     switch (level_data->obj_type) {
-    case KILL_ENEMY:
-        if (level_data->enemy_killed >= level_data->enemy_goal)
-            level_data->obj_complete = 1;
+        case KILL_ENEMY:
+            if (level_data->enemy_killed >= level_data->enemy_goal)
+                level_data->obj_complete = 1;
 
-        break;
-    case SURVIVE:
-        // if (CURRENT_TIME >= level_data->goal_timestamo)
-        //  level_data->obj_complete = 1;
+            break;
+        case SURVIVE:
+            // if (CURRENT_TIME >= level_data->goal_timestamo)
+            //  level_data->obj_complete = 1;
 
-        break;
+            break;
     }
 
     if (level_data->obj_complete) {
         enemy_reset();
         new_wave_level_reset();
-
-        if (level_data->wave_count - 1 == level_data->wave_goal) {
+        if (level_data->wave_count - 1 == level_data->wave_goal || !get_current_level()) {
             level_data->total_game_time += CURRENT_TIME - level_data->game_start;
 
             game_save(RUNSAVE);
@@ -360,6 +363,7 @@ void level_update() {
         level_data->obj_complete = 0;
         world->current_state = WAVE_COMPLETED;
         update_player_perks();
+        level_data->curr_level = NULL;
         return;
     }
 

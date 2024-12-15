@@ -189,6 +189,9 @@ void update_player_perks() {
 	perk1 = p_data->perk1;
 	perk2 = p_data->perk2;
 
+	if (perk1->type == NO_PERK && perk2->type == NO_PERK)
+		return;
+
 	// update perk uses
 	if (world->current_state == WAVE_COMPLETED) {
 		if ((perk1->type == DMG_RESIST || perk1->type == PASSIVE_HEALS) && !perk1->updated) {

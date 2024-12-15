@@ -84,5 +84,6 @@ void level_visuals_update();
 void level_update();
 void level_free();
 LevelData* get_level_data();
+SJson* get_current_level();
 
 #endif

@@ -204,6 +204,7 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, EnemyType enemy_type, SJson* objec
 
 		case FENCERS:
 			self->model = models->fencer;
+			level->fencer_flag = 1;
 			break;
 
 		case EMPERS:
@@ -325,7 +326,7 @@ void enemy_update(Entity* self) {
 	// bomber deaths are a special case
 	if (data->currHealth <= 0.0 && !data->enemy_dead) {
 		if (data->enemy_type == BOMBERS) {
-			if (data->damaged_type == CHARGE_SHOT)
+			if (data->damaged_type == CHARGE_SHOT || data->damaged_type == SUPER_NUKE)
 				enemy_die(self, data);
 			else {
 				bomber_die(self, data, self->position);
