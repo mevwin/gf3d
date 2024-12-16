@@ -1,0 +1,29 @@
+{
+    "#comment": "index 0 should always be NONE for no item placeholder so make sure to offset by -1 in src",
+    "#comment2": "this file defines upper bounds to each item",
+    "#comment3": "upper bound for powerups will refer to duration",
+    "powerup_cooldown": 25,
+    "items":
+    [
+        {
+            "#comment": "SCRAP",
+            "upper_bound": 7,
+            "item_speed": 1
+        },
+        {
+            "#comment": "HEALTH_PICKUP",
+            "upper_bound": 8,
+            "item_speed": 1.5
+        },
+        {
+            "#comment": "HAPPY_TRIGGER",
+            "upper_bound": 5,
+            "item_speed": 2
+        },
+        {
+            "#comment": "INVINCIBILITY",
+            "upper_bound": 10,
+            "item_speed": 2
+        }
+    ]
+}

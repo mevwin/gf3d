@@ -51,10 +51,9 @@ typedef struct EnemyData_S{
 	Uint8			missile_targeted;	// flag for player missile attack
 	int				scrap_amount;
 	int				item_type;			// pre-determined item type (-1 = random, 0 = none)
-	int				flock_num;
 
 }EnemyData;
 
-Entity* enemy_spawn(GFC_Vector3D* player_pos, EnemyType enemy_type, SJson* object);
+Entity* enemy_spawn(GFC_Vector3D* player_pos, EnemyType enemy_type, SJson* object, int item);
 
 #endif

@@ -1,10 +1,31 @@
 {
     "#comment": "used for procedural content generator",
-    "#comment2": "must match with regular_levels.def level objects",
-    "level_list":
+    "#comment2": "level_palette separated by obj_types",
+    "level_palette":
     [
         {
-            
+            "#comment": "KILL_ENEMY",
+            "level_types": [0],
+            "level_goal": [5, 10],
+            "flock_count": [3, 5],
+            "enemy_per_flock": [4, 8],
+            "enemy_spawns":
+            {
+                "enemy_types": [0, 1, 2],
+                "held_items": [0, 1, 2, 3, 4]
+            }
+        },
+        {
+            "#comment": "SURVIVE",
+            "level_types": [0],
+            "level_goal": [1, 2],
+            "flock_count": [10, 25],
+            "enemy_per_flock": [4, 8],
+            "enemy_spawns":
+            {
+                "enemy_types": [0, 1, 2],
+                "held_items": [0, 1, 2, 3, 4]
+            }
         }
-    ]
+    ] 
 }

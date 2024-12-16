@@ -2,7 +2,7 @@
     "return_rect": [108, 570, 320, 120],
     "previews_menu_exit": [504, 803, 300, 73],
     "previews_menu_color": [128, 128, 128, 140],
-    "run_num_offset": [660, 66],
+    "run_num_offset": [660, 40],
     "previews_next_page": [1075, 800, 145, 76],
     "previews_prev_page": [60, 800, 145, 76],
     "previews":

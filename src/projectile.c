@@ -416,6 +416,10 @@ void proj_free(Entity* self) {
         player_data->proj_count--;
         if (data->type == MISSILE)
             player_data->missile_count--;
+        else if (data->type == SUPER_NUKE)
+            player_data->nuke_flag = 0;
+        else if (data->type == VORTEX)
+            player_data->vortex_flag = 0;
 
         // stay is missile mode until all missiles are gone
         if (player_data->missile_count > 0)

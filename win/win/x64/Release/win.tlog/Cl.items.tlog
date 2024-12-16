@@ -57,6 +57,7 @@ C:\Users\vielg\gf3d\src\gf3d_vqueues.c;C:\Users\vielg\gf3d\win\win\x64\Release\g
 C:\Users\vielg\gf3d\src\item.c;C:\Users\vielg\gf3d\win\win\x64\Release\item.obj
 C:\Users\vielg\gf3d\src\level.c;C:\Users\vielg\gf3d\win\win\x64\Release\level.obj
 C:\Users\vielg\gf3d\src\level_editor.c;C:\Users\vielg\gf3d\win\win\x64\Release\level_editor.obj
+C:\Users\vielg\gf3d\src\level_generator.c;C:\Users\vielg\gf3d\win\win\x64\Release\level_generator.obj
 C:\Users\vielg\gf3d\src\lights.c;C:\Users\vielg\gf3d\win\win\x64\Release\lights.obj
 C:\Users\vielg\gf3d\src\notifications.c;C:\Users\vielg\gf3d\win\win\x64\Release\notifications.obj
 C:\Users\vielg\gf3d\src\perk.c;C:\Users\vielg\gf3d\win\win\x64\Release\perk.obj

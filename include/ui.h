@@ -138,7 +138,9 @@ typedef struct UIData_S{
     GFC_Rect        exit_block;
     GFC_Rect        next_block;
     GFC_Rect        prev_block;
+    GFC_Vector2D    run_num_offset;
     int             preview_page_offset;
+    Uint8           run_num;
 
     /*game complete*/
     Sprite*         game_complete;
@@ -175,7 +177,7 @@ void enemy_hud_all();
 
 void preview_runs();
 
-void display_previous_run();
+void display_previous_run(Uint8 game_mode);
 
 void game_complete();
 

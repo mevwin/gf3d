@@ -106,7 +106,7 @@ int random_item() {
     player_data = get_player_data();
 
     if (player_data->active_item == HAPPY_TRIGGER || player_data->active_item == INVINCIBILITY)
-        rand = 1 + gfc_random_int(2);
+        rand = 1 + gfc_random_int(HAPPY_TRIGGER - 1);
 
     free(item_data);
     return rand;

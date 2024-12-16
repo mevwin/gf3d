@@ -227,6 +227,7 @@ void UI_init() {
 
     UI_data->preview_page_offset = 0;
 
+    sj_value_as_vector2d(sj_object_get_value(UI_data->prev_menu_data, "run_num_offset"), &UI_data->run_num_offset);
 
     /*game complete*/
     UI_data->game_complete = gf2d_sprite_load_image("images/UI/game_complete/game_complete.png");
@@ -917,11 +918,12 @@ void shop_reset() {
 }
 
 void player_hud(void* d) {
-    GFC_Vector2D bar_position, scale;
+    GFC_Vector2D bar_position, scale, offset;
     SJson* position_data;
-    float scrap, maxscrap, nuke_cost, bar_length;
+    float scrap, maxscrap, nuke_cost, bar_length, currTime, currSeconds;
     float currHealth, currShield, currScrap, currVortex, currNuke;
-    //float enemy_kill, currEnem;
+    char buffer[100], time[5];
+    int progress, goal, i, k;
     LevelData* level;
     PlayerData* data;
 
@@ -987,10 +989,44 @@ void player_hud(void* d) {
                     NULL, NULL, NULL, NULL, NULL, NULL);
     
     // power up notifs
-    if (data->active_item == HAPPY_TRIGGER)
+    if (data->active_item == HAPPY_TRIGGER) {
+        get_world_data()->notif_flag = 1;
         notif_window(HAPPYTRIG_POWERUP);
-    else if (data->active_item == INVINCIBILITY)
+    }
+    else if (data->active_item == INVINCIBILITY) {
+        get_world_data()->notif_flag = 1;
         notif_window(INVINCE_POWERUP);
+    }
+
+    // display level_obj
+    switch (level->obj_type) {
+        case KILL_ENEMY:
+            progress = level->enemy_killed;
+            goal = level->enemy_goal;
+            sprintf(buffer, "%s (%i/%i)", level->level_obj, progress, goal);
+
+            break;
+        case SURVIVE:
+            currTime = (level->survival_time - (level->goal_timestamp - CURRENT_TIME)) / 60.0f;
+            progress = (int) currTime;  //minutes
+            k = (int)level->survival_time / 60.0f;
+            currSeconds = (currTime * (k * 60.0f) / (level->survival_time / 60.0f)) - (progress * 60); //seconds
+           
+            i = (int) currSeconds;
+            if (i < 10)
+                sprintf(time, "%i:0%i", progress, i);
+            else
+                sprintf(time, "%i:%i", progress, i);
+
+            sprintf(buffer, "%s (%s)", level->level_obj, time);
+
+            break;
+    }
+
+    if (level->obj_type == KILL_ENEMY || level->obj_type == SURVIVE) {
+        sj_value_as_vector2d(sj_object_get_value(UI_data->player_hud_data, "level_obj_offset"), &offset);
+        gf2d_font_draw_line_tag(buffer, FT_Large, GFC_COLOR_WHITE, offset);
+    }
 
     // visual for super nuke
     if (data->nuke_flag) {
@@ -1074,14 +1110,15 @@ void pause_menu(Sprite* menu, SJson* data) {
             goal = (float) level->enemy_goal;
             break;
         case SURVIVE:
-
+            progress = world->pause_time;
+            goal = level->goal_timestamp;
             break;
     }
-
-    scale = gfc_vector2d(progress / goal, 1.0f);
-
-    gf2d_sprite_draw(UI_data->p_progress_bar, offset, &scale, 
-        NULL, NULL, NULL, NULL, NULL, NULL);
+    if (progress && goal) {
+        scale = gfc_vector2d(progress / goal, 1.0f);
+        gf2d_sprite_draw(UI_data->p_progress_bar, offset, &scale,
+            NULL, NULL, NULL, NULL, NULL, NULL);
+    }
 
         // lvl objective text
     sj_value_as_vector2d(sj_object_get_value(data_entry, "text_offset"), &offset);
@@ -1181,8 +1218,12 @@ void wave_start() {
     switch (level->obj_type) {
         case KILL_ENEMY:
             data_entry = sj_object_get_value(UI_data->wave_start_data, "kill_enemy_text_offset");
-
             break;
+        
+        case SURVIVE:
+            data_entry = sj_object_get_value(UI_data->wave_start_data, "survive_text_offset");
+            break;
+        
         default:
             data_entry = NULL;
     }
@@ -1201,7 +1242,7 @@ void wave_completed(Uint8 game_mode) {
     LevelType level_type;
     ObjType obj_type;
     GFC_Vector2D offset;
-    int i;
+    int i, j, k;
     char name[20];
     char obj[20];
 
@@ -1213,13 +1254,11 @@ void wave_completed(Uint8 game_mode) {
     // TODO: implement images and text for next stages
     if (game_mode == REGULAR) {
         stage_desc = sj_array_get_nth(sj_object_get_value(UI_data->wave_completed_data, "stage_desc"), 0);
-
         gf2d_draw_rect_filled(UI_data->nextwave_block, gfc_color(65, 65, 65, 0.4f));
 
         if (!level->curr_level) 
             get_current_level();
         
-
         sj_object_get_value_as_int(sj_object_get_value(level->curr_level, "level"), "level_type", &i);
         level_type = (LevelType) i;
 
@@ -1249,11 +1288,57 @@ void wave_completed(Uint8 game_mode) {
         sj_value_as_vector2d(sj_object_get_value(stage_desc, "level_obj"), &offset);
         gf2d_font_draw_line_tag(obj, FT_Large, GFC_COLOR_WHITE, offset);
 
+        /*
+        * level preview neds:
+        *   - level_type
+        *   - level_obj
+        *   - level_goal
+        * 
+        */
+
     }
     else if (game_mode == ENDLESS) {
+        // two levels are created through json and displayed here
+        for (k = 0; k < 2; k++) {
+            stage_desc = sj_array_get_nth(sj_object_get_value(UI_data->wave_completed_data, "stage_desc"), k + 1);
+            if (k == 0){
+                gf2d_draw_rect_filled(UI_data->stage_block1, gfc_color(65, 65, 65, 0.4f));
+                sj_object_get_value_as_int(level->endless_prev1, "level_type", &i);
+                sj_object_get_value_as_int(level->endless_prev1, "obj_type", &j);
+            }
+            else { 
+                gf2d_draw_rect_filled(UI_data->stage_block2, gfc_color(65, 65, 65, 0.4f));
+                sj_object_get_value_as_int(level->endless_prev2, "level_type", &i);
+                sj_object_get_value_as_int(level->endless_prev2, "obj_type", &j);
+            }
+            
+            level_type = (LevelType)i;
+            strcpy(name, sj_object_get_value_as_string(sj_array_get_nth(sj_object_get_value(level->level_base, "level_type"), i), "name"));
+            obj_type = (ObjType)j;
 
+            switch (obj_type) {
+                case KILL_ENEMY:
+                    sprintf(obj, "KILL ENEMY");
+
+                    break;
+                case SURVIVE:
+                    strcpy(obj, "SURVIVE");
+
+                    break;
+
+                case BOSS:
+                    strcpy(obj, "MINI-BOSS");
+
+                break;
+            }
+            sj_value_as_vector2d(sj_object_get_value(stage_desc, "level_text"), &offset);
+            gf2d_font_draw_line_tag(name, FT_Large, GFC_COLOR_WHITE, offset);
+
+            sj_value_as_vector2d(sj_object_get_value(stage_desc, "level_obj"), &offset);
+            gf2d_font_draw_line_tag(obj, FT_Large, GFC_COLOR_WHITE, offset);
+
+        }
     }
-
 }
 
 void player_death_screen(Sprite* menu, SJson* menu_data) {
@@ -1305,7 +1390,7 @@ void enemy_hud(void* e, GFC_Vector3D position) {
     currHealth = data->currHealth / data->maxHealth;
 
     bar_position = gfc_3DPos_to_2DPos(position, data->x_bound, data->z_bound);
-    scale = gfc_vector2d(currHealth, 1);
+    scale = gfc_vector2d(currHealth, 1.0f);
 
     // bar offset (maybe testing the scaling for other res???)
     bar_position.x -= 50.0f;
@@ -1394,6 +1479,10 @@ void preview_runs() {
             if (gf2d_mouse_button_released(0) && gf2d_mouse_in_rect(preview_rect)) {
                 gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 
+                world->last_state = PREV_PREVIEW;
+
+                UI_data->run_num = j + 1;
+
                 level_begin(PREV_DISPLAY);
                 game_data_init_from_save(RUNSAVE, run);
             }
@@ -1401,8 +1490,18 @@ void preview_runs() {
     }
 }
 
-void display_previous_run() {
+void display_previous_run(Uint8 game_mode) {
+    char buffer[10];
+
     player_death_screen(UI_data->previous_run, UI_data->prev_menu_data);
+
+    sprintf(buffer, "#%d", UI_data->run_num);
+    gf2d_font_draw_line_tag(buffer, FT_H1, GFC_COLOR_WHITE, UI_data->run_num_offset);
+
+    if (game_mode == REGULAR)
+        gf2d_font_draw_line_tag("REGULAR", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(40.0f, 40.0f));
+    else if (game_mode == ENDLESS)
+        gf2d_font_draw_line_tag("ENDLESS", FT_H1, GFC_COLOR_WHITE, gfc_vector2d(40.0f, 40.0f));
 }
 
 void game_complete() {

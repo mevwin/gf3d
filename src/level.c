@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "gf2d_mouse.h"
+#include "gfc_config.h"
 #include "gfc_input.h"
 #include "gfc_audio.h"
 #include "world.h"
@@ -8,16 +9,17 @@
 #include "ui.h"
 #include "level.h"
 #include "item.h"
+#include "level_generator.h"
 
+/*
 typedef struct Level_S {
     Model*      terrain;
     GFC_List*   hazard_list;
     Uint8       hazard_count;
 }Level;
+*/
 
-void level_load_enemy_random(PlayerData* p_data);
-
-static Level* level;
+//static Level* level;
 static LevelData* level_data;
 
 void level_init() {
@@ -51,13 +53,13 @@ void level_begin(Uint8 game_mode) {
     switch (game_mode) {
         case REGULAR:
             level_data->level_def = sj_load("levels/regular_levels.def");
-            level_load(REGULAR, 0);
+            level_load(REGULAR);
 
             break;
 
         case ENDLESS:
-            level_data->level_def = sj_load("levels/endless.def");
-            level_load(ENDLESS, 0);
+            level_gen_init(sj_load("levels/endless.def"));
+            level_load(ENDLESS);
 
             break;
         case EDITOR:
@@ -86,10 +88,11 @@ SJson* get_current_level() {
 }
 
 // load a level based on wave_count-1
-void level_load(Uint8 game_mode, Uint8 slot) {
+void level_load(Uint8 game_mode) {
     SJson* data, *curr_level, *def_entry;
     char buffer[30];
     int i, j;
+    float k;
 
     if (game_mode == REGULAR) {
         curr_level = get_current_level();
@@ -104,7 +107,16 @@ void level_load(Uint8 game_mode, Uint8 slot) {
         level_data->obj_type = (ObjType) j;
 
         def_entry = sj_object_get_value(level_data->level_base, "level_obj");
-        sj_object_get_value_as_int(sj_object_get_value(curr_level, "level"), "level_goal", &i);
+        switch (level_data->obj_type) {
+            case KILL_ENEMY:
+                sj_object_get_value_as_int(sj_object_get_value(curr_level, "level"), "level_goal", &i);
+                break;
+            case SURVIVE:
+                sj_object_get_value_as_float(sj_object_get_value(curr_level, "level"), "level_goal", &k);
+                i = (int) k/60.0f;
+                break;
+        }
+
         if (i == 0) // boss stage does not need sprintf
             strcpy(level_data->level_obj, sj_object_get_value_as_string(sj_array_get_nth(def_entry, j), "obj_desc"));
         else {
@@ -117,14 +129,15 @@ void level_load(Uint8 game_mode, Uint8 slot) {
                 level_data->enemy_goal = i;
                 break;
             case SURVIVE:
-                level_data->survival_time = i;
+                level_data->survival_time = k;
                 break;
         }
         data = sj_object_get_value(level_data->level_def, "level_list");
         level_data->wave_goal = data->v.array->count;
     }
     else if (game_mode == ENDLESS) {
-
+        // create a level instead of loading one
+        generate_level();
     }
     else if (game_mode == PREV_DISPLAY) {
         // all done in game_data_init_from_save
@@ -153,32 +166,10 @@ void level_load_enemy_flock(SJson* curr_level, void* p_data) {
 
     for (i = 0; i < flock->v.array->count; i++) {
         enemy = sj_array_get_nth(flock, i);
-        enemy_spawn(player->player_pos, 0, enemy);
+        enemy_spawn(player->player_pos, 0, enemy, 0);
     }
 
     level_data->curr_level = NULL;
-}
-
-// TODO: modify for procedural generator
-void level_load_enemy_random(PlayerData* p_data) {
-    EnemyType type;
-
-    type = (EnemyType)gfc_random_int(5);
-
-    // only one fencer on-screen
-    if (type == FENCERS && !level_data->fencer_flag)
-        level_data->fencer_flag = 1;
-    else if (type == FENCERS && level_data->fencer_flag)
-        type = (EnemyType)gfc_random_int(4);
-
-    // only one emper on-screen
-    if (type == EMPERS && !level_data->emper_flag)
-        level_data->emper_flag = 1;
-    else if (type == EMPERS && level_data->emper_flag)
-        type = (EnemyType)gfc_random_int(3);
-
-
-    enemy_spawn(p_data->player_pos, type, NULL);
 }
 
 void new_wave_level_reset(){
@@ -206,6 +197,10 @@ void new_wave_level_reset(){
 }
 
 void full_level_reset() {
+    WorldData* world;
+
+    world = get_world_data();
+
     level_data->last_powerup = 0;
     level_data->enemy_count = 0;
     level_data->enemy_killed = 0;
@@ -224,9 +219,17 @@ void full_level_reset() {
 
     sj_free(level_data->level_base);
 
-    if (level_data->level_def && 
-        (get_world_data()->current_state != PREVIOUS_RUN && get_world_data()->current_state != LEVEL_EDITOR))
+    if (world->game_mode == EDITOR || world->game_mode == PREV_DISPLAY)
+        return;
+
+    if (world->game_mode == ENDLESS) {
+        level_gen_close();
+        return;
+    }
+
+    if (level_data->level_def)
         sj_free(level_data->level_def);
+
 }
 
 /*
@@ -307,13 +310,16 @@ void level_update() {
     entityList = get_entityList();
     p_data = get_player_data();
 
-    // player death check
-    if (p_data->player_dead) {
+    if (p_data->player_dead) { // game is over
         level_data->total_game_time += CURRENT_TIME - level_data->game_start;
-        level_data->enemy_killed_total += level_data->enemy_killed;
-
         game_save(RUNSAVE);
-        world->current_state = GAME_OVER;
+
+        if (world->game_mode == REGULAR) 
+            world->current_state = GAME_OVER;
+        else if (world->game_mode == ENDLESS) 
+            world->current_state = GAME_COMPLETED;
+
+        return;
     }
 
     // check if level objective has been accomplished
@@ -324,21 +330,29 @@ void level_update() {
 
             break;
         case SURVIVE:
-            // if (CURRENT_TIME >= level_data->goal_timestamo)
-            //  level_data->obj_complete = 1;
+            if (CURRENT_TIME >= level_data->goal_timestamp)
+                level_data->obj_complete = 1;
 
             break;
     }
 
     if (level_data->obj_complete) {
-        enemy_reset();
+        entity_reset();
         new_wave_level_reset();
-        if (level_data->wave_count - 1 == level_data->wave_goal || !get_current_level()) {
-            level_data->total_game_time += CURRENT_TIME - level_data->game_start;
 
-            game_save(RUNSAVE);
-            world->current_state = GAME_COMPLETED;
-            return;
+        if (world->game_mode == REGULAR) {
+            if (level_data->wave_count - 1 == level_data->wave_goal || !get_current_level()) {
+                level_data->total_game_time += CURRENT_TIME - level_data->game_start;
+
+                game_save(RUNSAVE);
+                world->current_state = GAME_COMPLETED;
+                return;
+            }
+        }
+        else if (world->game_mode == ENDLESS) {
+            // create two levels
+            level_data->endless_prev1 = generate_level_preview();
+            level_data->endless_prev2 = generate_level_preview();
         }
 
         player_upgrade();
@@ -367,6 +381,9 @@ void level_update() {
         return;
     }
 
+    if (level_data->flock_num == -1)
+        return;
+
     if (world->game_mode == REGULAR && world->current_state == IN_GAME) {
         if (level_data->enemy_count == 0) {
             // load next flock
@@ -374,6 +391,18 @@ void level_update() {
             level_data->curr_level = get_current_level();
         }
         level_load_enemy_flock(level_data->curr_level, p_data);
+    }
+    else if (world->game_mode == ENDLESS && world->current_state == IN_GAME) {
+        if (level_data->enemy_count == 0) {
+            level_data->flock_num++;
+            entity_reset();
+
+            if (level_data->flock_num >= get_flock_count()) {
+                level_data->flock_num = -1;
+                return;
+            }
+            level_generate_enemy_flock(level_data);
+        }
     }
 
     // enemy spawning (TODO: remove later)

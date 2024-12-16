@@ -11,7 +11,7 @@
 #define MAX_ENTITY 500
 #define CURRENT_TIME (SDL_GetTicks() / 1000.0f)
 
-typedef enum {
+typedef enum Entity_Type_S{
     PLAYER,
     ENEMY,
     PROJECTILE,

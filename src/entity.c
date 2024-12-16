@@ -471,7 +471,7 @@ void entity_reset() {
     for (i = 0; i < MAX_ENTITY; i++) {
         target = &entityList[i];
 
-        if (target->entity_type == PLAYER || target->entity_type == ENEMY || target->entity_type == ASTEROID)
+        if (target->entity_type == PLAYER || target->entity_type == ENEMY || target->entity_type == RETICLE)
             continue;
 
         entity_free(target);

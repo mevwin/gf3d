@@ -70,6 +70,7 @@ typedef struct WorldData_S {
 	// dummy perk containers for previous runs
 	void*			perk1; 
 	void*			perk2;
+	GameMode		prev_run_mode;
 
 	// def files
 	SJson*			player_init;

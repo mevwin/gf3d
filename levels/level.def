@@ -1,0 +1,32 @@
+{
+    "level_type":
+    [
+        {
+            "name": "Asteroid Belt",
+            "hazard": "",
+            "background": "",
+            "color": [128, 128, 128, 140]
+        },
+        {
+            "name": "Black Hole",
+            "hazard": "",
+            "background": "",
+            "color": [0, 0, 0, 200]
+        }
+    ],
+    "level_obj":
+    [
+        {
+            "obj_desc": "Kill %d enemies",
+            "color": [128, 128, 128, 140]
+        },
+        {
+            "obj_desc": "Survive for %d Minutes",
+            "color": [128, 128, 128, 140]
+        },
+        {
+            "obj_desc": "Defeat Mini-Boss",
+            "color": [128, 128, 128, 140]
+        }
+    ]
+}

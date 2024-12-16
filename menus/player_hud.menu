@@ -6,8 +6,5 @@
         "vortex_offset": [138, 94],
         "bar_width": 344
     },
-    "level_obj":
-    {
-
-    }
+    "level_obj_offset": [21, 142]
 }

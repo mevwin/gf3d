@@ -219,6 +219,9 @@
     <ClCompile Include="..\src\notifications.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\level_generator.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\gf2d_actor.h">
@@ -426,6 +429,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\notifications.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\level_generator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

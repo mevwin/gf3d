@@ -9,6 +9,7 @@
 #include "item.h"
 #include "level.h"
 #include "level_editor.h"
+#include "level_generator.h"
 
 #define EMPER_CHARGE_TIME 5.0f
 #define ENEMY_HURTBOX gfc_box(400, -150, 200, 1, 1, 1) // make temporary dummy hitbox not accessible to player when enemy is dead
@@ -22,7 +23,8 @@ void enemy_update_stats(EnemyData* data);
 void enemy_take_damage(Entity* self, EnemyData* data);
 void enemy_die(Entity* self, EnemyData* data);
 void bomber_die(Entity* self, EnemyData* data, GFC_Vector3D position);
-EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object);
+EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object, int item_type);
+GFC_Vector3D random_enemy_pos(EnemyData* e_data, SJson* enemy_def);
 
 // spawn random enemy (OLD, commented out for future reference)
 /*
@@ -99,7 +101,7 @@ EnemyData* enemy_data_init_random() {
 }
 */
 
-EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object) {
+EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object, int item_type) {
 	SJson* enemy_def, *enemy_entry;
 	EnemyData* e_data;
 	LevelData* level;
@@ -128,7 +130,7 @@ EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object) {
 
 		sj_value_as_vector2d(sj_object_get_value(object, "spawn"), &spawn_check);
 		if (spawn_check.x == 0 && spawn_check.y == 0)
-			e_data->spawn_pos = gfc_vector3d_enemy_random_pos(e_data->x_bound, e_data->dist_to_player, e_data->z_bound);
+			e_data->spawn_pos = random_enemy_pos(e_data, enemy_def);
 		else
 			e_data->spawn_pos = gfc_vector3d(spawn_check.x, e_data->dist_to_player, spawn_check.y);
 	
@@ -141,13 +143,15 @@ EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object) {
 		if (world->current_state == LEVEL_EDITOR) {
 			e_data->spawn_pos = gfc_vector3d(0, 0, 0);
 			e_data->spawn_pos = gfc_2DPos_to_3DPos(get_asset_prev_location(), e_data->x_bound, e_data->z_bound);
-			e_data->spawn_pos.x += 15.0f;
-			e_data->spawn_pos.z -= 5.0f;
+			e_data->spawn_pos.x -= 12.0f;
+			e_data->spawn_pos.z -= 6.0f;
 			e_data->spawn_pos.y = e_data->dist_to_player;
 			e_data->item_type = -1;
 		}
-		else
-			e_data->spawn_pos = gfc_vector3d_enemy_random_pos(e_data->x_bound, e_data->dist_to_player, e_data->z_bound);
+		else if (world->game_mode == ENDLESS){
+			e_data->spawn_pos = random_enemy_pos(e_data, enemy_def);
+			e_data->item_type = item_type;
+		}
 	}
 
 	enemy_entry = sj_array_get_nth(sj_object_get_value(enemy_def, "enemy_list"), index);
@@ -161,14 +165,17 @@ EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object) {
 	sj_object_get_value_as_float(enemy_entry, "upspeed", &e_data->upspeed);
 	sj_object_get_value_as_float(enemy_entry, "rigspeed", &e_data->rigspeed);
 
-	e_data->flock_num = get_level_data()->flock_num;
+	if (gfc_random() < 0)
+		e_data->upspeed = -e_data->upspeed;
+	if (gfc_random() < 0)
+		e_data->rigspeed = -e_data->rigspeed;
 
 	free(enemy_def);
 
 	return e_data;
 }
 
-Entity* enemy_spawn(GFC_Vector3D* player_pos, EnemyType enemy_type, SJson* object) {
+Entity* enemy_spawn(GFC_Vector3D* player_pos, EnemyType enemy_type, SJson* object, int item_type) {
 	Entity* self;
 	EnemyData* data;
 	LevelData* level;
@@ -178,7 +185,7 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, EnemyType enemy_type, SJson* objec
 	self = entity_new();
 	if (!self) return NULL;
 
-	data = enemy_data_init_from_config(enemy_type, object);
+	data = enemy_data_init_from_config(enemy_type, object, item_type);
 	if (data) self->data = data;
 
 	if (!data) return;
@@ -222,6 +229,8 @@ Entity* enemy_spawn(GFC_Vector3D* player_pos, EnemyType enemy_type, SJson* objec
 	data->player_pos = player_pos;
 
 	self->position = data->spawn_pos;
+	if (data->enemy_type == BOMBERS)
+		self->position.y -= 6.0f;
 
 	update_hurtbox(self);
 
@@ -426,7 +435,6 @@ void enemy_take_damage(Entity* self, EnemyData* data) {
 	data->damage_taken = 0;
 }
 
-
 void enemy_die(Entity* self, EnemyData* data) {
 	if (!self || !data) return;
 
@@ -478,4 +486,19 @@ void enemy_update_stats(EnemyData* data) {
 		data->base_damage *= 1.2f;
 	}
 	//slog("enemy stats updated %d times", wave_count);
+}
+
+GFC_Vector3D random_enemy_pos(EnemyData* e_data, SJson* enemy_def) {
+	GFC_Vector3D out;
+	GFC_Vector2D vec_buf;
+	SJson* loc_array;
+	int index;
+
+	loc_array = sj_object_get_value(enemy_def, "random_spawn");
+	index = gfc_random_int(loc_array->v.array->count);
+	sj_value_as_vector2d(sj_object_get_value(sj_array_get_nth(loc_array, index), "loc"), &vec_buf);
+
+	out = gfc_vector3d(vec_buf.x, e_data->dist_to_player, vec_buf.y);
+
+	return out;
 }

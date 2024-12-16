@@ -1,0 +1,84 @@
+{
+    "#comment1": "spawn: [0,0] means random spawn location",
+    "#comment2": "order must match in src",
+    "enemy_list":
+    [
+        {
+            "#comment": "PEAS",
+            "pea_speed": 1.5,
+            "maxHealth": 1500,
+            "base_damage": 100,
+            "move_type": 1,
+            "upspeed": 0.3,
+            "rigspeed": 0.5
+        },
+        {
+            "#comment": "CHARGERS",
+            "pea_speed": 2.0,
+            "maxHealth": 2000,
+            "base_damage": 200,
+            "move_type": 1,
+            "upspeed": 0.3,
+            "rigspeed": 0.5
+        },
+        {
+            "#comment": "BOMBERS",
+            "pea_speed": 1,
+            "maxHealth": 10,
+            "base_damage": 350,
+            "move_type": 1,
+            "upspeed": 0,
+            "rigspeed": 0.3
+        },
+        {
+            "#comment": "EMPERS",
+            "pea_speed": 0,
+            "maxHealth": 1200,
+            "base_damage": 0,
+            "move_type": 1,
+            "upspeed": 0,
+            "rigspeed": 1.2
+        },
+        {
+            "#comment": "FENCERS",
+            "pea_speed": 0,
+            "maxHealth": 1800,
+            "base_damage": 10,
+            "move_type": 1,
+            "upspeed": 0,
+            "rigspeed": 0.6
+        }
+    ],
+    "random_spawn":
+    [
+        {
+            "loc": [0, 0]
+        },
+        {
+            "loc": [72, 39]
+        },
+        {
+            "loc": [42, -7]
+        },
+        {
+            "loc": [28, 37]
+        },
+        {
+            "loc": [-32, 8]
+        },
+        {
+            "loc": [-64, -32]
+        },
+        {
+            "loc": [8, -33]
+        },
+        {
+            "loc": [-70, -6]
+        },
+        {
+            "loc": [70, 13]
+        }
+    ]
+
+
+}

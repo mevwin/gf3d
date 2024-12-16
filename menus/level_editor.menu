@@ -1,0 +1,55 @@
+{
+    "sidebar":{
+        "asset_select":
+        {
+            "new_asset": [1079, 283, 100, 70],
+            "prev_asset": [989, 281, 31, 61],
+            "next_asset": [1237, 281, 31, 61],
+            "asset_prev_location": [1051, 270]
+        },
+        "level_prop": [1018, 442, 224, 82],
+        "save_level": [1018, 555, 224, 82]
+    },
+    "trackbar":{
+        "trackbar_rect": [88, 693, 1192, 210], 
+        "prop_option": [164, 89],
+        "enemy":
+        {
+            "color": [255, 0, 0, 90],
+            "select_rect": [0, 693, 88, 105]
+        },
+        "hazard":
+        {
+            "color": [73, 231, 162, 90],
+            "select_rect": [0, 795, 88, 105]
+        }
+    },
+    "level_prop":
+    {
+        "text_offset": [443, 40],
+        "textbox": 
+        {
+            "color": [73, 231, 162, 140],
+            "rect": [369, 275,570, 270]
+        },
+        "next_page": [1075, 800, 145, 76],
+        "prev_page": [60, 800, 145, 76],
+        "exit_button": [504, 803, 300, 73],
+        "obj_rect": 
+        [
+            {
+                "text_offset": [110, 300],
+                "rect": [101, 208, 300, 200]
+            },
+            {
+                "text_offset": [500, 300],
+                "rect": [491, 208, 300, 200]
+            },
+            {
+                "text_offset": [885, 300],
+                "rect": [876, 208, 300, 200]
+            }
+        ]     
+    }
+
+}

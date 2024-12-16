@@ -36,7 +36,8 @@
         "level_type": 0,
         "obj_type": 0,
         "level_goal": 0,
-        "level_obj": "null"
+        "level_obj": "null",
+        "game_mode": 0
     },
     "upgrades":
     {

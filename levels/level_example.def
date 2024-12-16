@@ -1,0 +1,21 @@
+{
+    "level":
+    {
+        "level_type": 0,
+        "obj_type": 0,
+        "level_goal": 1,
+        "hazards": 
+        {
+            "model": "",
+            "count": 0,
+            "max_onscreen": 25
+        },
+        "level_spawns":
+        {
+            "flock0":
+            [
+
+            ]
+        }
+    }
+}

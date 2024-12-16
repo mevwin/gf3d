@@ -200,6 +200,7 @@
     <ClCompile Include="..\src\item.c" />
     <ClCompile Include="..\src\level.c" />
     <ClCompile Include="..\src\level_editor.c" />
+    <ClCompile Include="..\src\level_generator.c" />
     <ClCompile Include="..\src\lights.c" />
     <ClCompile Include="..\src\notifications.c" />
     <ClCompile Include="..\src\perk.c" />
@@ -244,6 +245,7 @@
     <ClInclude Include="..\include\item.h" />
     <ClInclude Include="..\include\level.h" />
     <ClInclude Include="..\include\level_editor.h" />
+    <ClInclude Include="..\include\level_generator.h" />
     <ClInclude Include="..\include\lights.h" />
     <ClInclude Include="..\include\notifications.h" />
     <ClInclude Include="..\include\perk.h" />

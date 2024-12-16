@@ -12,6 +12,7 @@
 #include "enemy.h"
 #include "notifications.h"
 #include "level_editor.h"
+#include "level_generator.h"
 
 static WorldData* world;
 static Entity* player;
@@ -105,6 +106,9 @@ void world_check_for_menu_input() {
 
 			level->game_start = CURRENT_TIME;
 
+			if (level->obj_type == SURVIVE)
+				level->goal_timestamp = level->game_start + level->survival_time;
+
 			world->current_state = IN_GAME;
 
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
@@ -137,7 +141,7 @@ void world_check_for_menu_input() {
 				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 			}
 			else if (gf2d_mouse_in_rect(ui->quit_block)) {
-				game_save(GAMESAVE);
+				//game_save(GAMESAVE);
 				perk_list_close();
 				full_level_reset();
 				shop_reset();
@@ -152,7 +156,10 @@ void world_check_for_menu_input() {
 	else if (world->current_state == SHOP) {
 		if (gf2d_mouse_button_released(0) && gf2d_mouse_in_rect(ui->next_wave_block)) {
 			empty_perk_list();
-			level_load_enemy_flock(level->curr_level, player->data);
+
+			if (world->game_mode == REGULAR)
+				level_load_enemy_flock(level->curr_level, player->data);
+
 			world->current_state = WAVE_START;
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
@@ -187,13 +194,15 @@ void world_check_for_menu_input() {
 		}
 		else if (gf2d_mouse_button_released(2)) {
 			if (gf2d_mouse_in_rect(ui->stage_block1) && world->game_mode == ENDLESS) {
-				// TODO: add level changing here
+				level->endless_chosen_level = 1;
+				generate_level();
 			}
 			else if (gf2d_mouse_in_rect(ui->stage_block2) && world->game_mode == ENDLESS) {
-				// TODO: add level changing here
+				level->endless_chosen_level = 2;
+				generate_level();
 			}
 			else if (gf2d_mouse_in_rect(ui->nextwave_block) && world->game_mode == REGULAR) {
-				level_load(world->game_mode, 0); // load next level
+				level_load(world->game_mode); // load next level
 			}
 			else
 				return;
@@ -299,6 +308,7 @@ void start_menu_input_check(UIData* ui) {
 				world->current_state = LEVEL_EDITOR;
 			}
 			else if (gf2d_mouse_in_rect(ui->previous_block)) {
+				world->game_mode = PREV_DISPLAY;
 
 				if (previous_runs_list_init())
 					world->current_state = PREV_PREVIEW;
@@ -323,14 +333,12 @@ void start_menu_input_check(UIData* ui) {
 				player_assets_init();
 
 				if (world->player_assets_made) {
-
 					world->enemy_start = 0;
 					world->player_spawned = 1;
 					world->current_state = LOADING_SCREEN;
 				}
 			}
 			else if (gf2d_mouse_in_rect(ui->endless_block)) {
-				/*
 				gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 
 				world->game_mode = ENDLESS;
@@ -338,12 +346,10 @@ void start_menu_input_check(UIData* ui) {
 				player_assets_init();
 
 				if (world->player_assets_made) {
-
 					world->enemy_start = 0;
 					world->player_spawned = 1;
 					world->current_state = LOADING_SCREEN;
 				}
-				*/
 			}
 			else if (gf2d_mouse_in_rect(ui->s_exit_block)) {
 				world->current_state = START_MENU;
@@ -357,16 +363,19 @@ void start_menu_input_check(UIData* ui) {
 * Time checks to update while game is paused:
 *	- player shot timings
 *	- emper countdown
+*	- survival time
 */
 void update_time_checks(float curr_time) {
 	Entity* entityList, *enemy;
 	PlayerData* p_data;
 	EnemyData* emper;
+	LevelData* level;
 	int i;
 	float added_time;
 
 	p_data = get_player_data();
 	entityList = get_entityList();
+	level = get_level_data();
 
 	added_time = curr_time - world->pause_time;
 
@@ -375,7 +384,11 @@ void update_time_checks(float curr_time) {
 	p_data->next_charged_shot += added_time;
 	p_data->charge_shot_delay += added_time;
 
-	if (get_level_data()->emper_flag) {
+	// update survival time
+	level->game_start += added_time;
+	level->goal_timestamp += added_time;
+
+	if (level->emper_flag) {
 		for (i = 0; i < MAX_ENTITY; i++) {
 			enemy = &entityList[i];
 			if (enemy->entity_type != ENEMY) continue;
@@ -396,7 +409,6 @@ void world_update(float fps) {
 	UIData* ui;
 	LevelData* level;
 	char fps_string[30];
-
 	level = get_level_data();
 	ui = get_UI_data();
 
@@ -444,7 +456,7 @@ void world_update(float fps) {
 			break;
 
 		case PREVIOUS_RUN:
-			display_previous_run();
+			display_previous_run(world->prev_run_mode);
 			gf2d_mouse_draw();
 
 			break;
@@ -482,7 +494,11 @@ void world_update(float fps) {
 				else {
 					// load level's initial enemies
 					perk_list_init();
-					level_load_enemy_flock(level->curr_level, player->data);
+					if (world->game_mode == REGULAR)
+						level_load_enemy_flock(level->curr_level, player->data);
+					else if (world->game_mode == ENDLESS)
+						level_generate_enemy_flock(level);
+
 					world->current_state = WAVE_START;
 				}
 			}
@@ -641,6 +657,11 @@ void game_data_init_from_save(SaveType type, SJson* json) {
 	}
 	strcpy(level->level_obj, sj_object_get_value_as_string(value, "level_obj"));
 
+	if (world->last_state == PREV_PREVIEW) {
+		sj_object_get_value_as_int(value, "game_mode", &i);
+		world->prev_run_mode = (GameMode) i;
+	}
+
 	value = sj_object_get_value(save, "upgrades");
 	sj_object_get_value_as_uint8(value, "shields_check", &ui->shields_check);
 	sj_object_get_value_as_uint8(value, "more_scrap_check", &ui->more_scrap_check);
@@ -718,6 +739,9 @@ void game_save(SaveType save_type) {
 			data_entry->v.string = sj_new_int(0)->v.string;
 			break;
 	}
+
+	data_entry = sj_object_get_value(value, "game_mode");
+	data_entry->v.string = sj_new_int(world->game_mode)->v.string;
 
 	data_entry = sj_object_get_value(value, "level_obj");
 	data_entry->v.string = sj_new_str(level->level_obj)->v.string;
