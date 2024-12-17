@@ -44,7 +44,7 @@ void gf3d_pipeline_init(Uint32 max_pipelines)
     gf3d_pipeline.maxPipelines = max_pipelines;
     gf3d_pipeline.chainLength = gf3d_swapchain_get_swap_image_count();
     atexit(gf3d_pipeline_close);
-    if (__DEBUG)slog("pipeline system initialized");
+    //if (__DEBUG) slog("pipeline system initialized: %d", max_pipelines);
 }
 
 void gf3d_pipeline_close()

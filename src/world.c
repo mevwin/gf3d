@@ -142,6 +142,9 @@ void world_check_for_menu_input() {
 			}
 			else if (gf2d_mouse_in_rect(ui->quit_block)) {
 				//game_save(GAMESAVE);
+				if (world->notif_flag)
+					world->notif_flag = 0;
+
 				perk_list_close();
 				full_level_reset();
 				shop_reset();
@@ -175,6 +178,9 @@ void world_check_for_menu_input() {
 				// TODO: add respawn function
 			}
 			else if (gf2d_mouse_in_rect(ui->g_quit_block)) {
+				if (world->notif_flag)
+					world->notif_flag = 0;
+
 				perk_list_close();
 				full_level_reset();
 				shop_reset();
@@ -904,3 +910,13 @@ WorldData* get_world_data() {
 GFC_List* get_previous_runs() {
 	return previous_runs_list;
 }
+
+/**
+* look at config files
+* write shaders (make ubo and such)
+*   - make sure ubo matches the implementation in src
+*   - ex: spirte.vert -> gf2d_sprite.c (way to instantiate it)
+* assuming both pipelines are setup, determine which pipeline to use
+*   - a flag in the ubos themselves
+*   - a flag in the src code
+*/

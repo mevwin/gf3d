@@ -98,7 +98,7 @@ int main(int argc,char *argv[])
     
     //gf3d_camera_enable_free_look(1);
 
-    // game init initialization
+    // initialize everything else
     UI_init();
     world_init();
     level_init();

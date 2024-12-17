@@ -20,6 +20,7 @@ typedef struct
 {
     Mesh *mesh_list;
     Pipeline *pipe;
+    //Pipeline *bh_pipe;
     Pipeline *sky_pipe;
     Uint32 mesh_max;
     VkVertexInputAttributeDescription attributeDescriptions[ATTRIBUTE_COUNT];
@@ -135,6 +136,20 @@ void gf3d_mesh_init(Uint32 mesh_max)
         sizeof(ModelUBO),
         VK_INDEX_TYPE_UINT16
     );
+
+    /*
+    gf3d_mesh.bh_pipe = gf3d_pipeline_create_from_config(
+        gf3d_vgraphics_get_default_logical_device(),
+        "config/model_pipeline.cfg",
+        gf3d_vgraphics_get_view_extent(),
+        mesh_max,
+        gf3d_mesh_get_bind_description(),
+        gf3d_mesh_get_attribute_descriptions(NULL),
+        count,
+        sizeof(ModelUBO),
+        VK_INDEX_TYPE_UINT16
+    );
+    */
 
     if (__DEBUG)slog("mesh system initialized");
 }
