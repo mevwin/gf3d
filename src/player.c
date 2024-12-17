@@ -293,7 +293,7 @@ void player_think(Entity* self) {
                 data->player_no_attack = 1;
             else
                 data->player_no_attack = 0;
-
+            
             data->currScrap = data->maxScrap;
         }
     }

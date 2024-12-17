@@ -7,7 +7,7 @@
 #include "gf3d_vqueues.h"
 #include "gf3d_swapchain.h"
 #include "gf3d_mesh.h"
-
+#include "world.h"
 
 extern int __DEBUG;
 
@@ -170,16 +170,31 @@ void gf3d_command_configure_render_pass_end(VkCommandBuffer commandBuffer)
 VkCommandBuffer gf3d_command_rendering_begin(Uint32 index,Pipeline *pipe)
 {
     VkCommandBuffer commandBuffer;
+    WorldData* world;
+    Pipeline* bh, *def;
     
+    world = get_world_data();
+
     commandBuffer = gf3d_command_begin_single_time(gf3d_vgraphics_get_graphics_command_pool());
     
-    gf3d_command_configure_render_pass(
+    def = get_bh_pipeline(0);
+    bh = get_bh_pipeline(1);
+    if (world->bh_pipe && pipe == def) {
+        gf3d_command_configure_render_pass(
+            commandBuffer,
+            bh->renderPass,
+            gf3d_swapchain_get_frame_buffer_by_index(index),
+            bh->pipeline,
+            bh->pipelineLayout);
+    }
+    else {
+        gf3d_command_configure_render_pass(
             commandBuffer,
             pipe->renderPass,
             gf3d_swapchain_get_frame_buffer_by_index(index),
             pipe->pipeline,
             pipe->pipelineLayout);
-    
+    }
     return commandBuffer;
 }
 

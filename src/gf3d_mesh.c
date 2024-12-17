@@ -11,6 +11,7 @@
 #include "gf3d_pipeline.h"
 #include "gf3d_model.h"
 #include "gf3d_mesh.h"
+#include "gfc_list.h"
 
 #define ATTRIBUTE_COUNT 5
 
@@ -20,8 +21,9 @@ typedef struct
 {
     Mesh *mesh_list;
     Pipeline *pipe;
-    //Pipeline *bh_pipe;
     Pipeline *sky_pipe;
+    GFC_List* pipe_list;
+    Uint8 curr_pipe;
     Uint32 mesh_max;
     VkVertexInputAttributeDescription attributeDescriptions[ATTRIBUTE_COUNT];
     VkVertexInputBindingDescription bindingDescription;
@@ -70,6 +72,7 @@ void gf3d_mesh_primitive_move(MeshPrimitive *in,GFC_Vector3D offset,GFC_Vector3D
 
 void gf3d_mesh_init(Uint32 mesh_max)
 {
+    Pipeline* pipe;
     Uint32 count = 0;
     if (!mesh_max)
     {
@@ -113,6 +116,7 @@ void gf3d_mesh_init(Uint32 mesh_max)
     gf3d_mesh_get_attribute_descriptions(&count);
 
     //the order of the pipeline creation is the order they are submitted in.
+        // init pipeline
     gf3d_mesh.sky_pipe = gf3d_pipeline_create_from_config(
         gf3d_vgraphics_get_default_logical_device(),
         "config/sky_pipeline.cfg",
@@ -125,7 +129,12 @@ void gf3d_mesh_init(Uint32 mesh_max)
         VK_INDEX_TYPE_UINT16
     );
 
-    gf3d_mesh.pipe = gf3d_pipeline_create_from_config(
+    gf3d_mesh.curr_pipe = 0;
+
+    gf3d_mesh.pipe_list = gfc_list_new();
+
+    gfc_list_append(gf3d_mesh.pipe_list, 
+        gf3d_pipeline_create_from_config(
         gf3d_vgraphics_get_default_logical_device(),
         "config/model_pipeline.cfg",
         gf3d_vgraphics_get_view_extent(),
@@ -134,24 +143,28 @@ void gf3d_mesh_init(Uint32 mesh_max)
         gf3d_mesh_get_attribute_descriptions(NULL),
         count,
         sizeof(ModelUBO),
-        VK_INDEX_TYPE_UINT16
+        VK_INDEX_TYPE_UINT16)
     );
 
-    /*
-    gf3d_mesh.bh_pipe = gf3d_pipeline_create_from_config(
-        gf3d_vgraphics_get_default_logical_device(),
-        "config/model_pipeline.cfg",
-        gf3d_vgraphics_get_view_extent(),
-        mesh_max,
-        gf3d_mesh_get_bind_description(),
-        gf3d_mesh_get_attribute_descriptions(NULL),
-        count,
-        sizeof(ModelUBO),
-        VK_INDEX_TYPE_UINT16
+    gfc_list_append(gf3d_mesh.pipe_list,
+        gf3d_pipeline_create_from_config(
+            gf3d_vgraphics_get_default_logical_device(),
+            "config/bh_pipeline.cfg",
+            gf3d_vgraphics_get_view_extent(),
+            mesh_max,
+            gf3d_mesh_get_bind_description(),
+            gf3d_mesh_get_attribute_descriptions(NULL),
+            count,
+            sizeof(ModelUBO),
+            VK_INDEX_TYPE_UINT16)
     );
-    */
+    gf3d_mesh.pipe = gfc_list_nth(gf3d_mesh.pipe_list, 0);
 
     if (__DEBUG)slog("mesh system initialized");
+}
+
+Pipeline* get_bh_pipeline(Uint8 type) {
+    return gfc_list_nth(gf3d_mesh.pipe_list, type);
 }
 
 Pipeline *gf3d_mesh_get_pipeline()
@@ -307,6 +320,9 @@ void gf3d_mesh_close()
         free(gf3d_mesh.mesh_list);
         gf3d_mesh.mesh_list = NULL;
     }
+    gfc_list_clear(gf3d_mesh.pipe_list);
+    gfc_list_delete(gf3d_mesh.pipe_list);
+
     if (__DEBUG)slog("mesh system closed");
 }
 

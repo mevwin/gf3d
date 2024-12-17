@@ -55,7 +55,7 @@ void main()
     int i;
     vec4 surfaceColor = texture(texSampler, fragTexCoord);
     vec3 normal = fragNormal;
-    vec4 lightTotals = vec4(0);
+    vec4 lightTotals = vec4(0.6745, 0.2275, 0.2275, 0.228);
     
     surfaceColor.xyz *= ubo.material.diffuse.xyz;
     surfaceColor.w *= ubo.material.diffuse.w * ubo.material.transparency;

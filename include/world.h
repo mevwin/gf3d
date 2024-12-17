@@ -55,6 +55,12 @@ typedef struct WorldData_S {
 	Uint8			_done;
 	Uint8			continue_from_save;
 
+	GameMode		game_mode;
+	GameState		current_state;
+	GameState		last_state;
+	float			pause_time;
+	Uint8			bh_pipe;
+
 	// notifications
 	Uint8			notif_init;
 	Uint8			notif_flag;
@@ -62,10 +68,6 @@ typedef struct WorldData_S {
 	Uint8			change_level_prop;
 	float			notification_time;      // timestamp to close notifcation popup
 
-	GameMode		game_mode;
-	GameState		current_state;
-	GameState		last_state;
-	float			pause_time;
 	
 	// dummy perk containers for previous runs
 	void*			perk1; 

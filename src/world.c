@@ -42,6 +42,7 @@ void world_init() {
 	world->notif_flag = 0;
 	world->notif_type = 0;
 	world->notification_time = 0;
+	world->bh_pipe = 0;
 
 	world->player_init = sj_load("def/player_init.def");
 
@@ -110,6 +111,8 @@ void world_check_for_menu_input() {
 				level->goal_timestamp = level->game_start + level->survival_time;
 
 			world->current_state = IN_GAME;
+			if (level->level_type == BLACK_HOLE)
+				world->bh_pipe = 1;
 
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}

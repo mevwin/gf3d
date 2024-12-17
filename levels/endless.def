@@ -5,7 +5,7 @@
     [
         {
             "#comment": "KILL_ENEMY",
-            "level_types": [0],
+            "level_types": [0, 1],
             "level_goal": [5, 10],
             "flock_count": [3, 5],
             "enemy_per_flock": [4, 8],
@@ -17,7 +17,7 @@
         },
         {
             "#comment": "SURVIVE",
-            "level_types": [0],
+            "level_types": [0, 1],
             "level_goal": [1, 2],
             "flock_count": [10, 25],
             "enemy_per_flock": [4, 8],
