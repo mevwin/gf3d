@@ -7,7 +7,7 @@
 #include "gf3d_vqueues.h"
 #include "gf3d_swapchain.h"
 #include "gf3d_mesh.h"
-#include "world.h"
+#include "level.h"
 
 extern int __DEBUG;
 
@@ -170,16 +170,16 @@ void gf3d_command_configure_render_pass_end(VkCommandBuffer commandBuffer)
 VkCommandBuffer gf3d_command_rendering_begin(Uint32 index,Pipeline *pipe)
 {
     VkCommandBuffer commandBuffer;
-    WorldData* world;
+    LevelData* level;
     Pipeline* bh, *def;
     
-    world = get_world_data();
+    level = get_level_data();
 
     commandBuffer = gf3d_command_begin_single_time(gf3d_vgraphics_get_graphics_command_pool());
     
     def = get_bh_pipeline(0);
     bh = get_bh_pipeline(1);
-    if (world->bh_pipe && pipe == def) {
+    if (level->level_type == BLACK_HOLE && pipe == def) {
         gf3d_command_configure_render_pass(
             commandBuffer,
             bh->renderPass,

@@ -42,8 +42,10 @@ void world_init() {
 	world->notif_flag = 0;
 	world->notif_type = 0;
 	world->notification_time = 0;
-	world->bh_pipe = 0;
 
+	world->bg_list = gfc_list_new();
+	gfc_list_append(world->bg_list, gf3d_model_load("models/asteroid_belt.model"));
+	gfc_list_append(world->bg_list, gf3d_model_load("models/black_hole.model"));
 	world->player_init = sj_load("def/player_init.def");
 
 	atexit(world_close);
@@ -51,6 +53,9 @@ void world_init() {
 
 void world_close() {
 	sj_free(world->player_init);
+	gfc_list_foreach(world->bg_list, gf3d_model_free);
+	gfc_list_clear(world->bg_list);
+	gfc_list_delete(world->bg_list);
 	free(world);
 }
 
@@ -111,8 +116,6 @@ void world_check_for_menu_input() {
 				level->goal_timestamp = level->game_start + level->survival_time;
 
 			world->current_state = IN_GAME;
-			if (level->level_type == BLACK_HOLE)
-				world->bh_pipe = 1;
 
 			gfc_sound_play(get_sound_data()->confirm, 0, 1, -1, -1);
 		}
@@ -418,6 +421,9 @@ void world_update(float fps) {
 	UIData* ui;
 	LevelData* level;
 	char fps_string[30];
+	Model* bg;
+	GFC_Matrix4 bgMat;
+
 	level = get_level_data();
 	ui = get_UI_data();
 
@@ -425,6 +431,10 @@ void world_update(float fps) {
 
 	if (world->current_state != START_MENU)
 		world_check_for_menu_input();
+
+	gfc_matrix4_identity(bgMat);
+	bg = gfc_list_nth(world->bg_list, level->level_type);
+	gf3d_model_draw_sky(bg, bgMat, GFC_COLOR_WHITE);
 
 	// fps check
 	//sprintf(fps_string, "fps: %f", fps);

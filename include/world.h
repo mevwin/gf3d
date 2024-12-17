@@ -59,7 +59,8 @@ typedef struct WorldData_S {
 	GameState		current_state;
 	GameState		last_state;
 	float			pause_time;
-	Uint8			bh_pipe;
+
+	GFC_List*		bg_list;
 
 	// notifications
 	Uint8			notif_init;

@@ -1,7 +1,0 @@
-{
-    "model":
-    {
-        "obj":"models/sky/sky.obj",
-        "texture":"models/sky/sky.png"
-    }
-}

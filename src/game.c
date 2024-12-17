@@ -54,8 +54,6 @@ void draw_origin()
 int main(int argc,char *argv[])
 {
     //local variables
-    Model *sky;
-    GFC_Matrix4 skyMat;
     WorldData* world;
 
     //initializtion    
@@ -86,9 +84,6 @@ int main(int argc,char *argv[])
 
     //game setup
     gf2d_mouse_load("actors/mouse.actor");
-    sky = gf3d_model_load("models/sky.model");
-
-    gfc_matrix4_identity(skyMat);
     
     gf3d_camera_set_scale(gfc_vector3d(1,1,1));
     gf3d_camera_set_position(gfc_vector3d(15,-15,10));
@@ -120,7 +115,6 @@ int main(int argc,char *argv[])
 
         gf3d_vgraphics_render_start(); // combines all draw commands, then submits
                 //3D draws
-                gf3d_model_draw_sky(sky,skyMat,GFC_COLOR_WHITE);
                 //draw_origin();
                
                 world_update(fps);

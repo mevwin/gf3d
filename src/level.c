@@ -375,7 +375,6 @@ void level_update() {
         level_data->total_game_time += (level_data->wave_end_time - level_data->game_start);
 
         level_data->obj_complete = 0;
-        world->bh_pipe = 0;
         world->current_state = WAVE_COMPLETED;
         update_player_perks();
         level_data->curr_level = NULL;
