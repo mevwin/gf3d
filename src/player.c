@@ -523,7 +523,7 @@ void player_death() {
     data->player_no_attack = 1;
     self->model->texture = get_models()->dead;
     
-    gfc_sound_play(get_sound_data()->death_sound, 0, 0.5f, -1, -1);
+    //gfc_sound_play(get_sound_data()->death_sound, 0, 0.5f, -1, -1);
 
     // kill reticle
     entity_free(data->reticle);

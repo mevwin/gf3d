@@ -227,7 +227,7 @@ void full_level_reset() {
         return;
     }
 
-    if (level_data->level_def)
+    if (world->game_mode == REGULAR)
         sj_free(level_data->level_def);
 
 }
@@ -312,6 +312,7 @@ void level_update() {
 
     if (p_data->player_dead) { // game is over
         level_data->total_game_time += CURRENT_TIME - level_data->game_start;
+        level_data->enemy_killed_total += level_data->enemy_killed;
         game_save(RUNSAVE);
 
         if (world->game_mode == REGULAR) 
@@ -349,7 +350,7 @@ void level_update() {
                 return;
             }
         }
-        else if (world->game_mode == ENDLESS) {
+        if (world->game_mode == ENDLESS) {
             // create two levels
             level_data->endless_prev1 = generate_level_preview();
             level_data->endless_prev2 = generate_level_preview();
@@ -396,9 +397,9 @@ void level_update() {
         if (level_data->enemy_count == 0) {
             level_data->flock_num++;
             entity_reset();
-
             if (level_data->flock_num >= get_flock_count()) {
                 level_data->flock_num = -1;
+                //entity_reset();
                 return;
             }
             level_generate_enemy_flock(level_data);
