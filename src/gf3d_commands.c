@@ -167,6 +167,11 @@ void gf3d_command_configure_render_pass_end(VkCommandBuffer commandBuffer)
     vkCmdEndRenderPass(commandBuffer);
 }
 
+/**
+* Idea to switch pipelines on render pass taken from:
+* https://vkguide.dev/docs/chapter-2/toggling_shaders/#:~:text=Switching%20pipeline%20at%20runtime,and%20see%20it%20display%20accordingly.
+* Date Accessed: 12/16/24
+*/
 VkCommandBuffer gf3d_command_rendering_begin(Uint32 index,Pipeline *pipe)
 {
     VkCommandBuffer commandBuffer;

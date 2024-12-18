@@ -1,2 +1,2 @@
-{"level":{"level_type":0,"obj_type":1,"level_goal":60.000000,"hazards":{"model":"","count":0,"max_onscreen":25
-        },"level_spawns":{"flock0":[{"enemy_type":0,"spawn":[1.878906,27.222223],"item":-1},{"enemy_type":0,"spawn":[-6.792969,-1.388889],"item":-1}],"flock1":[{"enemy_type":0,"spawn":[3.613281,10.277778],"item":-1}]}}}
+{"level":{"level_type":0,"obj_type":0,"level_goal":5,"hazards":{"model":"","count":0,"max_onscreen":25
+        },"level_spawns":{"flock0":[{"enemy_type":0,"spawn":[-19.222656,25.833334],"item":-1},{"enemy_type":1,"spawn":[42.781250,24.722223],"item":-1}],"flock1":[{"enemy_type":1,"spawn":[21.824219,-4.027778],"item":-1}],"flock2":[{"enemy_type":0,"spawn":[11.851562,24.861113],"item":-1},{"enemy_type":1,"spawn":[-18.066406,4.444445],"item":-1}]}}}

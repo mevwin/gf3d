@@ -388,6 +388,8 @@ void editor_ui(void* w_data) {
 
 		// input checks (TODO)
 		if (gfc_input_command_released("escape")) {
+			editor.asset_changing = 0;
+			editor.toggle_menu = 0;
 			full_level_reset();
 			entity_despawn_all();
 			entity_assets_close();
@@ -673,11 +675,11 @@ int select_num_effect(ObjType obj_type) {
 		}
 		else if (gf2d_mouse_in_rect(editor.ui->textbox_dec)) {
 			editor.int_buffer--;
-			if (editor.int_buffer < 1) {
-				if (editor.asset_changing) // selecting enemy item type
-					editor.int_buffer = (int) INVINCIBILITY;
-				else // selecting objective type
-					editor.int_buffer = 1;
+			if (editor.asset_changing && editor.int_buffer < -1) // selecting enemy item type
+				editor.int_buffer = (int)INVINCIBILITY;
+			else if (!editor.asset_changing && editor.int_buffer < 1) {
+				// selecting objective type
+				editor.int_buffer = 1;
 			}
 		}
 

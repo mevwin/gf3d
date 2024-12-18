@@ -1,6 +1,11 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
+#define SAMPLES 32
+#define WIDTH 0.8
+#define COLOR vec4(1.0, 1.0, 1.0, 1.0)
+#define NUM_FRAMES 6.0
+
 const uint MAX_LIGHTS = 16;
 
 struct MeshUBO
@@ -48,14 +53,12 @@ layout(location = 2) in vec3 position;
 
 layout(location = 0) out vec4 outColor;
 
-vec3 ApplyLight(Light light, vec3 surfaceColor, vec3 normal, vec3 surfacePos, vec3 surfaceToCamera);
-
 void main()
 {   
     int i;
     vec4 surfaceColor = texture(texSampler, fragTexCoord);
     vec3 normal = fragNormal;
-    vec4 lightTotals = vec4(0.6745, 0.2275, 0.2275, 0.228);
+    vec4 lightTotals = vec4(0.0353, 0.5059, 0.651, 0.573);
     
     surfaceColor.xyz *= ubo.material.diffuse.xyz;
     surfaceColor.w *= ubo.material.diffuse.w * ubo.material.transparency;

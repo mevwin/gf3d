@@ -165,9 +165,9 @@ EnemyData* enemy_data_init_from_config(EnemyType enemy_type, SJson* object, int 
 	sj_object_get_value_as_float(enemy_entry, "upspeed", &e_data->upspeed);
 	sj_object_get_value_as_float(enemy_entry, "rigspeed", &e_data->rigspeed);
 
-	if (gfc_random() < 0)
+	if (gfc_crandom() < 0)
 		e_data->upspeed = -e_data->upspeed;
-	if (gfc_random() < 0)
+	if (gfc_crandom() < 0)
 		e_data->rigspeed = -e_data->rigspeed;
 
 	free(enemy_def);
